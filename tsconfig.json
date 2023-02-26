@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "Node",
+        "target": "ES2021",
+        "allowSyntheticDefaultImports": true,
+        "alwaysStrict": true,
+        "outDir": "dist",
+        "module": "ESNext"
+    },
+    "watchOptions": { "excludeDirectories": ["node_modules"] },
+    "include": ["./src/**/*"]
+}
