@@ -2,7 +2,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnSkipped, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants, defaultTimeoutDuration } from "../constants.js"
+import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -93,7 +93,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     })
     game.lastPlayer = game.currentPlayer
     clearTimeout(game.timeout)
-    game.timeout = setTimeout(() => onTimeout(game), defaultTimeoutDuration)
+    game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)
     if (cardPlayed === "draw") {
         const { cards, newDeck } = game.draw(1)
         game.cards[ctx.member.id].push(cards[0])

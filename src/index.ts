@@ -2,7 +2,7 @@ import { client } from "./client.js"
 import { readdir } from "fs"
 import { Command } from "./types.js"
 import { prefix } from "./constants.js"
-import { onButtonPress, onSelectMenu } from "./gameLogic/index.js"
+import { onButtonPress, onModal, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
 
 const commands: { [k: string]: Command } = {}
@@ -24,6 +24,7 @@ client.on("ready", () => {
 client.on("error", console.error)
 
 client.on("messageCreate", msg => {
+    if (!msg.inCachedGuildChannel()) return
     if (!msg.content.startsWith(prefix)) return
     const args = msg.content.slice(prefix.length).split(/ +/)
     const command = args.shift()
@@ -35,6 +36,7 @@ client.on("interactionCreate", ctx => {
         if (ctx.isButtonComponentInteraction()) onButtonPress(ctx)
         else onSelectMenu(ctx)
     }
+    else if (ctx.type === InteractionTypes.MODAL_SUBMIT) onModal(ctx)
 })
 
 client.connect()

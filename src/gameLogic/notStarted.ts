@@ -1,5 +1,5 @@
 import { respond, sendMessage } from "../client.js"
-import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultTimeoutDuration } from "../constants.js"
+import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings } from "../constants.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
@@ -19,7 +19,8 @@ async function startGame(game: UnoGame<false>) {
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         currentPlayer: game.players[0],
         lastPlayer: null,
-        timeout: setTimeout(() => onTimeout(startedGame), defaultTimeoutDuration),
+        settings: game.settings || defaultSettings,
+        timeout: setTimeout(() => onTimeout(startedGame), defaultSettings.timeoutDuration * 1000),
         message: game.message
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
@@ -75,11 +76,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
             break
         }
         case ButtonIDs.EDIT_GAME_SETTINGS: {
-            if (game.host !== ctx.member.id) return ctx.createFollowup({
-                content: "This can only be used by the game's host",
-                flags: MessageFlags.EPHEMERAL
-            })
-            respond(ctx.message, "todo")
+            // handeled in onSettingsModal from gameLogic/started.ts
             break
         }
         case ButtonIDs.DELETE_GAME: {

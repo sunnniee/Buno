@@ -3,7 +3,7 @@ import { Command, UnoGame } from "../types"
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { ButtonStyles, MessageActionRow } from "oceanic.js"
 import { games, makeStartMessage } from "../gameLogic/index.js"
-import { ButtonIDs } from "../constants.js"
+import { ButtonIDs, defaultSettings } from "../constants.js"
 
 export const cmd = {
     name: "uno",
@@ -12,6 +12,7 @@ export const cmd = {
         const gameObj: UnoGame<false> = {
             started: false,
             host: msg.author.id,
+            settings: defaultSettings,
             message: msg,
             players: [msg.author.id],
         }

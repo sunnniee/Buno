@@ -1,7 +1,7 @@
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { MessageActionRow, ButtonStyles, ComponentTypes } from "oceanic.js"
 import { toTitleCase, wasLastTurnSkipped } from "./gameLogic/index.js"
-import { Card, UnoGame } from "./types.js"
+import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
 export const prefix = "]"
 
@@ -28,7 +28,11 @@ export const rainbowColors = [
     0xf5c2e7
 ] as const
 export const defaultColor = 0x6c7086
-export const defaultTimeoutDuration = 45_000
+
+export const defaultSettings: UnoGameSettings = Object.freeze({
+    timeoutDuration: 45,
+    kickOnTimeout: false
+})
 
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
@@ -80,3 +84,12 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
         type: ComponentTypes.STRING_SELECT
     })
     .toJSON()
+
+export const EditSettingsModalIDs = Object.freeze({
+    ROOT: "edit-settings-modal",
+    TIMEOUT_DURATION: "timeout-duration-modal",
+    KICK_ON_TIMEOUT: "kick-on-timeout-modal",
+    KICK_ON_TIMEOUT_OPTION_ENABLED: "kick-enabled-modal",
+    KICK_ON_TIMEOUT_OPTION_DISABLED: "kick-disabled-modal",
+    KICK_ON_TIMEOUT_TEXT_INPUT: "kick-on-timeout-discordstupit-modal"
+})
