@@ -72,7 +72,7 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
                 label: "Draw a card",
                 value: "draw"
             }
-        ].concat(game.lastPlayer === game.currentPlayer && !wasLastTurnSkipped(game) ? [{
+        ].concat(game.lastPlayer === game.currentPlayer && !(game.players.length > 2 || wasLastTurnSkipped(game)) ? [{
             label: "Skip your turn",
             value: "skip"
         }] : []),
