@@ -1,7 +1,7 @@
 import { ButtonIDs, cardEmotes, cards as allCards, SelectCardMenu } from "../constants.js"
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { games, makeGameMessage, cardArrayToCount } from "./index.js"
+import { games, makeGameMessage, cardArrayToCount, nextOrZero } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { client, sendMessage } from "../client.js"
 
@@ -26,6 +26,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
         case ButtonIDs.LEAVE_GAME: {
             if (game.players.includes(ctx.member.id)) {
                 game.players.splice(game.players.indexOf(ctx.member.id), 1)
+                if (game.currentPlayer === ctx.member.id) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
                 sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** left the game.`)
                 if (game.players.length <= 1) {
                     delete games[ctx.channel.id]
