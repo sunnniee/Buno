@@ -68,7 +68,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
         }
         case ButtonIDs.START_GAME: {
             if (game.host !== ctx.member.id) return ctx.createFollowup({
-                content: "nuh uh",
+                content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             })
             startGame(game)
@@ -76,10 +76,20 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
         }
         case ButtonIDs.EDIT_GAME_SETTINGS: {
             if (game.host !== ctx.member.id) return ctx.createFollowup({
-                content: "nuh uh",
+                content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             })
             respond(ctx.message, "todo")
+            break
+        }
+        case ButtonIDs.DELETE_GAME: {
+            if (game.host !== ctx.member.id) return ctx.createFollowup({
+                content: "This can only be used by the game's host",
+                flags: MessageFlags.EPHEMERAL
+            })
+            respond(ctx.message, `👋 - game stopped by <@${ctx.member.id}>`)
+                .then(() => ctx.deleteOriginal())
+            delete games[ctx.channel.id]
             break
         }
     }

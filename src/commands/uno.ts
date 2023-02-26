@@ -26,7 +26,7 @@ export const cmd = {
                 .addInteractionButton({
                     style: ButtonStyles.DANGER,
                     customID: ButtonIDs.LEAVE_GAME_BEFORE_START,
-                    emoji: ComponentBuilder.emojiToPartial("🛑", "default")
+                    emoji: ComponentBuilder.emojiToPartial("🚪", "default")
                 })
                 .addInteractionButton({
                     style: ButtonStyles.PRIMARY,
@@ -37,8 +37,14 @@ export const cmd = {
                 .addInteractionButton({
                     style: ButtonStyles.SECONDARY,
                     customID: ButtonIDs.EDIT_GAME_SETTINGS,
-                    label: "Settings (host only)",
+                    label: "Settings",
                     emoji: ComponentBuilder.emojiToPartial("⚙", "default")
+                })
+                .addInteractionButton({
+                    style: ButtonStyles.DANGER,
+                    customID: ButtonIDs.DELETE_GAME,
+                    label: "Stop game",
+                    emoji: ComponentBuilder.emojiToPartial("🛑", "default")
                 })
                 .toJSON()
         })

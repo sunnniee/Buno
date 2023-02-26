@@ -34,6 +34,7 @@ export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
     LEAVE_GAME_BEFORE_START: "leave",
     EDIT_GAME_SETTINGS: "game-settings",
+    DELETE_GAME: "delete-game",
     START_GAME: "start",
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",

@@ -11,13 +11,13 @@ export const client = new Client({
 
 export const sendMessage = (channelId: string, content: CreateMessageOptions | string) =>
     client.rest.channels.createMessage(channelId, typeof content === "string" ? { content } : content)
-export function editMessage(message: Message, content: CreateMessageOptions | string): any {
-    return client.rest.channels.editMessage(message.channelID, message.id, typeof content === "string" ? { content } : content)
-}
+export const editMessage = (message: Message, content: CreateMessageOptions | string): any =>
+    client.rest.channels.editMessage(message.channelID, message.id, typeof content === "string" ? { content } : content)
+
 export const deleteMessage = (message: Message) => client.rest.channels.deleteMessage(message.channel.id, message.id)
 export const respond = (msg: Message, c: CreateMessageOptions | string) => {
     let content: CreateMessageOptions = { messageReference: { messageID: msg.id, channelID: msg.channel.id } }
     if (typeof c === "string") content.content = c
     else content = { ...content, ...c }
-    sendMessage(msg.channelID, content)
+    return sendMessage(msg.channelID, content)
 }

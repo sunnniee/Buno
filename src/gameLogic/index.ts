@@ -76,6 +76,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.LEAVE_GAME_BEFORE_START:
         case ButtonIDs.START_GAME:
         case ButtonIDs.EDIT_GAME_SETTINGS:
+        case ButtonIDs.DELETE_GAME:
             if (!game || hasStarted(game)) return
             onGameJoin(ctx, game)
             break
