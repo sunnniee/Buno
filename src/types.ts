@@ -32,5 +32,6 @@ export type UnoGame<T extends boolean> = T extends true ? {
     host: UserID,
     players: UserID[],
     settings: UnoGameSettings,
-    message: Message<AnyGuildTextChannel>
+    message: Message<AnyGuildTextChannel>,
+    _allowSolo: boolean,
 }
