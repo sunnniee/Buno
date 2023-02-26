@@ -19,7 +19,8 @@ export type UnoGame<T extends boolean> = T extends true ? {
     deck: Card[],
     draw: (amount: number) => { cards: Card[], newDeck: Card[] },
     currentPlayer: UserID,
-    lastPlayer: UserID | null
+    lastPlayer: UserID | null,
+    timeout: NodeJS.Timeout
     message: Message,
 } : {
     started: false,

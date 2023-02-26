@@ -1,10 +1,10 @@
-import { client } from "../client.js"
+import { client, sendMessage } from "../client.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { EmbedBuilder } from "@oceanicjs/builders"
 import { onGameJoin } from "./notStarted.js"
 import { onGameButtonPress } from "./started.js"
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards } from "../constants.js"
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons } from "../constants.js"
 import { onCardPlayed, onColorPlayed } from "./playedCards.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
@@ -25,6 +25,19 @@ export const wasLastTurnSkipped = (game: UnoGame<true>) =>
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
     .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj }, {} as { [k in Card]: number })
+
+export function onTimeout(game: UnoGame<true>) {
+    game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    sendMessage(game.message.channel.id, {
+        content: `<@${game.currentPlayer}>, it's now your turn`,
+        embeds: [makeGameMessage(game)],
+        components: GameButtons,
+        allowedMentions: { users: true }
+    }).then(msg => {
+        game.message = msg
+        games[game.message.channelID] = game
+    })
+}
 
 export function makeStartMessage(game: UnoGame<false>) {
     return new EmbedBuilder()

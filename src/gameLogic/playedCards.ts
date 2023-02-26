@@ -1,8 +1,9 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnSkipped } from "./index.js"
+import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnSkipped, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants } from "../constants.js"
+import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants, defaultTimeoutDuration } from "../constants.js"
+import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
     delete games[ctx.channel.id]
@@ -19,7 +20,6 @@ function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card
             .toJSON()
     })
 }
-import { ComponentBuilder } from "@oceanicjs/builders"
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game
@@ -92,6 +92,8 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         flags: MessageFlags.EPHEMERAL
     })
     game.lastPlayer = game.currentPlayer
+    clearTimeout(game.timeout)
+    game.timeout = setTimeout(() => onTimeout(game), defaultTimeoutDuration)
     if (cardPlayed === "draw") {
         const { cards, newDeck } = game.draw(1)
         game.cards[ctx.member.id].push(cards[0])

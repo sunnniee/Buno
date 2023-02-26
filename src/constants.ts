@@ -12,6 +12,7 @@ export const cards = (colors
     .map(c => variants.map(v => `${c}-${v}`))
     .flat() as Card[])
     .concat(uniqueVariants)
+// TODO: clone uno card emotes to a server
 export const cardEmotes: { [k in Card]: string } = Object.fromEntries(
     cards.map(c => [c, "<:SaulGoodman_Stare:1013330239641882645>"])
 ) as any
@@ -27,6 +28,7 @@ export const rainbowColors = [
     0xf5c2e7
 ] as const
 export const defaultColor = 0x6c7086
+export const defaultTimeoutDuration = 45_000
 
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",

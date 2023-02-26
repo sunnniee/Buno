@@ -1,8 +1,8 @@
 import { respond, sendMessage } from "../client.js"
-import { cards, ButtonIDs, uniqueVariants, GameButtons } from "../constants.js"
+import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultTimeoutDuration } from "../constants.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { games, makeGameMessage, makeStartMessage, shuffle } from "./index.js"
+import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0]
@@ -19,6 +19,7 @@ async function startGame(game: UnoGame<false>) {
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         currentPlayer: game.players[0],
         lastPlayer: null,
+        timeout: setTimeout(() => onTimeout(startedGame), defaultTimeoutDuration),
         message: game.message
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
