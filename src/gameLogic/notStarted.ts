@@ -40,7 +40,7 @@ async function startGame(game: UnoGame<false>) {
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
     let { deck } = game
     return (amount: number) => {
-        if (deck.length < amount) deck = deck.concat(shuffle([...cards, ...uniqueVariants]))
+        if (deck.length < amount) deck = deck.concat(shuffle(dupe([...cards, ...uniqueVariants])))
         const takenCards = deck.splice(0, amount)
         return { cards: takenCards, newDeck: deck }
     }

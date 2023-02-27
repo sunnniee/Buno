@@ -11,10 +11,12 @@ export const games: { [channelId: string]: UnoGame<boolean> } = {}
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
     return !!(game as any).currentPlayer
 }
-export const shuffle = (array: Card[]): Card[] => array
-    .map(c => ({ c, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ c }) => c)
+export function shuffle<T>(array: T[]): T[] {
+    return array
+        .map(c => ({ c, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ c }) => c)
+}
 export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ")
 export function nextOrZero(array: any[], n: number) {
     if (n < array.length - 1) return array[n + 1]
