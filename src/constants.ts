@@ -25,6 +25,7 @@ export const cardEmotes: { [k in Card]: string } = {
     "red-9": "<:R9:1079758934103040121>",
     "red-+2": "<:Rd2:1079758935621382224>",
     "red-reverse": "<:Rr:1079758938247020554>",
+    "red-block": "<:Rb:1079775711830736927>",
     "yellow-0": "<:Y0:1079758940818133053>",
     "yellow-1": "<:Y1:1079758943963852801>",
     "yellow-2": "<:Y2:1079759135815503982>",
@@ -34,9 +35,10 @@ export const cardEmotes: { [k in Card]: string } = {
     "yellow-6": "<:Y6:1079758954160201808>",
     "yellow-7": "<:Y7:1079759140395700274>",
     "yellow-8": "<:Y8:1079758957649858590>",
-
+    "yellow-9": "<:Y9:1079775514786533376>",
     "yellow-+2": "<:Yd2:1079758965065388182>",
     "yellow-reverse": "<:Yr:1079758967489708062>",
+    "yellow-block": "<:Yb:1079775704679448656>",
     "blue-0": "<:B0:1079758719820255262>",
     "blue-1": "<:B1:1079758722060013579>",
     "blue-2": "<:B2:1079758725977485473>",
@@ -49,6 +51,7 @@ export const cardEmotes: { [k in Card]: string } = {
     "blue-9": "<:B9:1079758788460023888>",
     "blue-+2": "<:Bd2:1079758789999345715>",
     "blue-reverse": "<:Br:1079758792658518096>",
+    "blue-block": "<:Bb:1079775707569332285>",
     "green-0": "<:G0:1079758849369706547>",
     "green-1": "<:G1:1079758851643019336>",
     "green-2": "<:G2:1079758854662930473>",
@@ -61,15 +64,9 @@ export const cardEmotes: { [k in Card]: string } = {
     "green-9": "<:G9:1079758868734812165>",
     "green-+2": "<:Gd2:1079758869762408480>",
     "green-reverse": "<:Gr:1079758912045195344>",
+    "green-block": "<:Gb:1079775709456760872>",
     "wild": "<:W:1079759132925628526>",
     "+4": "<:d4:1079758847155130439>",
-
-    // TODO: finish when no longer rate limited
-    "red-block": "<:SaulGoodman_Stare:1013330239641882645>",
-    "yellow-block": "<:SaulGoodman_Stare:1013330239641882645>",
-    "green-block": "<:SaulGoodman_Stare:1013330239641882645>",
-    "blue-block": "<:SaulGoodman_Stare:1013330239641882645>",
-    "yellow-9": "<:SaulGoodman_Stare:1013330239641882645>",
 }
 
 // yes i like catppuccin how could you tell
