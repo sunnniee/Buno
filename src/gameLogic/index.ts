@@ -1,5 +1,5 @@
 import { client, sendMessage } from "../client.js"
-import { AnyGuildChannel, ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalSubmitInteraction } from "oceanic.js"
+import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalSubmitInteraction } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
@@ -30,7 +30,7 @@ export const cardArrayToCount = (a: Card[]) => a
     .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj }, {} as { [k in Card]: number })
 
 export function onTimeout(game: UnoGame<true>) {
-    const kickedPlayer = (game.message.channel as AnyGuildChannel).guild.members.get(game.currentPlayer)
+    const kickedPlayer = game.message.channel.guild.members.get(game.currentPlayer)
     game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
     sendMessage(game.message.channel.id,
