@@ -12,6 +12,7 @@ export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeo
 export type UnoGameSettings = {
     timeoutDuration: number
     kickOnTimeout: boolean
+    allowSkipping: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {
     started: true,

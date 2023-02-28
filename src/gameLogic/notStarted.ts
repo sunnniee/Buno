@@ -74,12 +74,17 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
     switch (ctx.data.values.raw[0]) {
         case SettingsIDs.KICK_ON_TIMEOUT: {
             game.settings.kickOnTimeout = !game.settings.kickOnTimeout
-            games[ctx.channel.id] = game
-            ctx.editOriginal({
-                components: SettingsSelectMenu(game)
-            })
+            break
+        }
+        case SettingsIDs.ALLOW_SKIPPING: {
+            game.settings.allowSkipping = !game.settings.allowSkipping
+            break
         }
     }
+    games[ctx.channel.id] = game
+    ctx.editOriginal({
+        components: SettingsSelectMenu(game)
+    })
 }
 
 export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<false>) {

@@ -88,10 +88,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 .toJSON()
         })
     }
-    if (cardPlayed === "skip" && game.lastPlayer !== game.currentPlayer && !wasLastTurnSkipped(game)) return ctx.createFollowup({
-        content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
-        flags: MessageFlags.EPHEMERAL
-    })
+    if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer !== game.currentPlayer && !wasLastTurnSkipped(game))))
+        return ctx.createFollowup({
+            content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
+            flags: MessageFlags.EPHEMERAL
+        })
     game.lastPlayer = game.currentPlayer
     clearTimeout(game.timeout)
     game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)

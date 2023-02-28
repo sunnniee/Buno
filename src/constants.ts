@@ -81,8 +81,9 @@ export const rainbowColors = [
 export const defaultColor = 0x6c7086
 
 export const defaultSettings: UnoGameSettings = {
-    timeoutDuration: 45,
-    kickOnTimeout: false
+    timeoutDuration: 60,
+    kickOnTimeout: false,
+    allowSkipping: true
 } as const
 
 export const ButtonIDs = Object.freeze({
@@ -129,7 +130,7 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
                 label: "Draw a card",
                 value: "draw"
             }
-        ].concat(game.lastPlayer === game.currentPlayer && !(game.players.length > 2 || wasLastTurnSkipped(game)) ? [{
+        ].concat(game.lastPlayer === game.currentPlayer && game.settings.allowSkipping && !(game.players.length > 2 || wasLastTurnSkipped(game)) ? [{
             label: "Skip your turn",
             value: "skip"
         }] : []),
@@ -139,7 +140,8 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
 function toHumanReadableTime(n: number) {
     if (n < 0 || n > 3600) return "Disabled"
     if (n < 60) return `${n} seconds`
-    return `${Math.floor(n / 60)} minutes${n % 60 ? ` and ${n % 60} seconds` : ""}`
+    const m = Math.floor(n / 60), s = n % 60
+    return `${m} minute${m === 1 ? "" : "s"}${s ? ` and ${s} second${s === 1 ? "" : "s"}` : ""}`
 }
 export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
@@ -154,6 +156,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Kick on timeout",
             value: SettingsIDs.KICK_ON_TIMEOUT,
             description: game.settings.kickOnTimeout ? "Enabled" : "Disabled"
+        },
+        {
+            label: "Allow skipping turns",
+            value: SettingsIDs.ALLOW_SKIPPING,
+            description: game.settings.allowSkipping ? "Enabled" : "Disabled"
         }]
     })
     .toJSON()
@@ -163,4 +170,5 @@ export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
     TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
     KICK_ON_TIMEOUT: "kick-on-timeout-setting",
+    ALLOW_SKIPPING: "allow-skipping"
 })
