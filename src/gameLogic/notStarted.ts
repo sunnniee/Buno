@@ -1,10 +1,9 @@
 import { respond, sendMessage } from "../client.js"
-import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js"
+import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings, SettingsSelectMenu, SettingsIDs, onMsgError } from "../constants.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
-import { onMsgError } from "../constants"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0]

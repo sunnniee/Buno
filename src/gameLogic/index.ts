@@ -4,9 +4,8 @@ import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
 import { onGameButtonPress } from "./started.js"
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, onMsgError, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
 import { onCardPlayed, onColorPlayed } from "./playedCards.js"
-import { onMsgError } from "../constants"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
