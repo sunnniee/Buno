@@ -6,6 +6,7 @@ import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, u
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
+    clearTimeout((games[ctx.channel.id] as UnoGame<true>).timeout)
     delete games[ctx.channel.id]
     sendMessage(ctx.channel.id, {
         content: `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,

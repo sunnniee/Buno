@@ -2,9 +2,9 @@ import { client, sendMessage } from "../client.js"
 import { AnyGuildChannel, ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalSubmitInteraction } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
-import { onGameJoin } from "./notStarted.js"
-import { onGameButtonPress, onSettingsModal } from "./started.js"
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, EditSettingsModalIDs } from "../constants.js"
+import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
+import { onGameButtonPress } from "./started.js"
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
 import { onCardPlayed, onColorPlayed } from "./playedCards.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
@@ -30,12 +30,13 @@ export const cardArrayToCount = (a: Card[]) => a
 
 export function onTimeout(game: UnoGame<true>) {
     const kickedPlayer = (game.message.channel as AnyGuildChannel).guild.members.get(game.currentPlayer)
-    if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
     game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
     sendMessage(game.message.channel.id,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     )
     if (game.players.length <= 1) {
+        clearTimeout(game.timeout)
         delete games[game.message.channel.id]
         return sendMessage(game.message.channel.id, {
             content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
@@ -90,8 +91,6 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 }
 
 export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {
-    // has to be handeled here becaue createModal is an initial response
-    if (ctx.data.customID === ButtonIDs.EDIT_GAME_SETTINGS) return onSettingsModal(ctx)
     ctx.deferUpdate()
     const game = games[ctx.channel.id]
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
@@ -99,6 +98,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.LEAVE_GAME_BEFORE_START:
         case ButtonIDs.START_GAME:
         case ButtonIDs.DELETE_GAME:
+        case ButtonIDs.EDIT_GAME_SETTINGS:
             if (!game || hasStarted(game)) return
             onGameJoin(ctx, game)
             break
@@ -116,25 +116,31 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
 }
 
 export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>) {
+    if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS) {
+        if (ctx.data.values.raw[0] === SettingsIDs.TIMEOUT_DURATION) return makeSettingsModal(ctx)
+    }
     ctx.deferUpdate()
     const game = games[ctx.channel.id]
-    if (!game || !hasStarted(game)) return
-    if (ctx.data.customID === SelectIDs.CHOOSE_CARD) onCardPlayed(ctx, game)
-    else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR) onColorPlayed(ctx, game)
+    if (!game) return
+    if (ctx.data.customID === SelectIDs.CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game)
+    else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game)
+    else if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS && !hasStarted(game)) onSettingsChange(ctx, game)
 }
 
-export function onModal(ctx: ModalSubmitInteraction) {
+export function onModalSubmit(ctx: ModalSubmitInteraction) {
     ctx.deferUpdate()
-    if (ctx.data.customID === EditSettingsModalIDs.ROOT) {
+    if (ctx.data.customID === SettingsIDs.TIMEOUT_DURATION_MODAL) {
         const game = games[ctx.channel.id]
         if (!game || hasStarted(game)) return
-        const [timeoutDurationRaw, kickOnTimeoutRaw] = ctx.data.components.map(i => i.components[0].value)
+        const [timeoutDurationRaw] = ctx.data.components.map(i => i.components[0].value)
         let timeoutDuration = parseInt(timeoutDurationRaw.replace(/[ .,_]/gm, ""), 10)
-        if (timeoutDuration < 0) timeoutDuration = Number.MAX_SAFE_INTEGER // :slight_smile:
-        if (!Number.isSafeInteger(timeoutDuration)) timeoutDuration = Number.MAX_SAFE_INTEGER
+        if (Number.isNaN(timeoutDuration)) ({ timeoutDuration } = defaultSettings)
+        if (timeoutDuration < 0 || timeoutDuration > 3600) timeoutDuration = Number.MAX_SAFE_INTEGER // :slight_smile:
         if (timeoutDuration < 20) timeoutDuration = 20
-        const kickOnTimeout = !!kickOnTimeoutRaw.toLowerCase().startsWith("enabl") || kickOnTimeoutRaw.toLowerCase() === "on"
-        game.settings = { timeoutDuration, kickOnTimeout }
+        game.settings.timeoutDuration = timeoutDuration
         games[ctx.channel.id] = game
+        ctx.editOriginal({
+            components: SettingsSelectMenu(game)
+        })
     }
 }

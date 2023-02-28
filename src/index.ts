@@ -2,7 +2,7 @@ import { client } from "./client.js"
 import { readdir } from "fs"
 import { Command } from "./types.js"
 import { prefix } from "./constants.js"
-import { onButtonPress, onModal, onSelectMenu } from "./gameLogic/index.js"
+import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
 
 const commands: { [k: string]: Command } = {}
@@ -36,7 +36,7 @@ client.on("interactionCreate", ctx => {
         if (ctx.isButtonComponentInteraction()) onButtonPress(ctx)
         else onSelectMenu(ctx)
     }
-    else if (ctx.type === InteractionTypes.MODAL_SUBMIT) onModal(ctx)
+    else if (ctx.type === InteractionTypes.MODAL_SUBMIT) onModalSubmit(ctx)
 })
 
 client.connect()

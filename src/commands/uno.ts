@@ -13,7 +13,7 @@ Jump: https://discord.com/channels/${msg.channel.guild.id}/${msg.channel.id}/${m
         const gameObj: UnoGame<false> = {
             started: false,
             host: msg.author.id,
-            settings: defaultSettings,
+            settings: { ...defaultSettings },
             message: msg,
             players: [msg.author.id],
             _allowSolo: args[0]?.toLowerCase() === "solo"
@@ -38,16 +38,16 @@ Jump: https://discord.com/channels/${msg.channel.guild.id}/${msg.channel.id}/${m
                 })
                 .addRow()
                 .addInteractionButton({
-                    style: ButtonStyles.SECONDARY,
-                    customID: ButtonIDs.EDIT_GAME_SETTINGS,
-                    label: "Settings",
-                    emoji: ComponentBuilder.emojiToPartial("⚙", "default")
-                })
-                .addInteractionButton({
                     style: ButtonStyles.DANGER,
                     customID: ButtonIDs.DELETE_GAME,
                     label: "Stop game",
                     emoji: ComponentBuilder.emojiToPartial("🛑", "default")
+                })
+                .addInteractionButton({
+                    style: ButtonStyles.SECONDARY,
+                    customID: ButtonIDs.EDIT_GAME_SETTINGS,
+                    label: "Settings",
+                    emoji: ComponentBuilder.emojiToPartial("⚙", "default")
                 })
                 .toJSON()
         })

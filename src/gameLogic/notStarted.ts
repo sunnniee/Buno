@@ -1,8 +1,9 @@
 import { respond, sendMessage } from "../client.js"
-import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings } from "../constants.js"
-import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js"
+import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js"
+import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
+import { ComponentBuilder } from "@oceanicjs/builders"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0]
@@ -21,7 +22,7 @@ async function startGame(game: UnoGame<false>) {
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         currentPlayer: game.players[0],
         lastPlayer: null,
-        settings: game.settings || defaultSettings,
+        settings: game.settings || { ...defaultSettings },
         timeout: setTimeout(() => onTimeout(startedGame), defaultSettings.timeoutDuration * 1000),
         message: game.message
     } as UnoGame<true>
@@ -43,6 +44,41 @@ function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], 
         if (deck.length < amount) deck = deck.concat(shuffle(dupe([...cards, ...uniqueVariants])))
         const takenCards = deck.splice(0, amount)
         return { cards: takenCards, newDeck: deck }
+    }
+}
+
+export function makeSettingsModal(ctx: ComponentInteraction) {
+    const game = games[ctx.channel.id]
+    if (!game) return ctx.deferUpdate()
+    if (game.host !== ctx.member.id) return ctx.createFollowup({
+        content: "This can only be used by the game's host",
+        flags: MessageFlags.EPHEMERAL
+    })
+    ctx.createModal({
+        title: "Edit game settings",
+        customID: SettingsIDs.TIMEOUT_DURATION_MODAL,
+        components: new ComponentBuilder<ModalActionRow>()
+            .addTextInput({
+                customID: SettingsIDs.TIMEOUT_DURATION_MODAL_SETTING,
+                label: "New duration (in seconds, >20, -1 to disable)",
+                style: TextInputStyles.SHORT,
+                value: `${((game.settings.timeoutDuration === Number.MAX_SAFE_INTEGER || game.settings.timeoutDuration < 0)
+                    ? "-1" : game.settings.timeoutDuration)
+                    ?? defaultSettings.timeoutDuration}`,
+                placeholder: `default: ${defaultSettings.timeoutDuration}, max of 1 hour`
+            })
+            .toJSON()
+    })
+}
+export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<false>) {
+    switch (ctx.data.values.raw[0]) {
+        case SettingsIDs.KICK_ON_TIMEOUT: {
+            game.settings.kickOnTimeout = !game.settings.kickOnTimeout
+            games[ctx.channel.id] = game
+            ctx.editOriginal({
+                components: SettingsSelectMenu(game)
+            })
+        }
     }
 }
 
@@ -78,7 +114,15 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
             break
         }
         case ButtonIDs.EDIT_GAME_SETTINGS: {
-            // handeled in onSettingsModal from gameLogic/started.ts
+            if (game.host !== ctx.member.id) return ctx.createFollowup({
+                content: "This can only be used by the game's host",
+                flags: MessageFlags.EPHEMERAL
+            })
+            ctx.createFollowup({
+                content: "Click on a setting to change it",
+                flags: MessageFlags.EPHEMERAL,
+                components: SettingsSelectMenu(game)
+            })
             break
         }
         case ButtonIDs.DELETE_GAME: {

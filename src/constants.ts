@@ -80,10 +80,10 @@ export const rainbowColors = [
 ] as const
 export const defaultColor = 0x6c7086
 
-export const defaultSettings: UnoGameSettings = Object.freeze({
+export const defaultSettings: UnoGameSettings = {
     timeoutDuration: 45,
     kickOnTimeout: false
-})
+} as const
 
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
@@ -110,7 +110,8 @@ export const GameButtons = new ComponentBuilder<MessageActionRow>()
 
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
-    CHOOSE_COLOR: "choose-color"
+    CHOOSE_COLOR: "choose-color",
+    EDIT_GAME_SETTINGS: "change-settings"
 })
 
 export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number }) => new ComponentBuilder<MessageActionRow>()
@@ -135,12 +136,31 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
         type: ComponentTypes.STRING_SELECT
     })
     .toJSON()
+function toHumanReadableTime(n: number) {
+    if (n < 0 || n > 3600) return "Disabled"
+    if (n < 60) return `${n} seconds`
+    return `${Math.floor(n / 60)} minutes${n % 60 ? ` and ${n % 60} seconds` : ""}`
+}
+export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder<MessageActionRow>()
+    .addSelectMenu({
+        customID: SelectIDs.EDIT_GAME_SETTINGS,
+        type: ComponentTypes.STRING_SELECT,
+        options: [{
+            label: "Turn duration",
+            value: SettingsIDs.TIMEOUT_DURATION,
+            description: `${toHumanReadableTime(game.settings.timeoutDuration ?? defaultSettings.timeoutDuration)}`
+        },
+        {
+            label: "Kick on timeout",
+            value: SettingsIDs.KICK_ON_TIMEOUT,
+            description: game.settings.kickOnTimeout ? "Enabled" : "Disabled"
+        }]
+    })
+    .toJSON()
 
-export const EditSettingsModalIDs = Object.freeze({
-    ROOT: "edit-settings-modal",
-    TIMEOUT_DURATION: "timeout-duration-modal",
-    KICK_ON_TIMEOUT: "kick-on-timeout-modal",
-    KICK_ON_TIMEOUT_OPTION_ENABLED: "kick-enabled-modal",
-    KICK_ON_TIMEOUT_OPTION_DISABLED: "kick-disabled-modal",
-    KICK_ON_TIMEOUT_TEXT_INPUT: "kick-on-timeout-discordstupit-modal"
+export const SettingsIDs = Object.freeze({
+    TIMEOUT_DURATION: "timeout-duration-setting",
+    TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
+    TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
+    KICK_ON_TIMEOUT: "kick-on-timeout-setting",
 })
