@@ -23,7 +23,7 @@ async function startGame(game: UnoGame<false>) {
         currentPlayer: game.players[0],
         lastPlayer: null,
         settings: game.settings || { ...defaultSettings },
-        timeout: setTimeout(() => onTimeout(startedGame), defaultSettings.timeoutDuration * 1000),
+        timeout: setTimeout(() => onTimeout(startedGame), game.settings.timeoutDuration * 1000),
         message: game.message
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
