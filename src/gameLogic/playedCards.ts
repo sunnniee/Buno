@@ -2,7 +2,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnSkipped, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants } from "../constants.js"
+import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants, onMsgError } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -63,14 +63,14 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (cards.indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
-    })
+    }).catch(e => onMsgError(e, ctx))
     if (
         color !== ccColor && color !== game.currentCardColor
         && variant !== ccVariant && !["draw", "skip", ...uniqueVariants].includes(color)
     ) return ctx.createFollowup({
         content: "You can't play that card",
         flags: MessageFlags.EPHEMERAL
-    })
+    }).catch(e => onMsgError(e, ctx))
     if (uniqueVariants.includes(color as typeof uniqueVariants[number])) {
         return ctx.editOriginal({
             content: "Choose a color",
@@ -86,13 +86,13 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                     type: ComponentTypes.STRING_SELECT,
                 })
                 .toJSON()
-        })
+        }).catch(e => onMsgError(e, ctx))
     }
     if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer !== game.currentPlayer && !wasLastTurnSkipped(game))))
         return ctx.createFollowup({
             content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
             flags: MessageFlags.EPHEMERAL
-        })
+        }).catch(e => onMsgError(e, ctx))
     game.lastPlayer = game.currentPlayer
     clearTimeout(game.timeout)
     game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)
@@ -103,7 +103,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.editOriginal({
             content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
             components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id]))
-        })
+        }).catch(e => onMsgError(e, ctx))
     }
     else if (cardPlayed === "skip") {
         game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))

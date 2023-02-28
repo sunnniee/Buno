@@ -1,5 +1,6 @@
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { MessageActionRow, ButtonStyles, ComponentTypes } from "oceanic.js"
+import { sendMessage } from "./client.js"
 import { toTitleCase, wasLastTurnSkipped } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
@@ -114,6 +115,9 @@ export const SelectIDs = Object.freeze({
     CHOOSE_COLOR: "choose-color",
     EDIT_GAME_SETTINGS: "change-settings"
 })
+
+export const onMsgError = (e, ctx: { channelID: string }) =>
+    sendMessage(ctx.channelID, `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``)
 
 export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({

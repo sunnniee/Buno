@@ -4,6 +4,7 @@ import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, Tex
 import { Card, UnoGame } from "../types.js"
 import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
+import { onMsgError } from "../constants"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0]
@@ -53,7 +54,7 @@ export function makeSettingsModal(ctx: ComponentInteraction) {
     if (game.host !== ctx.member.id) return ctx.createFollowup({
         content: "This can only be used by the game's host",
         flags: MessageFlags.EPHEMERAL
-    })
+    }).catch(e => onMsgError(e, ctx))
     ctx.createModal({
         title: "Edit game settings",
         customID: SettingsIDs.TIMEOUT_DURATION_MODAL,
@@ -84,7 +85,7 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
     games[ctx.channel.id] = game
     ctx.editOriginal({
         components: SettingsSelectMenu(game)
-    })
+    }).catch(e => onMsgError(e, ctx))
 }
 
 export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<false>) {
@@ -95,7 +96,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 games[ctx.channelID] = game
                 ctx.editOriginal({
                     embeds: [makeStartMessage(game)]
-                })
+                }).catch(e => onMsgError(e, ctx))
             }
             break
         }
@@ -106,7 +107,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 games[ctx.channelID] = game
                 ctx.editOriginal({
                     embeds: [makeStartMessage(game)]
-                })
+                }).catch(e => onMsgError(e, ctx))
             }
             break
         }
@@ -114,7 +115,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
             if (game.host !== ctx.member.id) return ctx.createFollowup({
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
-            })
+            }).catch(e => onMsgError(e, ctx))
             startGame(game)
             break
         }
@@ -127,14 +128,14 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "Click on a setting to change it",
                 flags: MessageFlags.EPHEMERAL,
                 components: SettingsSelectMenu(game)
-            })
+            }).catch(e => onMsgError(e, ctx))
             break
         }
         case ButtonIDs.DELETE_GAME: {
             if (game.host !== ctx.member.id) return ctx.createFollowup({
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
-            })
+            }).catch(e => onMsgError(e, ctx))
             respond(ctx.message, `👋 - game stopped by <@${ctx.member.id}>`)
                 .then(() => ctx.deleteOriginal())
             delete games[ctx.channel.id]
