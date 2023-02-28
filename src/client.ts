@@ -1,6 +1,6 @@
 import { config } from "dotenv"; config()
 import { AnyGuildTextChannel, Client, CreateMessageOptions, Message } from "oceanic.js"
-import { onMsgError } from "./constants"
+import { onMsgError } from "./constants.js"
 
 export const client = new Client({
     auth: `Bot ${process.env.TOKEN}`,
