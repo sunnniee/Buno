@@ -5,6 +5,7 @@ import { toTitleCase } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
 export const prefix = "]"
+export const devs = ["406028027768733696"]
 
 export const colors = ["red", "yellow", "green", "blue",] as const
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const
