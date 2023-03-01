@@ -4,7 +4,6 @@ import { sendMessage } from "./client.js"
 import { toTitleCase } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
-export const prefix = "]"
 export const devs = ["406028027768733696"]
 
 export const colors = ["red", "yellow", "green", "blue",] as const

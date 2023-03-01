@@ -1,9 +1,11 @@
 import { client } from "./client.js"
 import { readdir } from "fs"
 import { Command } from "./types.js"
-import { prefix } from "./constants.js"
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
+
+const environment = process.argv[2] === "--dev" ? "release" : "dev"
+const prefix = environment === "release" ? "]" : "]]"
 
 const commands: { [k: string]: Command } = {}
 // why the fuck does it need ./src specified
