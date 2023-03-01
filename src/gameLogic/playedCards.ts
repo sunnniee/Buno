@@ -124,11 +124,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (variant === "block") {
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         }
-        game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-        // remove ^ and ^^ and uncomment below to skip after every card
+        if (game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         ctx.deleteOriginal()
     }
-    // game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    if (!game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) {
         win(ctx, cardPlayed as Card)
