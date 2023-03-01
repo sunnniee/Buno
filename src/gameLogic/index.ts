@@ -22,7 +22,7 @@ export function nextOrZero(array: any[], n: number) {
     if (n < array.length - 1) return array[n + 1]
     else return array[0]
 }
-export const wasLastTurnSkipped = (game: UnoGame<true>) =>
+export const wasLastTurnBlocked = (game: UnoGame<true>) =>
     game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1])
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))

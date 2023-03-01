@@ -1,6 +1,6 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnSkipped, onTimeout } from "./index.js"
+import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
 import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants, onMsgError } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
@@ -88,7 +88,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 .toJSON()
         }).catch(e => onMsgError(e, ctx))
     }
-    if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer !== game.currentPlayer && !wasLastTurnSkipped(game))))
+    if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer !== game.currentPlayer && !wasLastTurnBlocked(game))))
         return ctx.createFollowup({
             content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
             flags: MessageFlags.EPHEMERAL

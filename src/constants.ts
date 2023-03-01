@@ -1,7 +1,7 @@
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { MessageActionRow, ButtonStyles, ComponentTypes } from "oceanic.js"
 import { sendMessage } from "./client.js"
-import { toTitleCase, wasLastTurnSkipped } from "./gameLogic/index.js"
+import { toTitleCase } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
 export const prefix = "]"
@@ -134,10 +134,11 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
                 label: "Draw a card",
                 value: "draw"
             }
-        ].concat(game.lastPlayer === game.currentPlayer && game.settings.allowSkipping && !(game.players.length > 2 || wasLastTurnSkipped(game)) ? [{
-            label: "Skip your turn",
-            value: "skip"
-        }] : []),
+        ].concat(game.lastPlayer === game.currentPlayer && game.settings.allowSkipping
+            /* && !(game.players.length > 2 || wasLastTurnBlocked(game)) */ ? [{
+                label: "Skip your turn",
+                value: "skip"
+            }] : []),
         type: ComponentTypes.STRING_SELECT
     })
     .toJSON()
