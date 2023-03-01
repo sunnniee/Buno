@@ -17,7 +17,7 @@ export const editMessage = (message: Message, content: CreateMessageOptions | st
     client.rest.channels.editMessage<AnyGuildTextChannel>(message.channelID, message.id, typeof content === "string" ? { content } : content)
         .catch(e => onMsgError(e, message))
 
-export const deleteMessage = (message: Message) => client.rest.channels.deleteMessage(message.channel.id, message.id).catch()
+export const deleteMessage = (message: Message) => client.rest.channels.deleteMessage(message.channel.id, message.id).catch(e => onMsgError(e, message))
 export const respond = (msg: Message, c: CreateMessageOptions | string) => {
     let content: CreateMessageOptions = { messageReference: { messageID: msg.id, channelID: msg.channel.id } }
     if (typeof c === "string") content.content = c

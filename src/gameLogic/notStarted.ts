@@ -136,7 +136,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 flags: MessageFlags.EPHEMERAL
             }).catch(e => onMsgError(e, ctx))
             respond(ctx.message, `👋 - game stopped by <@${ctx.member.id}>`)
-                .then(() => ctx.deleteOriginal())
+                .then(() => ctx.deleteOriginal().catch(e => onMsgError(e, ctx)))
             delete games[ctx.channel.id]
             break
         }

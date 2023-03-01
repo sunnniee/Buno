@@ -39,7 +39,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     game.currentCard = variant
     game.currentCardColor = color
     game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-    ctx.deleteOriginal()
+    ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
     sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`)
@@ -107,7 +107,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     }
     else if (cardPlayed === "skip") {
         game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-        ctx.deleteOriginal()
+        ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
     }
     else {
         game.cards[ctx.member.id].splice(cards.indexOf(cardPlayed), 1)
@@ -128,7 +128,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         }
         if (game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-        ctx.deleteOriginal()
+        ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
     }
     if (!game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
     deleteMessage(game.message)
