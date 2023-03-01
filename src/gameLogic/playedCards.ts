@@ -113,7 +113,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         game.cards[ctx.member.id].splice(cards.indexOf(cardPlayed), 1)
         game.currentCard = cardPlayed
         game.currentCardColor = color as typeof colors[number]
-        if (variant === "reverse") game.players = game.players.reverse()
+        if (variant === "reverse") {
+            game.players = game.players.reverse()
+            if (game.players.length === 2) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        }
         if (variant === "+2") {
             const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
             const { cards, newDeck } = game.draw(2)
