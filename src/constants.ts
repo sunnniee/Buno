@@ -116,8 +116,10 @@ export const SelectIDs = Object.freeze({
     EDIT_GAME_SETTINGS: "change-settings"
 })
 
-export const onMsgError = (e, ctx: { channelID: string }) =>
-    sendMessage(ctx.channelID, `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``)
+export const onMsgError = (e, ctx: { channelID: string }) => {
+    console.log(e)
+    return sendMessage(ctx.channelID, `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``)
+}
 
 export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
