@@ -4,8 +4,7 @@ import { Command } from "./types.js"
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
 
-const environment = process.argv[2] === "--dev" ? "dev" : "release"
-const prefix = environment === "release" ? "]" : "]]"
+const prefix = "]"
 
 const commands: { [k: string]: Command } = {}
 // why the fuck does it need ./src specified
