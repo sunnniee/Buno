@@ -4,7 +4,7 @@ import { Command } from "./types.js"
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
 
-const environment = process.argv[2] === "--dev" ? "release" : "dev"
+const environment = process.argv[2] === "--dev" ? "dev" : "release"
 const prefix = environment === "release" ? "]" : "]]"
 
 const commands: { [k: string]: Command } = {}
