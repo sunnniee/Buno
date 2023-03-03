@@ -3,6 +3,7 @@ import { readdir } from "fs"
 import { Command } from "./types.js"
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
 import { InteractionTypes } from "oceanic.js"
+import { onMsgError } from "./constants.js"
 
 const prefix = "]"
 
@@ -33,11 +34,13 @@ client.on("messageCreate", msg => {
 })
 
 client.on("interactionCreate", ctx => {
-    if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
-        if (ctx.isButtonComponentInteraction()) onButtonPress(ctx)
-        else onSelectMenu(ctx)
-    }
-    else if (ctx.type === InteractionTypes.MODAL_SUBMIT) onModalSubmit(ctx)
+    (async () => {
+        if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
+            if (ctx.isButtonComponentInteraction()) onButtonPress(ctx)
+            else onSelectMenu(ctx)
+        }
+        else if (ctx.type === InteractionTypes.MODAL_SUBMIT) onModalSubmit(ctx)
+    })().catch(e => onMsgError(e, ctx))
 })
 
 client.connect()

@@ -2,7 +2,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants, onMsgError } from "../constants.js"
+import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -40,7 +40,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     game.currentCard = variant
     game.currentCardColor = color
     game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-    ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
+    ctx.deleteOriginal()
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
     sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`)
@@ -64,14 +64,14 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (cards.indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
-    }).catch(e => onMsgError(e, ctx))
+    })
     if (
         color !== ccColor && color !== game.currentCardColor
         && variant !== ccVariant && !["draw", "skip", ...uniqueVariants].includes(color)
     ) return ctx.createFollowup({
         content: "You can't play that card",
         flags: MessageFlags.EPHEMERAL
-    }).catch(e => onMsgError(e, ctx))
+    })
     if (uniqueVariants.includes(color as typeof uniqueVariants[number])) {
         return ctx.editOriginal({
             content: "Choose a color",
@@ -87,13 +87,13 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                     type: ComponentTypes.STRING_SELECT,
                 })
                 .toJSON()
-        }).catch(e => onMsgError(e, ctx))
+        })
     }
     if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer.id !== game.currentPlayer && !wasLastTurnBlocked(game))))
         return ctx.createFollowup({
             content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
             flags: MessageFlags.EPHEMERAL
-        }).catch(e => onMsgError(e, ctx))
+        })
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     clearTimeout(game.timeout)
@@ -112,12 +112,12 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             ctx.editOriginal({
                 content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
                 components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id]))
-            }).catch(e => onMsgError(e, ctx))
+            })
         }
     }
     else if (cardPlayed === "skip") {
         game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-        ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
+        ctx.deleteOriginal()
     }
     else {
         game.cards[ctx.member.id].splice(cards.indexOf(cardPlayed), 1)
@@ -138,7 +138,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         }
         if (game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-        ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
+        ctx.deleteOriginal()
     }
     if (!game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
     if (cardPlayed !== "draw") deleteMessage(game.message)

@@ -4,7 +4,7 @@ import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
 import { onGameButtonPress } from "./started.js"
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, onMsgError, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
 import { onCardPlayed, onColorPlayed } from "./playedCards.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
@@ -112,7 +112,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
             return ctx.createFollowup({
                 content: "??????????????",
                 flags: MessageFlags.EPHEMERAL
-            }).catch(e => onMsgError(e, ctx))
+            })
     }
 }
 
@@ -142,6 +142,6 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
         games[ctx.channel.id] = game
         ctx.editOriginal({
             components: SettingsSelectMenu(game)
-        }).catch(e => onMsgError(e, ctx))
+        })
     }
 }

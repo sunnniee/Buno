@@ -1,4 +1,4 @@
-import { ButtonIDs, cardEmotes, onMsgError, SelectCardMenu } from "../constants.js"
+import { ButtonIDs, cardEmotes, SelectCardMenu } from "../constants.js"
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { UnoGame } from "../types.js"
 import { games, makeGameMessage, cardArrayToCount, nextOrZero } from "./index.js"
@@ -11,12 +11,12 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             if (!game.players.includes(ctx.member.id)) return ctx.createFollowup({
                 content: "nuh uh",
                 flags: MessageFlags.EPHEMERAL
-            }).catch(e => onMsgError(e, ctx))
+            })
             ctx.createFollowup({
                 content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
                 components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
-            }).catch(e => onMsgError(e, ctx))
+            })
             break
         }
         case ButtonIDs.LEAVE_GAME: {
@@ -42,7 +42,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 games[ctx.channelID] = game
                 ctx.editOriginal({
                     embeds: [makeGameMessage(game)]
-                }).catch(e => onMsgError(e, ctx))
+                })
             }
             break
         }
