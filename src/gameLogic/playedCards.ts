@@ -141,7 +141,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal().catch(e => onMsgError(e, ctx))
     }
     if (!game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
-    deleteMessage(game.message)
+    if (cardPlayed !== "draw") deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) {
         win(ctx, cardPlayed as Card)
     } else {
@@ -152,14 +152,18 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                     ? `**${ctx.member.nick ?? ctx.member.username}** skipped their turn`
                     : `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`
         )
-        sendMessage(ctx.channel.id, {
-            content: `<@${game.currentPlayer}>, it's now your turn`,
-            embeds: [makeGameMessage(game)],
-            components: GameButtons,
-            allowedMentions: { users: true }
-        }).then(msg => {
-            game.message = msg
-            games[ctx.message.channelID] = game
-        })
+        if (cardPlayed !== "draw") {
+            sendMessage(ctx.channel.id, {
+                content: `<@${game.currentPlayer}>, it's now your turn`,
+                embeds: [makeGameMessage(game)],
+                components: GameButtons,
+                allowedMentions: { users: true }
+            }).then(msg => {
+                game.message = msg
+                games[ctx.message.channel.id] = game
+            })
+        } else {
+            games[ctx.message.channel.id] = game
+        }
     }
 }
