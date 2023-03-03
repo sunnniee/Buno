@@ -84,7 +84,8 @@ export const defaultColor = 0x6c7086
 export const defaultSettings: UnoGameSettings = {
     timeoutDuration: 60,
     kickOnTimeout: false,
-    allowSkipping: true
+    allowSkipping: true,
+    antiSabotage: true
 } as const
 
 export const ButtonIDs = Object.freeze({
@@ -136,8 +137,8 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
                 label: "Draw a card",
                 value: "draw"
             }
-        ].concat(game.lastPlayer === game.currentPlayer && game.settings.allowSkipping
-            /* && !(game.players.length > 2 || wasLastTurnBlocked(game)) */ ? [{
+        ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping && game.lastPlayer.duration >= 1
+            ? [{
                 label: "Skip your turn",
                 value: "skip"
             }] : []),
@@ -168,6 +169,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Allow skipping turns",
             value: SettingsIDs.ALLOW_SKIPPING,
             description: game.settings.allowSkipping ? "Enabled" : "Disabled"
+        },
+        {
+            label: "Anti sabotage",
+            value: SettingsIDs.ANTI_SABOTAGE,
+            description: `Don't allow drawing too many cards at once. ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
         }]
     })
     .toJSON()
@@ -177,5 +183,6 @@ export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
     TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
     KICK_ON_TIMEOUT: "kick-on-timeout-setting",
-    ALLOW_SKIPPING: "allow-skipping"
+    ALLOW_SKIPPING: "allow-skipping",
+    ANTI_SABOTAGE: "anti-sabotage"
 })

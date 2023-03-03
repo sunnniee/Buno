@@ -10,10 +10,10 @@ export const client = new Client({
     allowedMentions: { roles: false }
 })
 
-export const sendMessage = (channelID: string, content: CreateMessageOptions | string) =>
+export const sendMessage = (channelID: string, content: CreateMessageOptions | string): Promise<Message<AnyGuildTextChannel>> =>
     client.rest.channels.createMessage<AnyGuildTextChannel>(channelID, typeof content === "string" ? { content } : content)
         .catch(e => onMsgError(e, { channelID }))
-export const editMessage = (message: Message, content: CreateMessageOptions | string): any =>
+export const editMessage = (message: Message, content: CreateMessageOptions | string): Promise<Message<AnyGuildTextChannel>> =>
     client.rest.channels.editMessage<AnyGuildTextChannel>(message.channelID, message.id, typeof content === "string" ? { content } : content)
         .catch(e => onMsgError(e, message))
 

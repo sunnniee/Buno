@@ -27,7 +27,8 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     if (currentPlayer !== ctx.member.id) return
     const cardPlayed = ctx.data.values.raw[0]
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number], typeof uniqueVariants[number]]
-    game.lastPlayer = game.currentPlayer
+    if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
+    else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     if (variant === "+4") {
         const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
         const { cards, newDeck } = game.draw(4)
@@ -88,22 +89,31 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 .toJSON()
         }).catch(e => onMsgError(e, ctx))
     }
-    if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer !== game.currentPlayer && !wasLastTurnBlocked(game))))
+    if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer.id !== game.currentPlayer && !wasLastTurnBlocked(game))))
         return ctx.createFollowup({
             content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
             flags: MessageFlags.EPHEMERAL
         }).catch(e => onMsgError(e, ctx))
-    game.lastPlayer = game.currentPlayer
+    if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
+    else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     clearTimeout(game.timeout)
     game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)
     if (cardPlayed === "draw") {
-        const { cards, newDeck } = game.draw(1)
-        game.cards[ctx.member.id].push(cards[0])
-        game.deck = newDeck
-        ctx.editOriginal({
-            content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
-            components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id]))
-        }).catch(e => onMsgError(e, ctx))
+        if (game.lastPlayer.duration >= 5 && game.settings.antiSabotage) {
+            game.players.splice(game.players.indexOf(ctx.member.id), 1)
+            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            game.lastPlayer.duration = 0
+            const kickedPlayer = game.message.channel.guild.members.get(game.lastPlayer.id)
+            sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`)
+        } else {
+            const { cards, newDeck } = game.draw(1)
+            game.cards[ctx.member.id].push(cards[0])
+            game.deck = newDeck
+            ctx.editOriginal({
+                content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
+                components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id]))
+            }).catch(e => onMsgError(e, ctx))
+        }
     }
     else if (cardPlayed === "skip") {
         game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))

@@ -12,7 +12,7 @@ const drawUntilNotSpecial = (game: UnoGame<true>) => {
 }
 function dupe<T>(a: T[]): T[] { return a.concat(a) }
 
-async function startGame(game: UnoGame<false>) {
+function startGame(game: UnoGame<false>) {
     if (game.players.length === 1 && !game._allowSolo)
         return respond(game.message, "You can't start a game by yourself!")
     const startedGame = {
@@ -21,22 +21,22 @@ async function startGame(game: UnoGame<false>) {
         players: game.players,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         currentPlayer: game.players[0],
-        lastPlayer: null,
+        lastPlayer: { id: null, duration: 0 },
         settings: game.settings || { ...defaultSettings },
         timeout: setTimeout(() => onTimeout(startedGame), game.settings.timeoutDuration * 1000),
-        message: game.message
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
     startedGame.cards = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]))
     startedGame.currentCard = drawUntilNotSpecial(startedGame)
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any
     startedGame.deck = startedGame.draw(0).newDeck
-    const msg = await sendMessage(game.message.channelID, {
+    const msg = sendMessage(game.message.channelID, {
         embeds: [makeGameMessage(startedGame)],
         components: GameButtons
+    }).then(m => {
+        startedGame.message = m
+        games[game.message.channelID] = startedGame
     })
-    startedGame.message = msg
-    games[game.message.channelID] = startedGame
 }
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
     let { deck } = game
@@ -78,6 +78,10 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
         }
         case SettingsIDs.ALLOW_SKIPPING: {
             game.settings.allowSkipping = !game.settings.allowSkipping
+            break
+        }
+        case SettingsIDs.ANTI_SABOTAGE: {
+            game.settings.antiSabotage = !game.settings.antiSabotage
             break
         }
     }

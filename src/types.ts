@@ -12,7 +12,8 @@ export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeo
 export type UnoGameSettings = {
     timeoutDuration: number
     kickOnTimeout: boolean
-    allowSkipping: boolean
+    allowSkipping: boolean,
+    antiSabotage: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {
     started: true,
@@ -24,7 +25,10 @@ export type UnoGame<T extends boolean> = T extends true ? {
     deck: Card[],
     draw: (amount: number) => { cards: Card[], newDeck: Card[] },
     currentPlayer: UserID,
-    lastPlayer: UserID | null,
+    lastPlayer: {
+        id: UserID,
+        duration: number
+    },
     timeout: NodeJS.Timeout,
     settings: UnoGameSettings
     message: Message<AnyGuildTextChannel>,
