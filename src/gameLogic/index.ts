@@ -86,6 +86,7 @@ ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? `
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`
 `)
+        .setThumbnail(`https://cdn.discordapp.com/emojis/${cardEmotes[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
         .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
         .toJSON()
 }
