@@ -1,7 +1,7 @@
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { MessageActionRow, ButtonStyles, ComponentTypes } from "oceanic.js"
 import { sendMessage } from "./client.js"
-import { toTitleCase } from "./gameLogic/index.js"
+import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
 export const devs = ["406028027768733696"]
@@ -139,7 +139,8 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
                 label: "Draw a card",
                 value: "draw"
             }
-        ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping && game.lastPlayer.duration >= 1
+        ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
+            (game.players.length === 2 && (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true))
             ? [{
                 label: "Skip your turn",
                 value: "skip"
