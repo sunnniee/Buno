@@ -36,7 +36,7 @@ export const cmd = {
                         }],
                         files: [{
                             name: "output.ts",
-                            contents: Buffer.from(result)
+                            contents: Buffer.from(inspect(evalResult, { depth: 4 }))
                         }]
                     })
                 }
