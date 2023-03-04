@@ -178,7 +178,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
         },
         {
             label: "Stack +2's and +4's",
-            value: SettingsIDs.ANTI_SABOTAGE,
+            value: SettingsIDs.ALLOW_CARD_STACKING,
             description: `(not working). ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
         }]
     })
