@@ -5,7 +5,7 @@ import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
 import { onGameButtonPress } from "./started.js"
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
-import { onCardPlayed, onColorPlayed } from "./playedCards.js"
+import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
@@ -82,6 +82,7 @@ export function makeGameMessage(game: UnoGame<true>) {
 Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
 Current card: ${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""}
+${game.drawStackCounter && `Next player must draw **${game.drawStackCounter}** cards`}
 \`\`\`diff
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`
@@ -125,6 +126,7 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (!game) return
     if (ctx.data.customID === SelectIDs.CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game)
     else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game)
+    else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game)
     else if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS && !hasStarted(game)) onSettingsChange(ctx, game)
 }
 

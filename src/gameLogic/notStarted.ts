@@ -17,9 +17,10 @@ function startGame(game: UnoGame<false>) {
         return respond(game.message, "You can't start a game by yourself!")
     const startedGame = {
         started: true,
-        host: game.host,
         players: game.players,
+        host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
+        drawStackCounter: 0,
         currentPlayer: game.players[0],
         lastPlayer: { id: null, duration: 0 },
         settings: game.settings || { ...defaultSettings },

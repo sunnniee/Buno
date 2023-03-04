@@ -2,7 +2,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, SelectCardMenu, SelectIDs, variants, uniqueVariants } from "../constants.js"
+import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -30,11 +30,14 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     if (variant === "+4") {
-        const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
-        const { cards, newDeck } = game.draw(4)
-        game.cards[ind] = game.cards[ind].concat(cards)
-        game.deck = newDeck
-        game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        if (game.settings.allowStacking) game.drawStackCounter += 4
+        else {
+            const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
+            const { cards, newDeck } = game.draw(4)
+            game.cards[ind] = game.cards[ind].concat(cards)
+            game.deck = newDeck
+            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        }
     }
     game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1)
     game.currentCard = variant
@@ -55,7 +58,31 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     })
 }
 
-export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
+export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
+    if (game.currentPlayer !== ctx.member.id) return
+    const cardPlayed = ctx.data.values.raw[0] as Card | "draw-forceful"
+    if (cardPlayed === "draw-forceful") {
+        const { cards, newDeck } = game.draw(game.drawStackCounter)
+        game.cards[game.currentPlayer] = game.cards[game.currentPlayer].concat(cards)
+        game.deck = newDeck
+        game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** drew ${game.drawStackCounter} cards`)
+        game.drawStackCounter = 0
+        ctx.deleteOriginal()
+        deleteMessage(game.message)
+        sendMessage(ctx.channel.id, {
+            content: `<@${game.currentPlayer}>, it's now your turn`,
+            embeds: [makeGameMessage(game)],
+            components: GameButtons,
+            allowedMentions: { users: true }
+        }).then(msg => {
+            game.message = msg
+            games[ctx.message.channel.id] = game
+        })
+    } else onCardPlayed(ctx, game, true)
+}
+
+export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack?: boolean) {
     if (game.currentPlayer !== ctx.member.id) return
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip"
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number] | undefined]
@@ -70,6 +97,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         && variant !== ccVariant && !["draw", "skip", ...uniqueVariants].includes(color)
     ) return ctx.createFollowup({
         content: "You can't play that card",
+        flags: MessageFlags.EPHEMERAL
+    })
+    if (game.drawStackCounter && !ignoreDrawStack) return ctx.createFollowup({
+        content: "https://tenor.com/view/nuh-uh-24435520",
         flags: MessageFlags.EPHEMERAL
     })
     if (uniqueVariants.includes(color as typeof uniqueVariants[number])) {
@@ -111,7 +142,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.deck = newDeck
             ctx.editOriginal({
                 content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
-                components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id]))
+                components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
             })
         }
     }
@@ -128,11 +159,14 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             if (game.players.length === 2) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         }
         if (variant === "+2") {
-            const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
-            const { cards, newDeck } = game.draw(2)
-            game.cards[ind] = game.cards[ind].concat(cards)
-            game.deck = newDeck
-            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            if (game.settings.allowStacking) game.drawStackCounter += 2
+            else {
+                const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
+                const { cards, newDeck } = game.draw(2)
+                game.cards[ind] = game.cards[ind].concat(cards)
+                game.deck = newDeck
+                game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            }
         }
         if (variant === "block") {
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))

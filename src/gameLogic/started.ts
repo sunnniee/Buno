@@ -1,4 +1,4 @@
-import { ButtonIDs, cardEmotes, SelectCardMenu } from "../constants.js"
+import { ButtonIDs, cardEmotes, DrawStackedCardSelect, PickCardSelect } from "../constants.js"
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { UnoGame } from "../types.js"
 import { games, makeGameMessage, cardArrayToCount, nextOrZero } from "./index.js"
@@ -9,12 +9,17 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.PLAY_CARD: {
             if (!game.players.includes(ctx.member.id)) return ctx.createFollowup({
-                content: "nuh uh",
+                content: "You aren't in the game!",
+                flags: MessageFlags.EPHEMERAL
+            })
+            if (game.drawStackCounter) return ctx.createFollowup({
+                content: "Choose an option",
+                components: DrawStackedCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
             })
             ctx.createFollowup({
                 content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
-                components: SelectCardMenu(game, cardArrayToCount(game.cards[ctx.member.id])),
+                components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
             })
             break

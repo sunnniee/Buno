@@ -115,6 +115,7 @@ export const GameButtons = new ComponentBuilder<MessageActionRow>()
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
     CHOOSE_COLOR: "choose-color",
+    FORCEFUL_DRAW: "draw-or-stack",
     EDIT_GAME_SETTINGS: "change-settings"
 })
 
@@ -123,7 +124,7 @@ export const onMsgError = (e, ctx: { channelID: string }) => {
     return sendMessage(ctx.channelID, `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``)
 }
 
-export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number }) => new ComponentBuilder<MessageActionRow>()
+export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
         customID: SelectIDs.CHOOSE_CARD,
         options: [
@@ -146,6 +147,24 @@ export const SelectCardMenu = (game: UnoGame<true>, cards: { [k in Card]: number
         type: ComponentTypes.STRING_SELECT
     })
     .toJSON()
+export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
+    .addSelectMenu({
+        customID: SelectIDs.FORCEFUL_DRAW,
+        options: [{
+            label: `Draw ${game.drawStackCounter} cards`,
+            value: "draw-forceful"
+        },
+        ...Object.keys(cards).map(c => {
+            if (c === "+4" || c.split("-")[1] === "+2") return {
+                label: `${toTitleCase(c)}`,
+                value: c,
+                emoji: ComponentBuilder.emojiToPartial(cardEmotes[c], "custom")
+            }
+        })].filter(Boolean),
+        type: ComponentTypes.STRING_SELECT
+    })
+    .toJSON()
+
 function toHumanReadableTime(n: number) {
     if (n < 0 || n > 3600) return "Disabled"
     if (n < 60) return `${n} seconds`
@@ -179,7 +198,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
         {
             label: "Stack +2's and +4's",
             value: SettingsIDs.ALLOW_CARD_STACKING,
-            description: `(not working). ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
+            description: game.settings.allowStacking ? "Enabled" : "Disabled"
         }]
     })
     .toJSON()
