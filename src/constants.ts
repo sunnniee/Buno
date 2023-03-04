@@ -85,7 +85,8 @@ export const defaultSettings: UnoGameSettings = {
     timeoutDuration: 60,
     kickOnTimeout: false,
     allowSkipping: true,
-    antiSabotage: true
+    antiSabotage: true,
+    allowStacking: false
 } as const
 
 export const ButtonIDs = Object.freeze({
@@ -174,6 +175,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Anti sabotage",
             value: SettingsIDs.ANTI_SABOTAGE,
             description: `Don't allow drawing too many cards at once. ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
+        },
+        {
+            label: "Stack +2's and +4's",
+            value: SettingsIDs.ANTI_SABOTAGE,
+            description: `(not working). ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
         }]
     })
     .toJSON()
@@ -184,5 +190,6 @@ export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
     KICK_ON_TIMEOUT: "kick-on-timeout-setting",
     ALLOW_SKIPPING: "allow-skipping",
-    ANTI_SABOTAGE: "anti-sabotage"
+    ANTI_SABOTAGE: "anti-sabotage",
+    ALLOW_CARD_STACKING: "allow-stacking"
 })

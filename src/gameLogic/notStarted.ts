@@ -30,7 +30,7 @@ function startGame(game: UnoGame<false>) {
     startedGame.currentCard = drawUntilNotSpecial(startedGame)
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any
     startedGame.deck = startedGame.draw(0).newDeck
-    const msg = sendMessage(game.message.channelID, {
+    sendMessage(game.message.channelID, {
         embeds: [makeGameMessage(startedGame)],
         components: GameButtons
     }).then(m => {
@@ -82,6 +82,10 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
         }
         case SettingsIDs.ANTI_SABOTAGE: {
             game.settings.antiSabotage = !game.settings.antiSabotage
+            break
+        }
+        case SettingsIDs.ALLOW_CARD_STACKING: {
+            game.settings.allowStacking = !game.settings.allowStacking
             break
         }
     }
