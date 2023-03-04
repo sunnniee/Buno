@@ -29,8 +29,16 @@ export const cmd = {
                         if (result.length > MAX_RESPONSE_LENGTH) result = inspect(evalResult, { depth: i })
                     }
                 if (result.length > MAX_RESPONSE_LENGTH) {
-                    result = "Too long, sending to console"
-                    console.log(inspect(evalResult, { depth: 4, colors: true }))
+                    return clientUtils.respond(msg, {
+                        attachments: [{
+                            id: "0",
+                            filename: "output.ts"
+                        }],
+                        files: [{
+                            name: "output.ts",
+                            contents: Buffer.from(result)
+                        }]
+                    })
                 }
                 if (result !== "undefined") clientUtils.respond(msg, "```ts\n" + result + "```")
             }).catch(reportError)
