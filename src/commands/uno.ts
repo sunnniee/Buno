@@ -8,8 +8,9 @@ import { ButtonIDs, defaultSettings } from "../constants.js"
 export const cmd = {
     name: "uno",
     execute: (msg, args) => {
-        if (games[msg.channelID]) return respond(msg, `Someone already started a game
-Jump: https://discord.com/channels/${msg.channel.guild.id}/${msg.channel.id}/${msg.id}`)
+        const existingGame = games[msg.channel.id]
+        if (existingGame) return respond(msg, `Someone already started a game
+Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`)
         const gameObj: UnoGame<false> = {
             started: false,
             host: msg.author.id,
