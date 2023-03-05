@@ -32,8 +32,10 @@ function startGame(game: UnoGame<false>) {
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any
     startedGame.deck = startedGame.draw(0).newDeck
     sendMessage(game.message.channelID, {
+        content: `<@${startedGame.currentPlayer}>, it's now your turn`,
         embeds: [makeGameMessage(startedGame)],
-        components: GameButtons
+        components: GameButtons,
+        allowedMentions: { users: true }
     }).then(m => {
         if (!m) return cancelGameMessageFail(game)
         startedGame.message = m
