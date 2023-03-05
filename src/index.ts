@@ -2,7 +2,7 @@ import { client } from "./client.js"
 import { readdir } from "fs"
 import { Command } from "./types.js"
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js"
-import { InteractionTypes } from "oceanic.js"
+import { ActivityTypes, InteractionTypes } from "oceanic.js"
 import { onMsgError } from "./constants.js"
 import { patch } from "./patchContext.js"
 
@@ -23,6 +23,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag)
+    client.editStatus("online", [{ name: "i fixed the crashes please try the bot 🙏", type: ActivityTypes.GAME }])
 })
 client.on("error", console.error)
 
