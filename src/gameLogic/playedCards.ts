@@ -175,7 +175,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         }
         if (variant === "+2") {
             const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id))
-            if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c === `${game.currentCardColor}-+2`)) {
+            if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
                 game.drawStackCounter += 2
             }
             else {
