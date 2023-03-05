@@ -143,7 +143,7 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
                 emoji: ComponentBuilder.emojiToPartial("🃏")
             }
         ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
-            (game.players.length === 2 && (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true))
+            (game.players.length === 2 ? (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true) : true)
             ? [{
                 label: "Skip your turn",
                 value: "skip",
