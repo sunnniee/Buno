@@ -40,7 +40,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards)
             game.deck = newDeck
             const trolledMember = getPlayerMember(game, nextPlayer)
-            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${4 + game.drawStackCounter} cards and was skipped`
+            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew **${4 + game.drawStackCounter}** cards and was skipped`
             game.drawStackCounter = 0
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         }
@@ -183,7 +183,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards)
                 game.deck = newDeck
                 const trolledMember = getPlayerMember(game, nextPlayer)
-                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${2 + game.drawStackCounter} cards and was skipped`
+                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew **${2 + game.drawStackCounter}** cards and was skipped`
                 game.drawStackCounter = 0
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
             }
