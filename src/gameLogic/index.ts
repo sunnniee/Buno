@@ -102,6 +102,9 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 
 export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {
     ctx.deferUpdate()
+
+    if (ctx.data.customID === "the-button") return ctx.createFollowup({})
+
     const game = games[ctx.channel.id]
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.JOIN_GAME:
