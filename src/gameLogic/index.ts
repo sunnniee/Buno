@@ -27,9 +27,10 @@ export const wasLastTurnBlocked = (game: UnoGame<true>) =>
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
     .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj }, {} as { [k in Card]: number })
+export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player)
 
 export function onTimeout(game: UnoGame<true>) {
-    const kickedPlayer = game.message.channel.guild.members.get(game.currentPlayer)
+    const kickedPlayer = getPlayerMember(game, game.currentPlayer)
     game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
     sendMessage(game.message.channel.id,
@@ -81,8 +82,8 @@ export function makeGameMessage(game: UnoGame<true>) {
         .setDescription(`
 Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
 Current card: ${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)} \
-${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""}
-${game.drawStackCounter && `Next player must draw **${game.drawStackCounter}** cards`}
+${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
+${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
 \`\`\`diff
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`

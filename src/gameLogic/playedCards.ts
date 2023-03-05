@@ -1,6 +1,6 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout } from "./index.js"
+import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
 import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
@@ -27,6 +27,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     if (currentPlayer !== ctx.member.id) return
     const cardPlayed = ctx.data.values.raw[0]
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number], typeof uniqueVariants[number]]
+    let extraInfo = ""
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     if (variant === "+4") {
@@ -36,6 +37,8 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             const { cards, newDeck } = game.draw(4)
             game.cards[ind] = game.cards[ind].concat(cards)
             game.deck = newDeck
+            const trolledMember = getPlayerMember(game, ind)
+            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew 4 cards and was skipped`
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         }
     }
@@ -46,7 +49,10 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     ctx.deleteOriginal()
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
-    sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`)
+    sendMessage(ctx.channel.id, `
+    ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${extraInfo.length ? `\n${extraInfo}` : ""}
+    `)
     sendMessage(ctx.message.channel.id, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
@@ -129,12 +135,14 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     clearTimeout(game.timeout)
     game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)
+
+    let extraInfo = ""
     if (cardPlayed === "draw") {
         if (game.lastPlayer.duration >= 5 && game.settings.antiSabotage) {
             game.players.splice(game.players.indexOf(ctx.member.id), 1)
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
             game.lastPlayer.duration = 0
-            const kickedPlayer = game.message.channel.guild.members.get(game.lastPlayer.id)
+            const kickedPlayer = getPlayerMember(game, game.lastPlayer.id)
             sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`)
         } else {
             const { cards, newDeck } = game.draw(1)
@@ -156,7 +164,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         game.currentCardColor = color as typeof colors[number]
         if (variant === "reverse") {
             game.players = game.players.reverse()
-            if (game.players.length === 2) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            if (game.players.length === 2) {
+                game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+                const trolledMember = getPlayerMember(game, game.currentPlayer)
+                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`
+            }
         }
         if (variant === "+2") {
             if (game.settings.allowStacking) game.drawStackCounter += 2
@@ -165,11 +177,15 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 const { cards, newDeck } = game.draw(2)
                 game.cards[ind] = game.cards[ind].concat(cards)
                 game.deck = newDeck
+                const trolledMember = getPlayerMember(game, ind)
+                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew 2 cards and was skipped`
                 game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
             }
         }
         if (variant === "block") {
             game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            const trolledMember = getPlayerMember(game, game.currentPlayer)
+            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`
         }
         if (game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
         ctx.deleteOriginal()
@@ -180,11 +196,12 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         win(ctx, cardPlayed as Card)
     } else {
         sendMessage(ctx.channel.id,
-            cardPlayed === "draw"
+            `${cardPlayed === "draw"
                 ? `**${ctx.member.nick ?? ctx.member.username}** drew a card`
                 : cardPlayed === "skip"
                     ? `**${ctx.member.nick ?? ctx.member.username}** skipped their turn`
-                    : `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`
+                    : `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
+        ${extraInfo.length ? `\n${extraInfo}` : ""}`
         )
         if (cardPlayed !== "draw") {
             sendMessage(ctx.channel.id, {
