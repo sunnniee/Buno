@@ -1,6 +1,6 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, nextOrZero, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
+import { cardArrayToCount, games, makeGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
 import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
@@ -31,21 +31,23 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     if (variant === "+4") {
-        if (game.settings.allowStacking) game.drawStackCounter += 4
+        const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id))
+        if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c === `${color}-+2`)) {
+            game.drawStackCounter += 4
+        }
         else {
-            const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
-            const { cards, newDeck } = game.draw(4)
-            game.cards[ind] = game.cards[ind].concat(cards)
+            const { cards, newDeck } = game.draw(4 + game.drawStackCounter)
+            game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards)
             game.deck = newDeck
-            const trolledMember = getPlayerMember(game, ind)
-            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew 4 cards and was skipped`
-            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            const trolledMember = getPlayerMember(game, nextPlayer)
+            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${4 + game.drawStackCounter} cards and was skipped`
+            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         }
     }
     game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1)
     game.currentCard = variant
     game.currentCardColor = color
-    game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
     ctx.deleteOriginal()
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
@@ -71,7 +73,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         const { cards, newDeck } = game.draw(game.drawStackCounter)
         game.cards[game.currentPlayer] = game.cards[game.currentPlayer].concat(cards)
         game.deck = newDeck
-        game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** drew ${game.drawStackCounter} cards`)
         game.drawStackCounter = 0
         ctx.deleteOriginal()
@@ -140,7 +142,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (cardPlayed === "draw") {
         if (game.lastPlayer.duration >= 5 && game.settings.antiSabotage) {
             game.players.splice(game.players.indexOf(ctx.member.id), 1)
-            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
             game.lastPlayer.duration = 0
             const kickedPlayer = getPlayerMember(game, game.lastPlayer.id)
             sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`)
@@ -155,7 +157,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         }
     }
     else if (cardPlayed === "skip") {
-        game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         ctx.deleteOriginal()
     }
     else {
@@ -165,32 +167,34 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (variant === "reverse") {
             game.players = game.players.reverse()
             if (game.players.length === 2) {
-                game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+                game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
                 const trolledMember = getPlayerMember(game, game.currentPlayer)
                 extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`
             }
         }
         if (variant === "+2") {
-            if (game.settings.allowStacking) game.drawStackCounter += 2
+            const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id))
+            if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c === `${game.currentCardColor}-+2`)) {
+                game.drawStackCounter += 2
+            }
             else {
-                const ind = nextOrZero(game.players, game.players.indexOf(ctx.member.id))
-                const { cards, newDeck } = game.draw(2)
-                game.cards[ind] = game.cards[ind].concat(cards)
+                const { cards, newDeck } = game.draw(2 + game.drawStackCounter)
+                game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards)
                 game.deck = newDeck
-                const trolledMember = getPlayerMember(game, ind)
-                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew 2 cards and was skipped`
-                game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+                const trolledMember = getPlayerMember(game, nextPlayer)
+                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${2 + game.drawStackCounter} cards and was skipped`
+                game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
             }
         }
         if (variant === "block") {
-            game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
             const trolledMember = getPlayerMember(game, game.currentPlayer)
             extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`
         }
-        if (game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+        if (game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         ctx.deleteOriginal()
     }
-    if (!game.settings.allowSkipping) game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
     if (cardPlayed !== "draw") deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) {
         win(ctx, cardPlayed as Card)

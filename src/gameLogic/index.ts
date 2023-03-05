@@ -18,7 +18,7 @@ export function shuffle<T>(array: T[]): T[] {
         .map(({ c }) => c)
 }
 export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ")
-export function nextOrZero(array: any[], n: number) {
+export function next(array: any[], n: number) {
     if (n < array.length - 1) return array[n + 1]
     else return array[0]
 }
@@ -31,7 +31,7 @@ export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.
 
 export function onTimeout(game: UnoGame<true>) {
     const kickedPlayer = getPlayerMember(game, game.currentPlayer)
-    game.currentPlayer = nextOrZero(game.players, game.players.indexOf(game.currentPlayer))
+    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
     sendMessage(game.message.channel.id,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
