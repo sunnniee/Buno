@@ -1,6 +1,6 @@
 import { ComponentBuilder } from "@oceanicjs/builders"
-import { MessageActionRow, ButtonStyles, ComponentTypes } from "oceanic.js"
-import { sendMessage } from "./client.js"
+import { MessageActionRow, ButtonStyles, ComponentTypes, AnyGuildTextChannel } from "oceanic.js"
+import { client } from "./client.js"
 import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js"
 import { Card, UnoGame, UnoGameSettings } from "./types.js"
 
@@ -121,7 +121,9 @@ export const SelectIDs = Object.freeze({
 
 export const onMsgError = (e, ctx: { channelID: string }) => {
     console.log(e)
-    return sendMessage(ctx.channelID, `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``)
+    return client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
+        content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}?\//gi, "/[REDACTED]/")}\`\`\``
+    }).catch(() => { })
 }
 
 export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()

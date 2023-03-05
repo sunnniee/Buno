@@ -2,7 +2,7 @@ import { respond, sendMessage } from "../client.js"
 import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
+import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout, cancelGameMessageFail } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
@@ -35,6 +35,7 @@ function startGame(game: UnoGame<false>) {
         embeds: [makeGameMessage(startedGame)],
         components: GameButtons
     }).then(m => {
+        if (!m) return cancelGameMessageFail(game)
         startedGame.message = m
         games[game.message.channelID] = startedGame
     })

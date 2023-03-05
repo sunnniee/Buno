@@ -28,6 +28,12 @@ export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
     .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj }, {} as { [k in Card]: number })
 export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player)
+export function cancelGameMessageFail(game: UnoGame<boolean>) {
+    getPlayerMember(game, game.host).user.createDM()
+        .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
+        .catch(() => { })
+    delete games[game.message.channel.id]
+}
 
 export function onTimeout(game: UnoGame<true>) {
     const kickedPlayer = getPlayerMember(game, game.currentPlayer)
@@ -57,6 +63,7 @@ export function onTimeout(game: UnoGame<true>) {
         components: GameButtons,
         allowedMentions: { users: true }
     }).then(msg => {
+        if (!msg) return cancelGameMessageFail(game)
         game.message = msg
         games[game.message.channelID] = game
     })

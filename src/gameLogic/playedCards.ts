@@ -1,6 +1,6 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
+import { cardArrayToCount, games, makeGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember, cancelGameMessageFail } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
 import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
@@ -62,6 +62,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
         embeds: [makeGameMessage(game)],
         components: GameButtons
     }).then(msg => {
+        if (!msg) return cancelGameMessageFail(game)
         game.message = msg
         games[ctx.message.channelID] = game
     })
@@ -85,6 +86,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
             components: GameButtons,
             allowedMentions: { users: true }
         }).then(msg => {
+            if (!msg) return cancelGameMessageFail(game)
             game.message = msg
             games[ctx.message.channel.id] = game
         })
@@ -216,6 +218,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 components: GameButtons,
                 allowedMentions: { users: true }
             }).then(msg => {
+                if (!msg) return cancelGameMessageFail(game)
                 game.message = msg
                 games[ctx.message.channel.id] = game
             })
