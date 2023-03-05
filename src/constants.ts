@@ -137,13 +137,15 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
             }),
             {
                 label: "Draw a card",
-                value: "draw"
+                value: "draw",
+                emoji: ComponentBuilder.emojiToPartial("🃏")
             }
         ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
             (game.players.length === 2 && (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true))
             ? [{
                 label: "Skip your turn",
-                value: "skip"
+                value: "skip",
+                emoji: ComponentBuilder.emojiToPartial("➡")
             }] : []),
         type: ComponentTypes.STRING_SELECT
     })
@@ -153,7 +155,8 @@ export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?
         customID: SelectIDs.FORCEFUL_DRAW,
         options: [{
             label: `Draw ${game.drawStackCounter} cards`,
-            value: "draw-forceful"
+            value: "draw-forceful",
+            emoji: ComponentBuilder.emojiToPartial("🃏")
         },
         ...Object.keys(cards).map(c => {
             if (c === "+4" || c.split("-")[1] === "+2") return {
