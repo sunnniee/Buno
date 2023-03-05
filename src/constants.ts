@@ -86,7 +86,7 @@ export const defaultSettings: UnoGameSettings = {
     kickOnTimeout: false,
     allowSkipping: true,
     antiSabotage: true,
-    allowStacking: false
+    allowStacking: true
 } as const
 
 export const ButtonIDs = Object.freeze({
