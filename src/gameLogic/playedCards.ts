@@ -41,6 +41,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             game.deck = newDeck
             const trolledMember = getPlayerMember(game, nextPlayer)
             extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${4 + game.drawStackCounter} cards and was skipped`
+            game.drawStackCounter = 0
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
         }
     }
@@ -90,7 +91,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
     } else onCardPlayed(ctx, game, true)
 }
 
-export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack?: boolean) {
+export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false) {
     if (game.currentPlayer !== ctx.member.id) return
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip"
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number] | undefined]
@@ -183,6 +184,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 game.deck = newDeck
                 const trolledMember = getPlayerMember(game, nextPlayer)
                 extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew ${2 + game.drawStackCounter} cards and was skipped`
+                game.drawStackCounter = 0
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
             }
         }
