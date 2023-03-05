@@ -4,6 +4,7 @@ import { onMsgError } from "./constants.js"
 export function patch<T = AnyInteractionGateway>(ctx: T): T {
     const methods = [
         "createFollowup", "createMessage", "createModal",
+        "defer", "deferUpdate",
         "deleteFollowup", "deleteOriginal",
         "editOriginal", "editFollowup", "editParent",
         "getFollowup", "getOriginal",
