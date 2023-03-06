@@ -119,7 +119,7 @@ export const SelectIDs = Object.freeze({
     EDIT_GAME_SETTINGS: "change-settings"
 })
 
-export const onMsgError = (e, ctx: { channelID: string }) => {
+export function onMsgError(e, ctx: { channelID: string }) {
     console.log(e)
     return client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
         content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
