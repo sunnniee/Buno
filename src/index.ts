@@ -22,7 +22,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag)
-    client.editStatus("online", [{ name: "only for real GAMERS that are GAMERING", type: ActivityTypes.GAME }])
+    client.editStatus("online", [{ name: "i fixed the crashes please try the bot 🙏", type: ActivityTypes.GAME }])
 })
 client.on("error", console.error)
 
