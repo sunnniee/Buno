@@ -3,8 +3,10 @@ import { sendMessage } from "./client.js"
 import { onMsgError } from "./constants.js"
 
 function onInteractionError(e: Error, ctx: AnyInteractionGateway) {
-    if (e.message.includes("Unknown "))
+    if (e.message.includes("Unknown ")) {
+        console.log(e)
         return sendMessage(ctx.channel.id, `<@${ctx.member.id}> Unknown interaction, please try again`)
+    }
     else onMsgError(e, ctx)
 }
 
