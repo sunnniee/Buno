@@ -1,5 +1,5 @@
 import { client, sendMessage } from "../client.js"
-import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalSubmitInteraction } from "oceanic.js"
+import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, ModalSubmitInteraction } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
@@ -103,8 +103,6 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {
     ctx.deferUpdate()
 
-    if (ctx.data.customID === "the-button") return ctx.createFollowup({})
-
     const game = games[ctx.channel.id]
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.JOIN_GAME:
@@ -120,11 +118,6 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
             if (!game || !hasStarted(game)) return
             onGameButtonPress(ctx, game)
             break
-        default:
-            return ctx.createFollowup({
-                content: "??????????????",
-                flags: MessageFlags.EPHEMERAL
-            })
     }
 }
 
