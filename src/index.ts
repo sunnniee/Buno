@@ -5,7 +5,7 @@ import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js
 import { ActivityTypes, InteractionTypes } from "oceanic.js"
 import { patch } from "./patchContext.js"
 
-const prefix = "]"
+const prefix = process.argv[2] === "--dev" ? "]]" : "]"
 
 const commands: { [k: string]: Command } = {}
 // why the fuck does it need ./src specified
