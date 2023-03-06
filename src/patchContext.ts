@@ -1,7 +1,14 @@
 import { AnyInteractionGateway } from "oceanic.js"
+import { sendMessage } from "./client.js"
 import { onMsgError } from "./constants.js"
 
-export function patch<T = AnyInteractionGateway>(ctx: T): T {
+function onInteractionError(e: Error, ctx: AnyInteractionGateway) {
+    if (e.message.includes("Unknown "))
+        return sendMessage(ctx.channel.id, `<@${ctx.member.id}> Unknown interaction, please try again`)
+    else onMsgError(e, ctx)
+}
+
+export function patch<T extends AnyInteractionGateway>(ctx: T): T {
     const methods = [
         "createFollowup", "createMessage", "createModal",
         "defer", "deferUpdate",
@@ -11,7 +18,7 @@ export function patch<T = AnyInteractionGateway>(ctx: T): T {
     ] as const
     methods.forEach(m => ctx[m] && (ctx[m] = new Proxy(ctx[m], {
         apply(target, thisArg, argArray) {
-            return target.apply(thisArg, argArray).catch(e => onMsgError(e, ctx as any))
+            return target.apply(thisArg, argArray).catch(e => onInteractionError(e, ctx))
         },
     })))
     return ctx
