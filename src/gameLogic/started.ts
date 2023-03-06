@@ -5,6 +5,40 @@ import { games, makeGameMessage, cardArrayToCount, next, cancelGameMessageFail }
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { client, sendMessage } from "../client.js"
 
+export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
+    if (game.players.includes(ctx.member.id)) {
+        game.players.splice(game.players.indexOf(ctx.member.id), 1)
+        if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
+        sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** left the game.`)
+        if (game.players.length <= 1) {
+            clearTimeout(game.timeout)
+            delete games[ctx.channel.id]
+            return sendMessage(ctx.channel.id, {
+                content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
+                components: new ComponentBuilder<MessageActionRow>()
+                    .addInteractionButton({
+                        style: ButtonStyles.SUCCESS,
+                        emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                        disabled: true,
+                        customID: "we-have-a-nerd-here🤓"
+                    })
+                    .toJSON()
+            })
+        }
+        ctx.deleteOriginal()
+        sendMessage(ctx.channel.id, {
+            content: `<@${game.currentPlayer}>, it's now your turn`,
+            embeds: [makeGameMessage(game)],
+            components: GameButtons,
+            allowedMentions: { users: true }
+        }).then(msg => {
+            if (!msg) return cancelGameMessageFail(game)
+            game.message = msg
+            games[ctx.message.channel.id] = game
+        })
+    }
+}
+
 export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.PLAY_CARD: {
@@ -25,38 +59,22 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             break
         }
         case ButtonIDs.LEAVE_GAME: {
-            if (game.players.includes(ctx.member.id)) {
-                game.players.splice(game.players.indexOf(ctx.member.id), 1)
-                if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
-                sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** left the game.`)
-                if (game.players.length <= 1) {
-                    clearTimeout(game.timeout)
-                    delete games[ctx.channel.id]
-                    return sendMessage(ctx.channel.id, {
-                        content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
-                        components: new ComponentBuilder<MessageActionRow>()
-                            .addInteractionButton({
-                                style: ButtonStyles.SUCCESS,
-                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                                disabled: true,
-                                customID: "we-have-a-nerd-here🤓"
-                            })
-                            .toJSON()
+            return ctx.createFollowup({
+                content: "Are you sure you want to leave?",
+                components: new ComponentBuilder<MessageActionRow>()
+                    .addInteractionButton({
+                        customID: ButtonIDs.LEAVE_GAME_CONFIRMATION_NO,
+                        style: ButtonStyles.DANGER,
+                        label: "No"
                     })
-                }
-                ctx.deleteOriginal()
-                sendMessage(ctx.channel.id, {
-                    content: `<@${game.currentPlayer}>, it's now your turn`,
-                    embeds: [makeGameMessage(game)],
-                    components: GameButtons,
-                    allowedMentions: { users: true }
-                }).then(msg => {
-                    if (!msg) return cancelGameMessageFail(game)
-                    game.message = msg
-                    games[ctx.message.channel.id] = game
-                })
-            }
-            break
+                    .addInteractionButton({
+                        customID: ButtonIDs.LEAVE_GAME_CONFIRMATION_YES,
+                        style: ButtonStyles.SUCCESS,
+                        label: "Yes"
+                    })
+                    .toJSON(),
+                flags: MessageFlags.EPHEMERAL
+            })
         }
     }
 }

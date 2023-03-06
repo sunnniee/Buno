@@ -3,7 +3,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
-import { onGameButtonPress } from "./started.js"
+import { leaveGame, onGameButtonPress } from "./started.js"
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js"
 
@@ -117,6 +117,13 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.LEAVE_GAME:
             if (!game || !hasStarted(game)) return
             onGameButtonPress(ctx, game)
+            break
+        case ButtonIDs.LEAVE_GAME_CONFIRMATION_YES:
+            if (!game || !hasStarted(game)) return
+            leaveGame(ctx, game)
+            break
+        case ButtonIDs.LEAVE_GAME_CONFIRMATION_NO:
+            ctx.deleteOriginal()
             break
     }
 }

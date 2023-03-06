@@ -97,6 +97,8 @@ export const ButtonIDs = Object.freeze({
     START_GAME: "start",
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",
+    LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
+    LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game"
 })
 export const GameButtons = new ComponentBuilder<MessageActionRow>()
     .addInteractionButton({
