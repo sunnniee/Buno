@@ -9,7 +9,7 @@ import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
-    return !!(game as any).currentPlayer
+    return game.started
 }
 export function shuffle<T>(array: T[]): T[] {
     return array
