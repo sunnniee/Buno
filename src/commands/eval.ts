@@ -19,7 +19,7 @@ export const cmd = {
             clientUtils.respond(msg, `Error\n\`\`\`ts\n${e}\`\`\``)
             console.log(e)
         }
-        msg.createReaction("👍")
+        msg.createReaction("👍").catch(() => { })
         try {
             const game = games[msg.channel.id]; game;
             (eval(`(async function(){${code}})().catch(reportError)`) as Promise<any>).then(evalResult => {

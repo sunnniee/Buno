@@ -11,14 +11,13 @@ export const cmd = {
         const existingGame = games[msg.channel.id]
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`)
-        const gameObj: UnoGame<false> = {
+        const gameObj = {
             started: false,
             host: msg.author.id,
             settings: { ...defaultSettings },
-            message: msg,
             players: [msg.author.id],
             _allowSolo: args[0]?.toLowerCase() === "solo"
-        }
+        } as UnoGame<false>
         respond(msg, {
             embeds: [makeStartMessage(gameObj)],
             components: new ComponentBuilder<MessageActionRow>()
@@ -51,7 +50,10 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
                     emoji: ComponentBuilder.emojiToPartial("⚙", "default")
                 })
                 .toJSON()
+        }).then(m => {
+            if (!m) return msg.createReaction("‼")
+            gameObj.message = m
+            games[msg.channelID] = gameObj
         })
-        games[msg.channelID] = gameObj
     },
 } as Command
