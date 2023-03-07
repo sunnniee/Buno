@@ -15,6 +15,7 @@ function dupe<T>(a: T[]): T[] { return a.concat(a) }
 function startGame(game: UnoGame<false>) {
     if (game.players.length === 1 && !game._allowSolo)
         return respond(game.message, "You can't start a game by yourself!")
+    games[game.message.channelID].started = true
     const startedGame = {
         started: true,
         players: game.players,
