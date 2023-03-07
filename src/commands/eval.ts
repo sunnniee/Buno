@@ -17,7 +17,7 @@ export const cmd = {
         const code = args.join(" ")
         const reportError = (e: Error): void => {
             clientUtils.respond(msg, `Error\n\`\`\`ts\n${e}\`\`\``)
-            console.log(e)
+
         }
         msg.createReaction("👍").catch(() => { })
         try {
