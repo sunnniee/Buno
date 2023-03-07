@@ -22,7 +22,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag)
-    client.editStatus("online", [{ name: "❕ interactions are known now", type: ActivityTypes.GAME }])
+    client.editStatus("online", [{ name: `❕ interactions are known now - ${prefix}uno`, type: ActivityTypes.GAME }])
 })
 client.on("error", console.error)
 
