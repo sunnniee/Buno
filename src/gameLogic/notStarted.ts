@@ -102,7 +102,7 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
 export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<false>) {
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.JOIN_GAME: {
-            sendMessage(ctx.channel.id, `[TEMP] **${ctx.member.nick ?? ctx.member.username}** joined the game`)
+            // sendMessage(ctx.channel.id, `[TEMP] **${ctx.member.nick ?? ctx.member.username}** joined the game`)
             if (!game.players.includes(ctx.member.id)) {
                 game.players.push(ctx.member.id)
                 games[ctx.channelID] = game
