@@ -75,7 +75,8 @@ ${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join(
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : game.cards[playerID]?.length <= 2 ? "- " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`
 export function sendGameMessage(game: UnoGame<true>) {
-    sendMessage(game.message.channel.id, {
+    const { id } = game.message.channel
+    sendMessage(id, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
         embeds: [new EmbedBuilder()
@@ -97,7 +98,7 @@ export function sendGameMessage(game: UnoGame<true>) {
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game)
         game.message = msg
-        games[game.message.channelID] = game
+        games[id] = game
     })
 }
 

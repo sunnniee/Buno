@@ -131,6 +131,8 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.lastPlayer.duration = 0
             const kickedPlayer = getPlayerMember(game, game.lastPlayer.id)
             sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`)
+            deleteMessage(game.message)
+            return sendGameMessage(game)
         } else {
             const { cards, newDeck } = game.draw(1)
             game.cards[ctx.member.id].push(cards[0])
