@@ -34,11 +34,13 @@ export type UnoGame<T extends boolean> = T extends true ? {
     timeout: NodeJS.Timeout,
     settings: UnoGameSettings
     message: Message<AnyGuildTextChannel>,
+    channelID: string
 } : {
     started: false,
     host: UserID,
     players: UserID[],
     settings: UnoGameSettings,
     message: Message<AnyGuildTextChannel>,
+    channelID: string,
     _allowSolo: boolean,
 }

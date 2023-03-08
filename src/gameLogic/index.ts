@@ -32,20 +32,20 @@ export function cancelGameMessageFail(game: UnoGame<boolean>) {
     getPlayerMember(game, game.host).user.createDM()
         .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
         .catch(() => { })
-    delete games[game.message.channel.id]
+    delete games[game.channelID]
 }
 
 export function onTimeout(game: UnoGame<true>) {
     const kickedPlayer = getPlayerMember(game, game.currentPlayer)
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
-    sendMessage(game.message.channel.id,
+    sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     )
     if (game.players.length <= 1) {
         clearTimeout(game.timeout)
-        delete games[game.message.channel.id]
-        return sendMessage(game.message.channel.id, {
+        delete games[game.channelID]
+        return sendMessage(game.channelID, {
             content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
             components: new ComponentBuilder<MessageActionRow>()
                 .addInteractionButton({
@@ -75,8 +75,7 @@ ${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join(
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : game.cards[playerID]?.length <= 2 ? "- " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`
 export function sendGameMessage(game: UnoGame<true>) {
-    const { id } = game.message.channel
-    sendMessage(id, {
+    sendMessage(game.channelID, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
         embeds: [new EmbedBuilder()
@@ -98,7 +97,7 @@ export function sendGameMessage(game: UnoGame<true>) {
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game)
         game.message = msg
-        games[id] = game
+        games[game.channelID] = game
     })
 }
 

@@ -16,7 +16,8 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             host: msg.author.id,
             settings: { ...defaultSettings },
             players: [msg.author.id],
-            _allowSolo: args[0]?.toLowerCase() === "solo"
+            _allowSolo: args[0]?.toLowerCase() === "solo",
+            channelID: msg.channel.id
         } as UnoGame<false>
         respond(msg, {
             embeds: [makeStartMessage(gameObj)],
