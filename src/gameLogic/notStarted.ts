@@ -1,8 +1,8 @@
-import { respond, sendMessage } from "../client.js"
-import { cards, ButtonIDs, uniqueVariants, GameButtons, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js"
+import { respond } from "../client.js"
+import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js"
 import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { games, makeGameMessage, makeStartMessage, shuffle, onTimeout, cancelGameMessageFail } from "./index.js"
+import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
@@ -32,16 +32,7 @@ function startGame(game: UnoGame<false>) {
     startedGame.currentCard = drawUntilNotSpecial(startedGame)
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any
     startedGame.deck = startedGame.draw(0).newDeck
-    sendMessage(game.message.channelID, {
-        content: `<@${startedGame.currentPlayer}>, it's now your turn`,
-        embeds: [makeGameMessage(startedGame)],
-        components: GameButtons,
-        allowedMentions: { users: true }
-    }).then(m => {
-        if (!m) return cancelGameMessageFail(game)
-        startedGame.message = m
-        games[game.message.channelID] = startedGame
-    })
+    sendGameMessage(startedGame)
 }
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
     let { deck } = game

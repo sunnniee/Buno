@@ -1,8 +1,8 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, makeGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember, cancelGameMessageFail } from "./index.js"
+import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants, coloredUniqueCards } from "../constants.js"
+import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants, coloredUniqueCards } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -56,16 +56,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     ${`**${ctx.member.nick ?? ctx.member.username}** played ${coloredUniqueCards[cardPlayed]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `)
-    sendMessage(ctx.message.channel.id, {
-        content: `<@${game.currentPlayer}> it's now your turn`,
-        allowedMentions: { users: true },
-        embeds: [makeGameMessage(game)],
-        components: GameButtons
-    }).then(msg => {
-        if (!msg) return cancelGameMessageFail(game)
-        game.message = msg
-        games[ctx.message.channelID] = game
-    })
+    sendGameMessage(game)
 }
 
 export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
@@ -80,16 +71,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         game.drawStackCounter = 0
         ctx.deleteOriginal()
         deleteMessage(game.message)
-        sendMessage(ctx.channel.id, {
-            content: `<@${game.currentPlayer}>, it's now your turn`,
-            embeds: [makeGameMessage(game)],
-            components: GameButtons,
-            allowedMentions: { users: true }
-        }).then(msg => {
-            if (!msg) return cancelGameMessageFail(game)
-            game.message = msg
-            games[ctx.message.channel.id] = game
-        })
+        sendGameMessage(game)
     } else onCardPlayed(ctx, game, true)
 }
 
@@ -212,16 +194,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         )
         if (cardPlayed !== "draw") {
-            sendMessage(ctx.channel.id, {
-                content: `<@${game.currentPlayer}>, it's now your turn`,
-                embeds: [makeGameMessage(game)],
-                components: GameButtons,
-                allowedMentions: { users: true }
-            }).then(msg => {
-                if (!msg) return cancelGameMessageFail(game)
-                game.message = msg
-                games[ctx.message.channel.id] = game
-            })
+            sendGameMessage(game)
         } else {
             games[ctx.message.channel.id] = game
         }

@@ -57,16 +57,7 @@ export function onTimeout(game: UnoGame<true>) {
                 .toJSON()
         })
     }
-    sendMessage(game.message.channel.id, {
-        content: `<@${game.currentPlayer}>, it's now your turn`,
-        embeds: [makeGameMessage(game)],
-        components: GameButtons,
-        allowedMentions: { users: true }
-    }).then(msg => {
-        if (!msg) return cancelGameMessageFail(game)
-        game.message = msg
-        games[game.message.channelID] = game
-    })
+    sendGameMessage(game)
 }
 
 export function makeStartMessage(game: UnoGame<false>) {
@@ -83,22 +74,31 @@ ${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join(
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : game.cards[playerID]?.length <= 2 ? "- " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`
-export function makeGameMessage(game: UnoGame<true>) {
-    return new EmbedBuilder()
-        .setTitle("The Buno.")
-        .setDescription(`
-Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
-Current card: ${uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCard}-${game.currentCardColor}`] : cardEmotes[game.currentCard]} \
-${toTitleCase(game.currentCard)} \
-${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
-${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
-\`\`\`diff
-${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
-\`\`\`
-`)
-        .setThumbnail(`https://cdn.discordapp.com/emojis/${cardEmotes[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
-        .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
-        .toJSON()
+export function sendGameMessage(game: UnoGame<true>) {
+    sendMessage(game.message.channel.id, {
+        content: `<@${game.currentPlayer}> it's now your turn`,
+        allowedMentions: { users: true },
+        embeds: [new EmbedBuilder()
+            .setTitle("The Buno.")
+            .setDescription(`
+    Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
+    Current card: ${uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCard}-${game.currentCardColor}`] : cardEmotes[game.currentCard]} \
+    ${toTitleCase(game.currentCard)} \
+    ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
+    ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
+    \`\`\`diff
+    ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
+    \`\`\`
+    `)
+            .setThumbnail(`https://cdn.discordapp.com/emojis/${cardEmotes[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
+            .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
+            .toJSON()],
+        components: GameButtons
+    }).then(msg => {
+        if (!msg) return cancelGameMessageFail(game)
+        game.message = msg
+        games[game.message.channelID] = game
+    })
 }
 
 export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {

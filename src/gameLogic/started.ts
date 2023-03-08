@@ -1,7 +1,7 @@
-import { ButtonIDs, cardEmotes, DrawStackedCardSelect, GameButtons, PickCardSelect } from "../constants.js"
+import { ButtonIDs, cardEmotes, DrawStackedCardSelect, PickCardSelect } from "../constants.js"
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { UnoGame } from "../types.js"
-import { games, makeGameMessage, cardArrayToCount, next, cancelGameMessageFail } from "./index.js"
+import { games, sendGameMessage, cardArrayToCount, next } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 import { client, sendMessage } from "../client.js"
 
@@ -26,16 +26,7 @@ export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game
             })
         }
         ctx.deleteOriginal()
-        sendMessage(ctx.channel.id, {
-            content: `<@${game.currentPlayer}>, it's now your turn`,
-            embeds: [makeGameMessage(game)],
-            components: GameButtons,
-            allowedMentions: { users: true }
-        }).then(msg => {
-            if (!msg) return cancelGameMessageFail(game)
-            game.message = msg
-            games[ctx.message.channel.id] = game
-        })
+        sendGameMessage(game)
     }
 }
 
