@@ -92,8 +92,8 @@ export const rainbowColors = [
 export const defaultColor = 0x6c7086
 
 export const defaultSettings: UnoGameSettings = {
-    timeoutDuration: 60,
-    kickOnTimeout: false,
+    timeoutDuration: 150,
+    kickOnTimeout: true,
     allowSkipping: true,
     antiSabotage: true,
     allowStacking: true
