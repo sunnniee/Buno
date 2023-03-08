@@ -4,7 +4,7 @@ import { Card, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
 import { leaveGame, onGameButtonPress } from "./started.js"
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu } from "../constants.js"
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards } from "../constants.js"
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
@@ -88,7 +88,8 @@ export function makeGameMessage(game: UnoGame<true>) {
         .setTitle("The Buno.")
         .setDescription(`
 Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
-Current card: ${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)} \
+Current card: ${uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCard}-${game.currentCardColor}`] : cardEmotes[game.currentCard]} \
+${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
 ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
 \`\`\`diff

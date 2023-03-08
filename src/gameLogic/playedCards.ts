@@ -2,7 +2,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { Card, UnoGame } from "../types.js"
 import { cardArrayToCount, games, makeGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember, cancelGameMessageFail } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
+import { cardEmotes, colors, GameButtons, PickCardSelect, SelectIDs, variants, uniqueVariants, coloredUniqueCards } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
@@ -25,7 +25,7 @@ function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game
     if (currentPlayer !== ctx.member.id) return
-    const cardPlayed = ctx.data.values.raw[0]
+    const cardPlayed = ctx.data.values.raw[0] as `${typeof colors[number]}-${typeof uniqueVariants[number]}`
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number], typeof uniqueVariants[number]]
     let extraInfo = ""
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
@@ -53,7 +53,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
     sendMessage(ctx.channel.id, `
-    ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${`**${ctx.member.nick ?? ctx.member.username}** played ${coloredUniqueCards[cardPlayed]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `)
     sendMessage(ctx.message.channel.id, {

@@ -66,8 +66,18 @@ export const cardEmotes: { [k in Card]: string } = {
     "green-+2": "<:Gd2:1079758869762408480>",
     "green-reverse": "<:Gr:1079758912045195344>",
     "green-block": "<:Gb:1079775709456760872>",
-    "wild": "<:W:1079759132925628526>",
-    "+4": "<:d4:1079758847155130439>",
+    "wild": "<:Wn:1083073225371693056>",
+    "+4": "<:d4:1083073222230155295>",
+}
+export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniqueVariants[number]}`] } = {
+    "red-wild": "<:Wr:1083073403197587476>",
+    "red-+4": "<:4r:1083073363360108545>",
+    "yellow-wild": "<:Wy:1083073405793873940>",
+    "yellow-+4": "<:4y:1083073365641801849>",
+    "green-wild": "<:Wg:1083073401469542460>",
+    "green-+4": "<:4g:1083073361875325071>",
+    "blue-wild": "<:Wb:1083073398374137917>",
+    "blue-+4": "<:4b:1083073359404867716>"
 }
 
 // yes i like catppuccin how could you tell
