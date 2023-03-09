@@ -53,7 +53,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) return win(ctx, variant)
     sendMessage(ctx.channel.id, `
-    ${`**${ctx.member.nick ?? ctx.member.username}** played ${coloredUniqueCards[cardPlayed]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `)
     sendGameMessage(game)
