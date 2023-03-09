@@ -81,15 +81,15 @@ export function sendGameMessage(game: UnoGame<true>) {
         embeds: [new EmbedBuilder()
             .setTitle("The Buno.")
             .setDescription(`
-    Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
-    Current card: ${uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCard}-${game.currentCardColor}`] : cardEmotes[game.currentCard]} \
-    ${toTitleCase(game.currentCard)} \
-    ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
-    ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
-    \`\`\`diff
-    ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
-    \`\`\`
-    `)
+Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
+Current card: ${uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCard}-${game.currentCardColor}`] : cardEmotes[game.currentCard]} \
+${toTitleCase(game.currentCard)} \
+${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
+${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
+\`\`\`diff
+${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
+\`\`\`
+`.trim())
             .setThumbnail(`https://cdn.discordapp.com/emojis/${cardEmotes[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
             .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
             .toJSON()],
