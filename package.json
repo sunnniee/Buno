@@ -2,17 +2,17 @@
     "name": "buno",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "npx tsc -w",
         "build": "npx tsc",
-        "start": "node dist/.",
-        "startDev": "node dist/. --dev"
+        "start": "nodemon .",
+        "startDev": "nodemon . --dev"
     },
     "keywords": [],
     "author": "",
-    "license": "ISC",
+    "license": "MIT",
     "dependencies": {
         "@oceanicjs/builders": "^1.1.7",
         "dotenv": "^16.0.3",
@@ -23,6 +23,7 @@
         "@typescript-eslint/parser": "^5.54.1",
         "eslint": "^8.35.0",
         "eslint-plugin-unused-imports": "^2.0.0",
+        "nodemon": "^2.0.21",
         "typescript": "^4.9.5"
     },
     "type": "module"
