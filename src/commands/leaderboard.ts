@@ -8,8 +8,8 @@ export const cmd = {
     name: "leaderboard",
     aliases: ["lb"],
     execute: (msg, args) => {
-        const stats = database.getAllForGuild(msg.channel.guild.id)
-        console.log(stats)
+        const stats = database.getAllForGuild(/^\d{17,20}$/.test(args?.[0]) ? args[0] : msg.channel.guild.id)
+        if (!stats) return
         sendMessage(msg.channel.id, {
             embeds: [new EmbedBuilder()
                 .setTitle(`Leaderboard for ${msg.channel.guild.name}`)
