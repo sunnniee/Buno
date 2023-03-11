@@ -6,6 +6,16 @@ export type Command = {
     execute: (msg: Message<AnyGuildTextChannel>, args: string[]) => any;
 }
 
+export type PlayerStorage = {
+    wins: number
+    losses: number
+}
+export type PlayerStatsDatabaseInfo = {
+    [guildID: string]: {
+        [userID: string]: PlayerStorage
+    }
+}
+
 export type UserID = string;
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]
 
@@ -29,12 +39,13 @@ export type UnoGame<T extends boolean> = T extends true ? {
     currentPlayer: UserID,
     lastPlayer: {
         id: UserID,
-        duration: number
+        duration: number,
     },
     timeout: NodeJS.Timeout,
-    settings: UnoGameSettings
+    settings: UnoGameSettings,
     message: Message<AnyGuildTextChannel>,
-    channelID: string
+    channelID: string,
+    guildID: string,
 } : {
     started: false,
     host: UserID,
@@ -42,5 +53,6 @@ export type UnoGame<T extends boolean> = T extends true ? {
     settings: UnoGameSettings,
     message: Message<AnyGuildTextChannel>,
     channelID: string,
+    guildID: string,
     _allowSolo: boolean,
 }

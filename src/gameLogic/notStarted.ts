@@ -4,6 +4,7 @@ import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, Tex
 import { Card, UnoGame } from "../types.js"
 import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
+import database from "../database.js"
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0]
@@ -15,6 +16,9 @@ function dupe<T>(a: T[]): T[] { return a.concat(a) }
 function startGame(game: UnoGame<false>) {
     if (game.players.length === 1 && !game._allowSolo)
         return respond(game.message, "You can't start a game by yourself!")
+    game.players.forEach(id => {
+        if (!database.get(game.guildID, id)) database.set(game.guildID, id, { wins: 0, losses: 0 })
+    })
     games[game.channelID].started = true
     const startedGame = {
         started: true,
@@ -26,7 +30,8 @@ function startGame(game: UnoGame<false>) {
         lastPlayer: { id: null, duration: 0 },
         settings: game.settings || { ...defaultSettings },
         timeout: setTimeout(() => onTimeout(startedGame), game.settings.timeoutDuration * 1000),
-        channelID: game.channelID
+        channelID: game.channelID,
+        guildID: game.guildID
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
     startedGame.cards = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]))
@@ -95,7 +100,6 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
 export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<false>) {
     switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.JOIN_GAME: {
-            // sendMessage(ctx.channel.id, `[TEMP] **${ctx.member.nick ?? ctx.member.username}** joined the game`)
             if (!game.players.includes(ctx.member.id)) {
                 game.players.push(ctx.member.id)
                 games[ctx.channelID] = game

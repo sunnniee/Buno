@@ -1,11 +1,12 @@
 import { client, sendMessage } from "../client.js"
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, ModalSubmitInteraction } from "oceanic.js"
-import { Card, UnoGame } from "../types.js"
+import { Card, PlayerStorage, UnoGame } from "../types.js"
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders"
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js"
 import { leaveGame, onGameButtonPress } from "./started.js"
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards } from "../constants.js"
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js"
+import database from "../database.js"
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {}
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
@@ -33,6 +34,16 @@ export function cancelGameMessageFail(game: UnoGame<boolean>) {
         .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
         .catch(() => { })
     delete games[game.channelID]
+}
+export function updateStats(game: UnoGame<true>, winner: string) {
+    const newStats: { [id: string]: PlayerStorage } = {}
+    game.players.forEach(id => {
+        const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 }
+        if (id === winner) val.wins++
+        else val.losses++
+        newStats[id] = val
+    })
+    database.setMultiple(game.guildID, newStats)
 }
 
 export function onTimeout(game: UnoGame<true>) {

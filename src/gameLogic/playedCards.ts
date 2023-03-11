@@ -1,12 +1,13 @@
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js"
 import { Card, UnoGame } from "../types.js"
-import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js"
+import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember, updateStats } from "./index.js"
 import { deleteMessage, sendMessage } from "../client.js"
-import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants, coloredUniqueCards } from "../constants.js"
+import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js"
 import { ComponentBuilder } from "@oceanicjs/builders"
 
 function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
     clearTimeout((games[ctx.channel.id] as UnoGame<true>).timeout)
+    updateStats((games[ctx.channel.id] as UnoGame<true>), ctx.member.id)
     delete games[ctx.channel.id]
     sendMessage(ctx.channel.id, {
         content: `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,

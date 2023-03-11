@@ -6,7 +6,8 @@ import * as clientUtils from "../client.js"
 import * as constants from "../constants.js"
 import { games } from "../gameLogic/index.js"
 import * as gameLogic from "../gameLogic/index.js"
-client; gameLogic
+import database from "../database.js"
+client; gameLogic; database
 
 const MAX_RESPONSE_LENGTH = 1950
 
