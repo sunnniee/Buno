@@ -25,7 +25,7 @@ class PlayerStatsDatabase {
         }
         this.waitingForInit = false;
         [...client.guilds.keys()].forEach(async i => {
-            if (!savedGuilds.includes(i)) {
+            if (!savedGuilds.includes(`${i}.json`)) {
                 this.cache[i] = {}
                 await this.write(i)
             }

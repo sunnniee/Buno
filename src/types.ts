@@ -3,6 +3,7 @@ import { AnyGuildTextChannel, Message } from "oceanic.js"
 
 export type Command = {
     name: string,
+    aliases?: string[]
     execute: (msg: Message<AnyGuildTextChannel>, args: string[]) => any;
 }
 

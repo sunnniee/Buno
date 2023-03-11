@@ -15,6 +15,10 @@ readdir("./src/commands", (err, res) => {
         f => (import(`./commands/${f.slice(0, -3)}.js`) as Promise<{ cmd: Command }>)
             .then(c => {
                 if (commands[c.cmd.name]) return console.error(`Duplicate command ${c.cmd.name}`)
+                c.cmd.aliases?.forEach(a => {
+                    if (commands[a]) return console.error(`Duplicate command ${a}`)
+                    else commands[a] = c.cmd
+                })
                 commands[c.cmd.name] = c.cmd
             })
     )
