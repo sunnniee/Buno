@@ -21,7 +21,19 @@ export const cmd = {
         }
         msg.createReaction("👍").catch(() => { })
         try {
-            const game = games[msg.channel.id]; game;
+            const game = new Proxy(games[msg.channel.id], {
+                set(target, p, newValue, receiver) {
+                    target._modified = true
+                    target[p] = newValue
+                    return true
+                }
+            })
+            if (gameLogic.hasStarted(game)) game.draw = new Proxy(game.draw, {
+                apply(target, thisArg, argArray) {
+                    games[msg.channel.id]._modified = true
+                    target.apply(thisArg, argArray)
+                },
+            });
             (eval(`(async function(){${code}})().catch(reportError)`) as Promise<any>).then(evalResult => {
                 let result = inspect(evalResult, { depth: 5 })
                 if (result.length > MAX_RESPONSE_LENGTH)

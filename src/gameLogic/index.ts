@@ -36,6 +36,7 @@ export function cancelGameMessageFail(game: UnoGame<boolean>) {
     delete games[game.channelID]
 }
 export function updateStats(game: UnoGame<true>, winner: string) {
+    if (game._modified) return
     const newStats: { [id: string]: PlayerStorage } = {}
     game.players.forEach(id => {
         const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 }
@@ -104,6 +105,8 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 `.trim())
             .setThumbnail(`https://cdn.discordapp.com/emojis/${currentCardEmote.match(/<:\w+:(\d+)>/)[1]}.png`)
             .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
+            .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
+                + `Timeout is ${game.settings.timeoutDuration} seconds`)
             .toJSON()],
         components: GameButtons
     }).then(msg => {

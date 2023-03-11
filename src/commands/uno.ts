@@ -17,6 +17,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             settings: { ...defaultSettings },
             players: [msg.author.id],
             _allowSolo: args[0]?.toLowerCase() === "solo",
+            _modified: false,
             channelID: msg.channel.id,
             guildID: msg.channel.guild.id
         } as UnoGame<false>

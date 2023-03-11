@@ -31,7 +31,8 @@ function startGame(game: UnoGame<false>) {
         settings: game.settings || { ...defaultSettings },
         timeout: setTimeout(() => onTimeout(startedGame), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
-        guildID: game.guildID
+        guildID: game.guildID,
+        _modified: game._modified
     } as UnoGame<true>
     startedGame.draw = drawFactory(startedGame)
     startedGame.cards = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]))
