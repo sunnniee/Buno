@@ -122,7 +122,6 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 }
     clearTimeout(game.timeout)
-    game.timeout = setTimeout(() => onTimeout(game), game.settings.timeoutDuration * 1000)
 
     let extraInfo = ""
     if (cardPlayed === "draw") {
@@ -184,6 +183,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal()
     }
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
+    game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000)
     if (cardPlayed !== "draw") deleteMessage(game.message)
     if (game.cards[ctx.member.id].length === 0) {
         win(ctx, cardPlayed as Card)

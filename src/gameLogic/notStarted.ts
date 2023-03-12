@@ -29,7 +29,7 @@ function startGame(game: UnoGame<false>) {
         currentPlayer: game.players[0],
         lastPlayer: { id: null, duration: 0 },
         settings: game.settings || { ...defaultSettings },
-        timeout: setTimeout(() => onTimeout(startedGame), game.settings.timeoutDuration * 1000),
+        timeout: setTimeout(() => onTimeout(startedGame, game.players[0]), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified

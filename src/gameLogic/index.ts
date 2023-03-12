@@ -47,7 +47,8 @@ export function updateStats(game: UnoGame<true>, winner: string) {
     database.setMultiple(game.guildID, newStats)
 }
 
-export function onTimeout(game: UnoGame<true>) {
+export function onTimeout(game: UnoGame<true>, player: string) {
+    if (player !== game.currentPlayer) return
     const kickedPlayer = getPlayerMember(game, game.currentPlayer)
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer))
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1)
