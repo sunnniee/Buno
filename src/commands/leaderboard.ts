@@ -19,7 +19,7 @@ export const cmd = {
                     .slice(0, 9)
                     .map(([id, stats]) =>
                         `**${client.users.get(id)?.username || id}** - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
-                    ${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}`
+${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}`
                     ))
                 .toJSON()
             ]
