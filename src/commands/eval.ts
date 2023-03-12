@@ -30,12 +30,6 @@ export const cmd = {
                         return true;
                     }
                 });
-                if (gameLogic.hasStarted(game)) game.draw = new Proxy(game.draw, {
-                    apply(target, thisArg, argArray) {
-                        games[msg.channel.id]._modified = true;
-                        target.apply(thisArg, argArray);
-                    },
-                });
             }
             game;
             (eval(`(async function(){${code}})().catch(reportError)`) as Promise<any>).then(evalResult => {
