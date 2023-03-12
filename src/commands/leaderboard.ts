@@ -1,15 +1,15 @@
-import { EmbedBuilder } from "@oceanicjs/builders"
-import { client, sendMessage } from "../client.js"
-import { defaultColor } from "../constants.js"
-import database from "../database.js"
-import { Command } from "../types"
+import { EmbedBuilder } from "@oceanicjs/builders";
+import { client, sendMessage } from "../client.js";
+import { defaultColor } from "../constants.js";
+import database from "../database.js";
+import { Command } from "../types";
 
 export const cmd = {
     name: "leaderboard",
     aliases: ["lb"],
     execute: (msg, args) => {
-        const stats = database.getAllForGuild(/^\d{17,20}$/.test(args?.[0]) ? args[0] : msg.channel.guild.id)
-        if (!stats) return
+        const stats = database.getAllForGuild(/^\d{17,20}$/.test(args?.[0]) ? args[0] : msg.channel.guild.id);
+        if (!stats) return;
         sendMessage(msg.channel.id, {
             embeds: [new EmbedBuilder()
                 .setTitle(`Leaderboard for ${msg.channel.guild.name}`)
@@ -23,6 +23,6 @@ ${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** l
                     ))
                 .toJSON()
             ]
-        })
+        });
     },
-} as Command
+} as Command;

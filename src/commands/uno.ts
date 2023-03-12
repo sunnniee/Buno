@@ -1,16 +1,16 @@
-import { respond } from "../client.js"
-import { Command, UnoGame } from "../types"
-import { ComponentBuilder } from "@oceanicjs/builders"
-import { ButtonStyles, MessageActionRow } from "oceanic.js"
-import { games, makeStartMessage } from "../gameLogic/index.js"
-import { ButtonIDs, defaultSettings } from "../constants.js"
+import { respond } from "../client.js";
+import { Command, UnoGame } from "../types";
+import { ComponentBuilder } from "@oceanicjs/builders";
+import { ButtonStyles, MessageActionRow } from "oceanic.js";
+import { games, makeStartMessage } from "../gameLogic/index.js";
+import { ButtonIDs, defaultSettings } from "../constants.js";
 
 export const cmd = {
     name: "uno",
     execute: (msg, args) => {
-        const existingGame = games[msg.channel.id]
+        const existingGame = games[msg.channel.id];
         if (existingGame) return respond(msg, `Someone already started a game
-Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`)
+Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
         const gameObj = {
             started: false,
             host: msg.author.id,
@@ -20,7 +20,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             _modified: false,
             channelID: msg.channel.id,
             guildID: msg.channel.guild.id
-        } as UnoGame<false>
+        } as UnoGame<false>;
         respond(msg, {
             embeds: [makeStartMessage(gameObj)],
             components: new ComponentBuilder<MessageActionRow>()
@@ -54,9 +54,9 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
                 })
                 .toJSON()
         }).then(m => {
-            if (!m) return msg.createReaction("‼")
-            gameObj.message = m
-            games[msg.channelID] = gameObj
-        })
+            if (!m) return msg.createReaction("‼");
+            gameObj.message = m;
+            games[msg.channelID] = gameObj;
+        });
     },
-} as Command
+} as Command;

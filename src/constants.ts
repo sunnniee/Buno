@@ -1,18 +1,18 @@
-import { ComponentBuilder } from "@oceanicjs/builders"
-import { MessageActionRow, ButtonStyles, ComponentTypes, AnyGuildTextChannel } from "oceanic.js"
-import { client } from "./client.js"
-import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js"
-import { Card, UnoGame, UnoGameSettings } from "./types.js"
+import { ComponentBuilder } from "@oceanicjs/builders";
+import { MessageActionRow, ButtonStyles, ComponentTypes, AnyGuildTextChannel } from "oceanic.js";
+import { client } from "./client.js";
+import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js";
+import { Card, UnoGame, UnoGameSettings } from "./types.js";
 
-export const devs = ["406028027768733696"]
+export const devs = ["406028027768733696"];
 
-export const colors = ["red", "yellow", "green", "blue",] as const
-export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const
-export const uniqueVariants = ["wild", "+4",] as const
+export const colors = ["red", "yellow", "green", "blue",] as const;
+export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
+export const uniqueVariants = ["wild", "+4",] as const;
 export const cards = (colors
     .map(c => variants.map(v => `${c}-${v}`))
     .flat() as Card[])
-    .concat(uniqueVariants)
+    .concat(uniqueVariants);
 export const cardEmotes: { [k in Card]: string } = {
     "red-0": "<:R0:1079758914909900890>",
     "red-1": "<:R1:1079758916491149332>",
@@ -68,7 +68,7 @@ export const cardEmotes: { [k in Card]: string } = {
     "green-block": "<:Gb:1083071799945859104>",
     "wild": "<:Wn:1083073225371693056>",
     "+4": "<:d4:1083073222230155295>",
-}
+};
 export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniqueVariants[number]}`] } = {
     "red-wild": "<:Wr:1083073403197587476>",
     "red-+4": "<:4r:1083073363360108545>",
@@ -78,7 +78,7 @@ export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniq
     "green-+4": "<:4g:1083073361875325071>",
     "blue-wild": "<:Wb:1083073398374137917>",
     "blue-+4": "<:4b:1083073359404867716>"
-}
+};
 
 // yes i like catppuccin how could you tell
 export const rainbowColors = [
@@ -88,8 +88,8 @@ export const rainbowColors = [
     0xa6e3a1,
     0x74e7bc,
     0xf5c2e7
-] as const
-export const defaultColor = 0x6c7086
+] as const;
+export const defaultColor = 0x6c7086;
 
 export const defaultSettings: UnoGameSettings = {
     timeoutDuration: 150,
@@ -97,7 +97,7 @@ export const defaultSettings: UnoGameSettings = {
     allowSkipping: true,
     antiSabotage: true,
     allowStacking: true
-} as const
+} as const;
 
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
@@ -109,7 +109,7 @@ export const ButtonIDs = Object.freeze({
     LEAVE_GAME: "leave-game",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game"
-})
+});
 export const GameButtons = new ComponentBuilder<MessageActionRow>()
     .addInteractionButton({
         style: ButtonStyles.PRIMARY,
@@ -122,20 +122,20 @@ export const GameButtons = new ComponentBuilder<MessageActionRow>()
         customID: "leave-game",
         emoji: ComponentBuilder.emojiToPartial("🚪", "default")
     })
-    .toJSON()
+    .toJSON();
 
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
     EDIT_GAME_SETTINGS: "change-settings"
-})
+});
 
 export function onMsgError(e, ctx: { channelID: string }) {
-    console.log(e)
+    console.log(e);
     return client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
         content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
-    }).catch(() => { })
+    }).catch(() => { });
 }
 
 export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
@@ -147,7 +147,7 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
                     label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
                     value: c,
                     emoji: ComponentBuilder.emojiToPartial(cardEmotes[c], "custom")
-                }
+                };
             }),
             {
                 label: "Draw a card",
@@ -163,7 +163,7 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
             }] : []),
         type: ComponentTypes.STRING_SELECT
     })
-    .toJSON()
+    .toJSON();
 export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
         customID: SelectIDs.FORCEFUL_DRAW,
@@ -177,17 +177,17 @@ export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?
                 label: `${toTitleCase(c)}`,
                 value: c,
                 emoji: ComponentBuilder.emojiToPartial(cardEmotes[c], "custom")
-            }
+            };
         })].filter(Boolean),
         type: ComponentTypes.STRING_SELECT
     })
-    .toJSON()
+    .toJSON();
 
 function toHumanReadableTime(n: number) {
-    if (n < 0 || n > 3600) return "Disabled"
-    if (n < 60) return `${n} seconds`
-    const m = Math.floor(n / 60), s = n % 60
-    return `${m} minute${m === 1 ? "" : "s"}${s ? ` and ${s} second${s === 1 ? "" : "s"}` : ""}`
+    if (n < 0 || n > 3600) return "Disabled";
+    if (n < 60) return `${n} seconds`;
+    const m = Math.floor(n / 60), s = n % 60;
+    return `${m} minute${m === 1 ? "" : "s"}${s ? ` and ${s} second${s === 1 ? "" : "s"}` : ""}`;
 }
 export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
@@ -219,7 +219,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             description: game.settings.allowStacking ? "Enabled" : "Disabled"
         }]
     })
-    .toJSON()
+    .toJSON();
 
 export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION: "timeout-duration-setting",
@@ -229,4 +229,4 @@ export const SettingsIDs = Object.freeze({
     ALLOW_SKIPPING: "allow-skipping",
     ANTI_SABOTAGE: "anti-sabotage",
     ALLOW_CARD_STACKING: "allow-stacking"
-})
+});

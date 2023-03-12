@@ -14,7 +14,7 @@
         "no-multi-spaces": "error",
         "no-trailing-spaces": "error",
         "no-whitespace-before-property": "error",
-        "semi": ["error", "never"],
+        "semi": ["error", "always"],
         "space-in-parens": ["error", "never"],
         "block-spacing": ["error", "always"],
         "object-curly-spacing": ["error", "always"],
