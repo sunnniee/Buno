@@ -130,6 +130,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
             if (!game || hasStarted(game)) return;
             onGameJoin(ctx, game);
             break;
+        case ButtonIDs.VIEW_CARDS:
         case ButtonIDs.PLAY_CARD:
         case ButtonIDs.LEAVE_GAME:
             if (!game || !hasStarted(game)) return;

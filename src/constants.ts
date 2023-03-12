@@ -105,6 +105,7 @@ export const ButtonIDs = Object.freeze({
     EDIT_GAME_SETTINGS: "game-settings",
     DELETE_GAME: "delete-game",
     START_GAME: "start",
+    VIEW_CARDS: "view-cards",
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
@@ -112,14 +113,20 @@ export const ButtonIDs = Object.freeze({
 });
 export const GameButtons = new ComponentBuilder<MessageActionRow>()
     .addInteractionButton({
+        style: ButtonStyles.SECONDARY,
+        customID: ButtonIDs.VIEW_CARDS,
+        label: "View",
+        emoji: ComponentBuilder.emojiToPartial("🔍", "default")
+    })
+    .addInteractionButton({
         style: ButtonStyles.PRIMARY,
-        customID: "play-game",
+        customID: ButtonIDs.PLAY_CARD,
         label: "Play",
         emoji: ComponentBuilder.emojiToPartial("🃏", "default")
     })
     .addInteractionButton({
         style: ButtonStyles.DANGER,
-        customID: "leave-game",
+        customID: ButtonIDs.LEAVE_GAME,
         emoji: ComponentBuilder.emojiToPartial("🚪", "default")
     })
     .toJSON();
@@ -141,6 +148,7 @@ export function onMsgError(e, ctx: { channelID: string }) {
 export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
         customID: SelectIDs.CHOOSE_CARD,
+        placeholder: "Choose a card",
         options: [
             ...Object.keys(cards).map(c => {
                 return {
