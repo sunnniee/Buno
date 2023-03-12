@@ -19,7 +19,7 @@ export function shuffle<T>(array: T[]): T[] {
         .map(({ c }) => c);
 }
 export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
-export function next(array: any[], n: number) {
+export function next<T>(array: T[], n: number) {
     if (n < array.length - 1) return array[n + 1];
     else return array[0];
 }
