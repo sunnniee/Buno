@@ -49,12 +49,13 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 
 export function onTimeout(game: UnoGame<true>, player: string) {
     if (player !== game.currentPlayer) return;
-    const kickedPlayer = getPlayerMember(game, game.currentPlayer);
-    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-    if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(game.currentPlayer), 1);
+    const kickedPlayer = getPlayerMember(game, player);
+    game.currentPlayer = next(game.players, game.players.indexOf(player));
+    if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(player), 1);
     sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
+    game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     if (game.players.length <= 1) {
         clearTimeout(game.timeout);
         delete games[game.channelID];
