@@ -4,7 +4,7 @@ import { Card, PlayerStorage, UnoGame } from "../types.js";
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards } from "../constants.js";
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards, veryLongTime } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import database from "../database.js";
 
@@ -168,7 +168,7 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
         const [timeoutDurationRaw] = ctx.data.components.map(i => i.components[0].value);
         let timeoutDuration = parseInt(timeoutDurationRaw.replace(/[ .,_]/gm, ""), 10);
         if (Number.isNaN(timeoutDuration)) ({ timeoutDuration } = defaultSettings);
-        if (timeoutDuration < 0 || timeoutDuration > 3600) timeoutDuration = Number.MAX_SAFE_INTEGER; // :slight_smile:
+        if (timeoutDuration < 0 || timeoutDuration > 3600) timeoutDuration = veryLongTime; // :slight_smile:
         if (timeoutDuration < 20) timeoutDuration = 20;
         game.settings.timeoutDuration = timeoutDuration;
         games[ctx.channel.id] = game;

@@ -20,6 +20,7 @@ function startGame(game: UnoGame<false>) {
         if (!database.get(game.guildID, id)) database.set(game.guildID, id, { wins: 0, losses: 0 });
     });
     games[game.channelID].started = true;
+    const settings = game.settings || { ...defaultSettings };
     const startedGame = {
         started: true,
         players: game.players,
@@ -28,7 +29,7 @@ function startGame(game: UnoGame<false>) {
         drawStackCounter: 0,
         currentPlayer: game.players[0],
         lastPlayer: { id: null, duration: 0 },
-        settings: game.settings || { ...defaultSettings },
+        settings,
         timeout: setTimeout(() => onTimeout(startedGame, game.players[0]), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
         guildID: game.guildID,

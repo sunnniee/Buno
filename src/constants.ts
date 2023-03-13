@@ -99,6 +99,8 @@ export const defaultSettings: UnoGameSettings = {
     allowStacking: true
 } as const;
 
+export const veryLongTime = 86400_000_000_000;
+
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
     LEAVE_GAME_BEFORE_START: "leave",
