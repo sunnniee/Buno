@@ -86,7 +86,8 @@ ${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join(
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : game.cards[playerID]?.length <= 2 ? "- " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}:\
+${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
     sendMessage(game.channelID, {
