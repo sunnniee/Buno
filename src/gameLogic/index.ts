@@ -4,7 +4,7 @@ import { Card, PlayerStorage, UnoGame } from "../types.js";
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards, veryLongTime } from "../constants.js";
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards, veryLongTime, toHumanReadableTime } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import database from "../database.js";
 
@@ -86,7 +86,7 @@ ${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join(
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}:\
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
@@ -108,7 +108,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setThumbnail(`https://cdn.discordapp.com/emojis/${currentCardEmote.match(/<:\w+:(\d+)>/)[1]}.png`)
             .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
-                + `Timeout is ${game.settings.timeoutDuration} seconds`)
+                + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
         components: GameButtons
     }).then(msg => {

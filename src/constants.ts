@@ -194,7 +194,7 @@ export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?
     })
     .toJSON();
 
-function toHumanReadableTime(n: number) {
+export function toHumanReadableTime(n: number) {
     if (n < 0 || n > 3600) return "Disabled";
     if (n < 60) return `${n} seconds`;
     const m = Math.floor(n / 60), s = n % 60;

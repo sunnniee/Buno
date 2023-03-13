@@ -1,5 +1,5 @@
 import { respond } from "../client.js";
-import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsSelectMenu, SettingsIDs } from "../constants.js";
+import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsSelectMenu, SettingsIDs, veryLongTime } from "../constants.js";
 import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
 import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js";
@@ -66,7 +66,7 @@ export function makeSettingsModal(ctx: ComponentInteraction) {
                 customID: SettingsIDs.TIMEOUT_DURATION_MODAL_SETTING,
                 label: "New duration (in seconds, >20, -1 to disable)",
                 style: TextInputStyles.SHORT,
-                value: `${((game.settings.timeoutDuration === Number.MAX_SAFE_INTEGER || game.settings.timeoutDuration < 0)
+                value: `${((game.settings.timeoutDuration === veryLongTime || game.settings.timeoutDuration < 0)
                     ? "-1" : game.settings.timeoutDuration)
                     ?? defaultSettings.timeoutDuration}`,
                 placeholder: `default: ${defaultSettings.timeoutDuration}, max of 1 hour`
