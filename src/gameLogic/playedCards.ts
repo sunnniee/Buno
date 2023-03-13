@@ -1,27 +1,9 @@
-import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
+import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
-import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember, updateStats } from "./index.js";
+import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js";
 import { deleteMessage, sendMessage } from "../client.js";
 import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
-
-function win(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, card: Card) {
-    clearTimeout((games[ctx.channel.id] as UnoGame<true>).timeout);
-    updateStats((games[ctx.channel.id] as UnoGame<true>), ctx.member.id);
-    delete games[ctx.channel.id];
-    sendMessage(ctx.channel.id, {
-        content: `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
-        components: new ComponentBuilder<MessageActionRow>()
-            .addInteractionButton({
-                style: ButtonStyles.SUCCESS,
-                label: "gg",
-                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                disabled: true,
-                customID: "we-have-a-nerd-here🤓"
-            })
-            .toJSON()
-    });
-}
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game;
@@ -52,7 +34,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
     deleteMessage(game.message);
-    if (game.cards[ctx.member.id].length === 0) return win(ctx, variant);
+    if (game.cards[ctx.member.id].length === 0) return;
     sendMessage(ctx.channel.id, `
     ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
@@ -185,9 +167,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     if (cardPlayed !== "draw") deleteMessage(game.message);
-    if (game.cards[ctx.member.id].length === 0) {
-        win(ctx, cardPlayed as Card);
-    } else {
+    if (game.cards[ctx.member.id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
                 ? `**${ctx.member.nick ?? ctx.member.username}** drew a card`

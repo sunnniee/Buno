@@ -1,8 +1,8 @@
-import { respond } from "../client.js";
-import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsSelectMenu, SettingsIDs, veryLongTime } from "../constants.js";
-import { ComponentInteraction, ComponentTypes, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
+import { respond, sendMessage } from "../client.js";
+import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsSelectMenu, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
+import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
-import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout } from "./index.js";
+import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout, updateStats, toTitleCase, getPlayerMember } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import database from "../database.js";
 
@@ -36,7 +36,38 @@ function startGame(game: UnoGame<false>) {
         _modified: game._modified
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
-    startedGame.cards = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
+    const cardsToBeUsed = { [game.players[0]]: ["wild", "wild"] as Card[], [game.players[1]]: ["wild", "wild"] as Card[] };
+    // Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
+    Object.keys(cardsToBeUsed).forEach(id => {
+        cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
+            deleteProperty(t, p) {
+                const card = t[p];
+                delete t[p];
+                // length isn't 0, the array becomes [ <1 empty item> ] not []
+                if (t.length === 1 && p === "0") {
+                    const winnerID = startedGame.players.find(id => startedGame.cards[id]?.filter(Boolean).length === 0);
+                    const winner = getPlayerMember(startedGame, winnerID);
+                    clearTimeout(startedGame.timeout);
+                    updateStats(startedGame, winnerID);
+                    delete games[startedGame.channelID];
+                    sendMessage(startedGame.channelID, {
+                        content: `**${winner?.nick ?? winner?.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
+                        components: new ComponentBuilder<MessageActionRow>()
+                            .addInteractionButton({
+                                style: ButtonStyles.SUCCESS,
+                                label: "gg",
+                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                                disabled: true,
+                                customID: "we-have-a-nerd-here🤓"
+                            })
+                            .toJSON()
+                    });
+                }
+                return true;
+            }
+        });
+    });
+    startedGame.cards = cardsToBeUsed;
     startedGame.currentCard = drawUntilNotSpecial(startedGame);
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any;
     startedGame.deck = startedGame.draw(0).newDeck;

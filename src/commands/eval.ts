@@ -21,16 +21,7 @@ export const cmd = {
         };
         msg.createReaction("👍").catch(() => { });
         try {
-            let game;
-            if (games[msg.channel.id]) {
-                game = new Proxy(games[msg.channel.id], {
-                    set(target, p, newValue, receiver) {
-                        target._modified = true;
-                        target[p] = newValue;
-                        return true;
-                    }
-                });
-            }
+            const game = games[msg.channel.id];
             game;
             (eval(`(async function(){${code}})().catch(reportError)`) as Promise<any>).then(evalResult => {
                 let result = inspect(evalResult, { depth: 5 });
