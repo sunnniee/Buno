@@ -57,7 +57,7 @@ function startGame(game: UnoGame<false>) {
         _modified: game._modified
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
-    const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, ["+4", "green-+2", "blue-+2"]])) as { [k: string]: Card[] }; // Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
+    const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
             set(t, p, n) {
