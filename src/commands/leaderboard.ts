@@ -6,7 +6,7 @@ import database from "../database.js";
 import { Command } from "../types.js";
 
 const emotes = ["🥇", "🥈", "🥉"];
-function getUsername(id: string, fetchedMembers?: Member[], guild?: Guild) {
+export function getUsername(id: string, fetchedMembers?: Member[], guild?: Guild) {
     return fetchedMembers?.find(m => m.id === id)?.username ?? guild?.members.get(id)?.username ?? client.users.get(id)?.username ?? id;
 }
 
