@@ -1,4 +1,4 @@
-import { respond } from "../client.js";
+import { deleteMessage, respond } from "../client.js";
 import { games, hasStarted, sendGameMessage, updateStats } from "../gameLogic/index.js";
 import { Command } from "../types";
 import { getUsername } from "./leaderboard.js";
@@ -13,20 +13,22 @@ export const cmd = {
                 .then(() => respond(msg, `Couldn't find anything wrong.
 https://discord.com/channels/${game.message.channel.guild.id}/${game.message.channel.id}/${game.message.id}`))
                 .catch(e => {
-                    if (e.includes("Unknown Message")) {
+                    if (e.message.includes("Unknown Message")) {
                         delete games[msg.channel.id];
                         respond(msg, "👍 Deleted the game in this channel");
                     } else console.log(e);
                 });
         } else {
-            if (game.players.length < 0) {
+            if (game.players.length <= 1) {
                 const possiblyTheWinner = /\d{17,20}/.test(game.currentPlayer) ? game.currentPlayer : game.lastPlayer.id;
+                deleteMessage(game.message);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner)}** would've "won"`);
             } else if (Object.values(game.cards).some(a => a.length === 0)) {
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
+                deleteMessage(game.message);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner)}** the win`);
             } else {
@@ -34,7 +36,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                     .then(() => respond(msg, `Couldn't find anything wrong.
 https://discord.com/channels/${game.message.channel.guild.id}/${game.message.channel.id}/${game.message.id}`))
                     .catch(e => {
-                        if (e.includes("Unknown Message")) sendGameMessage(game);
+                        if (e.message.includes("Unknown Message")) sendGameMessage(game);
                         else console.log(e);
                     });
             }
