@@ -22,6 +22,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
             if (game.players.length <= 1) {
                 const possiblyTheWinner = /\d{17,20}/.test(game.currentPlayer) ? game.currentPlayer : game.lastPlayer.id;
                 deleteMessage(game.message);
+                clearTimeout(game.timeout);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner)}** would've "won"`);
@@ -29,6 +30,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);
+                clearTimeout(game.timeout);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner)}** the win`);
             } else {
