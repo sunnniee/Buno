@@ -19,7 +19,7 @@ export const editMessage = (message: Message, content: CreateMessageOptions | st
         .catch(e => tryAgain ? editMessage(message, content, false) : onMsgError(e, message));
 
 export const deleteMessage = (message: Message, tryAgain = true) => client.rest.channels.deleteMessage(message.channel.id, message.id)
-    .catch(() => tryAgain && deleteMessage(message, false));
+    .catch(e => tryAgain ? deleteMessage(message, false) : console.log(e));
 
 export const respond = (msg: Message, c: CreateMessageOptions | string) => {
     let content: CreateMessageOptions = { messageReference: { messageID: msg.id, channelID: msg.channel.id } };

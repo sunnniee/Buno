@@ -23,7 +23,28 @@ function startGame(game: UnoGame<false>) {
     const settings = game.settings || { ...defaultSettings };
     const startedGame = {
         started: true,
-        players: game.players,
+        players: new Proxy(game.players, {
+            deleteProperty(t, p) {
+                delete t[p];
+                if (t.filter(Boolean).length <= 1) {
+                    const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
+                    clearTimeout(startedGame.timeout);
+                    delete games[startedGame.channelID];
+                    sendMessage(startedGame.channelID, {
+                        content: `**${winner?.nick ?? winner?.username}** won by default`,
+                        components: new ComponentBuilder<MessageActionRow>()
+                            .addInteractionButton({
+                                style: ButtonStyles.SUCCESS,
+                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                                disabled: true,
+                                customID: "we-have-a-nerd-here🤓"
+                            })
+                            .toJSON()
+                    });
+                }
+                return true;
+            },
+        }),
         host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         drawStackCounter: 0,
@@ -36,14 +57,14 @@ function startGame(game: UnoGame<false>) {
         _modified: game._modified
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
-    const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
+    const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, ["+4", "green-+2", "blue-+2"]])) as { [k: string]: Card[] }; // Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
-            deleteProperty(t, p) {
-                const card = t[p];
-                delete t[p];
-                // length isn't 0, the array becomes [ <1 empty item> ] not []
-                if (t.length === 1 && p === "0") {
+            set(t, p, n) {
+                t[p] = n;
+                if (p === "length" && n === 0) {
+                    // TODO: check that the card shown here is the correct one and dont just pray it is
+                    const card = startedGame.currentCard;
                     const winnerID = startedGame.players.find(id => startedGame.cards[id]?.filter(Boolean).length === 0);
                     const winner = getPlayerMember(startedGame, winnerID);
                     clearTimeout(startedGame.timeout);

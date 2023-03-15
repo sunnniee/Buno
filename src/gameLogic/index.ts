@@ -1,7 +1,7 @@
-import { client, sendMessage } from "../client.js";
-import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, ModalSubmitInteraction } from "oceanic.js";
+import { client, deleteMessage, sendMessage } from "../client.js";
+import { ComponentInteraction, ComponentTypes, ModalSubmitInteraction } from "oceanic.js";
 import { Card, PlayerStorage, UnoGame } from "../types.js";
-import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
+import { EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, GameButtons, SettingsIDs, defaultSettings, SettingsSelectMenu, coloredUniqueCards, veryLongTime, toHumanReadableTime } from "../constants.js";
@@ -48,6 +48,7 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 }
 
 export function onTimeout(game: UnoGame<true>, player: string) {
+    if (!games[game.channelID]) return;
     if (player !== game.currentPlayer) return;
     const kickedPlayer = getPlayerMember(game, player);
     game.currentPlayer = next(game.players, game.players.indexOf(player));
@@ -55,22 +56,8 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
+    clearTimeout(game.timeout);
     game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
-    if (game.players.length <= 1) {
-        clearTimeout(game.timeout);
-        delete games[game.channelID];
-        return sendMessage(game.channelID, {
-            content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
-            components: new ComponentBuilder<MessageActionRow>()
-                .addInteractionButton({
-                    style: ButtonStyles.SUCCESS,
-                    emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                    disabled: true,
-                    customID: "we-have-a-nerd-here🤓"
-                })
-                .toJSON()
-        });
-    }
     sendGameMessage(game);
 }
 
@@ -114,6 +101,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
         components: GameButtons
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
+        if (game.message?.channel) deleteMessage(game.message);
         game.message = msg;
         games[game.channelID] = game;
     });

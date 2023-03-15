@@ -1,31 +1,17 @@
 import { ButtonIDs, cardEmotes, DrawStackedCardSelect, PickCardSelect } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { UnoGame } from "../types.js";
-import { games, sendGameMessage, cardArrayToCount, next } from "./index.js";
+import { sendGameMessage, cardArrayToCount, next } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { client, sendMessage } from "../client.js";
+import { sendMessage } from "../client.js";
 
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
         if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** left the game.`);
-        if (game.players.length <= 1) {
-            clearTimeout(game.timeout);
-            delete games[ctx.channel.id];
-            return sendMessage(ctx.channel.id, {
-                content: `**${client.users.get(game.players[0])?.username ?? "Nobody"}** won by default`,
-                components: new ComponentBuilder<MessageActionRow>()
-                    .addInteractionButton({
-                        style: ButtonStyles.SUCCESS,
-                        emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                        disabled: true,
-                        customID: "we-have-a-nerd-here🤓"
-                    })
-                    .toJSON()
-            });
-        }
         ctx.deleteOriginal();
+        if (game.players.length <= 1) return;
         sendGameMessage(game);
     }
 }

@@ -1,7 +1,7 @@
 import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
 import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js";
-import { deleteMessage, sendMessage } from "../client.js";
+import { sendMessage, deleteMessage } from "../client.js";
 import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 
@@ -28,12 +28,11 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         }
     }
-    game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1);
     game.currentCard = variant;
     game.currentCardColor = color;
+    game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1);
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
-    deleteMessage(game.message);
     if (game.cards[ctx.member.id].length === 0) return;
     sendMessage(ctx.channel.id, `
     ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
@@ -53,7 +52,6 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** drew ${game.drawStackCounter} cards`);
         game.drawStackCounter = 0;
         ctx.deleteOriginal();
-        deleteMessage(game.message);
         sendGameMessage(game);
     } else onCardPlayed(ctx, game, true);
 }
@@ -61,10 +59,9 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
 export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false) {
     if (game.currentPlayer !== ctx.member.id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip";
-    const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number] | undefined];
-    const [ccColor, ccVariant] = game.currentCard.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number] | undefined];
-    const cards = game.cards[ctx.member.id];
-    if (cards.indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
+    const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
+    const [ccColor, ccVariant] = game.currentCard.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
+    if (game.cards[ctx.member.id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
     });
@@ -103,7 +100,6 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         });
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++;
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 };
-    clearTimeout(game.timeout);
 
     let extraInfo = "";
     if (cardPlayed === "draw") {
@@ -113,16 +109,16 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.lastPlayer.duration = 0;
             const kickedPlayer = getPlayerMember(game, game.lastPlayer.id);
             sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`);
-            deleteMessage(game.message);
             return sendGameMessage(game);
         } else {
             const { cards, newDeck } = game.draw(1);
             game.cards[ctx.member.id].push(cards[0]);
             game.deck = newDeck;
-            ctx.editOriginal({
-                content: `Choose a card\nYour cards: ${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}`,
+            if (game.settings.allowSkipping) ctx.editOriginal({
+                content: game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
                 components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
             });
+            else ctx.deleteOriginal();
         }
     }
     else if (cardPlayed === "skip") {
@@ -130,9 +126,9 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal();
     }
     else {
-        game.cards[ctx.member.id].splice(cards.indexOf(cardPlayed), 1);
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
+        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
         if (variant === "reverse") {
             game.players = game.players.reverse();
             if (game.players.length === 2) {
@@ -146,7 +142,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
                 game.drawStackCounter += 2;
             }
-            else {
+            else if (game.cards[ctx.member.id].length > 0) {
                 const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
                 game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
                 game.deck = newDeck;
@@ -165,8 +161,8 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal();
     }
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+    clearTimeout(game.timeout);
     game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
-    if (cardPlayed !== "draw") deleteMessage(game.message);
     if (game.cards[ctx.member.id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
@@ -176,10 +172,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                     : `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         );
-        if (cardPlayed !== "draw") {
+        if (cardPlayed !== "draw" || !game.settings.allowSkipping) {
             sendGameMessage(game);
         } else {
             games[ctx.message.channel.id] = game;
         }
-    }
+    } else deleteMessage(game.message);
 }
