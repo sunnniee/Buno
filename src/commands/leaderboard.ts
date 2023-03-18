@@ -18,7 +18,7 @@ export function getUsername(id: string, nick?: boolean, fetchedMembers?: Member[
 type ParsedArguments = { page: number, guildId?: string }
 function getArgs(args: string[]): ParsedArguments {
     const res = {} as ParsedArguments;
-    args.every(a => {
+    args.forEach(a => {
         if (/^\d{17,20}$/.test(a)) res.guildId ??= a;
         else if (/^\d+$/.test(a)) res.page ??= parseInt(a, 10);
     });
