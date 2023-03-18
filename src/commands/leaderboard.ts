@@ -23,6 +23,7 @@ function getArgs(args: string[]): ParsedArguments {
         else if (/^\d+$/.test(a)) res.page ??= parseInt(a, 10);
     });
     res.page ??= 1;
+    if (res.page < 1) res.page = 1;
     return res;
 }
 
@@ -42,12 +43,13 @@ export const cmd = {
             .slice((page - 1) * 10, (page - 1) * 10 + 9);
         const yourStats = sortedLb.find(i => i[0] === msg.author.id);
         const yourIndex = sortedLb.indexOf(yourStats);
+        const off = (i: number) => i + (page - 1) * 10;
         const lbEmbed = (fetchedMembers?: Member[]) => new EmbedBuilder()
             .setTitle(`Leaderboard for ${guild.name}`)
             .setColor(defaultColor)
             .setDescription(sortedLbSegment
                 .map(([id, stats], i) =>
-                    `\`${emotes[i] ?? `${i}.`}\` __${getUsername(id, false, fetchedMembers, guild)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
+                    `\`${emotes[off(i)] ?? `${off(i)}.`}\` __${getUsername(id, false, fetchedMembers, guild)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
 ${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}\
 ${i === 2 ? "\n" : ""}`
                 ))
