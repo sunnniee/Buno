@@ -25,14 +25,14 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                 clearTimeout(game.timeout);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
-**${getUsername(possiblyTheWinner)}** would've "won"`);
+**${getUsername(possiblyTheWinner, true)}** would've "won"`);
             } else if (Object.values(game.cards).some(a => a.length === 0)) {
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);
                 clearTimeout(game.timeout);
                 delete games[msg.channel.id];
-                respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner)}** the win`);
+                respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true)}** the win`);
             } else {
                 msg.channel.getMessage(game.message.id)
                     .then(() => respond(msg, `Couldn't find anything wrong.
