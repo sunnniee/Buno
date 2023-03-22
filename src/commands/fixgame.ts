@@ -1,7 +1,7 @@
 import { deleteMessage, respond } from "../client.js";
 import { games, hasStarted, sendGameMessage, updateStats } from "../gameLogic/index.js";
 import { Command } from "../types";
-import { getUsername } from "./leaderboard.js";
+import { getUsername } from "../utils.js";
 
 export const cmd = {
     name: "fixgame",
