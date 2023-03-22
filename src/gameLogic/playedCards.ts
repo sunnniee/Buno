@@ -2,20 +2,21 @@ import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } 
 import { Card, UnoGame } from "../types.js";
 import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
-import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
+import { cardEmotes, colors, SelectIDs, variants, uniqueVariants, clyde } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { PickCardSelect } from "../utils.js";
+import { getUsername, PickCardSelect } from "../utils.js";
 
-export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
+export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
+    const id = asClyde ? clyde : ctx.member.id;
     const { currentPlayer } = game;
-    if (currentPlayer !== ctx.member.id) return;
+    if (currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as `${typeof colors[number]}-${typeof uniqueVariants[number]}`;
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number], typeof uniqueVariants[number]];
     let extraInfo = "";
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++;
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 };
     if (variant === "+4") {
-        const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
+        const nextPlayer = next(game.players, game.players.indexOf(id));
         if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c === `${color}-+2`)) {
             game.drawStackCounter += 4;
         }
@@ -24,45 +25,47 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
             game.deck = newDeck;
             const trolledMember = getPlayerMember(game, nextPlayer);
-            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
+            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
             game.drawStackCounter = 0;
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         }
     }
     game.currentCard = variant;
     game.currentCardColor = color;
-    game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1);
+    game.cards[id].splice(game.cards[id].indexOf(variant), 1);
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
-    if (game.cards[ctx.member.id].length === 0) return;
+    if (game.cards[id].length === 0) return;
     sendMessage(ctx.channel.id, `
-    ${`**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${`**${getUsername(id)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `);
     sendGameMessage(game);
 }
 
-export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
-    if (game.currentPlayer !== ctx.member.id) return;
+export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
+    const id = asClyde ? clyde : ctx.member.id;
+    if (game.currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw-forceful";
     if (cardPlayed === "draw-forceful") {
         const { cards, newDeck } = game.draw(game.drawStackCounter);
         game.cards[game.currentPlayer] = game.cards[game.currentPlayer].concat(cards);
         game.deck = newDeck;
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-        sendMessage(ctx.channel.id, `**${ctx.member.nick ?? ctx.member.username}** drew ${game.drawStackCounter} cards`);
+        sendMessage(ctx.channel.id, `**${getUsername(id)}** drew ${game.drawStackCounter} cards`);
         game.drawStackCounter = 0;
         ctx.deleteOriginal();
         sendGameMessage(game);
     } else onCardPlayed(ctx, game, true);
 }
 
-export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false) {
-    if (game.currentPlayer !== ctx.member.id) return;
+export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false, asClyde = false) {
+    const id = asClyde ? clyde : ctx.member.id;
+    if (game.currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip";
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
     const [ccColor, ccVariant] = game.currentCard.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
-    if (game.cards[ctx.member.id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
+    if (game.cards[id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
     });
@@ -82,7 +85,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             content: "Choose a color",
             components: new ComponentBuilder<MessageActionRow>()
                 .addSelectMenu({
-                    customID: SelectIDs.CHOOSE_COLOR,
+                    customID: asClyde ? SelectIDs.CLYDE_CHOOSE_COLOR : SelectIDs.CHOOSE_COLOR,
                     options: Object.values(colors).map(c => {
                         return {
                             label: toTitleCase(c),
@@ -105,19 +108,19 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     let extraInfo = "";
     if (cardPlayed === "draw") {
         if (game.lastPlayer.duration >= 5 && game.settings.antiSabotage) {
-            game.players.splice(game.players.indexOf(ctx.member.id), 1);
+            game.players.splice(game.players.indexOf(id), 1);
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             game.lastPlayer.duration = 0;
             const kickedPlayer = getPlayerMember(game, game.lastPlayer.id);
-            sendMessage(ctx.channel.id, `Removed **${kickedPlayer.nick ?? kickedPlayer.username}** for attempting to sabotage the game`);
+            sendMessage(ctx.channel.id, `Removed **${kickedPlayer?.nick ?? kickedPlayer?.username ?? game.lastPlayer.id}** for attempting to sabotage the game`);
             return sendGameMessage(game);
         } else {
             const { cards, newDeck } = game.draw(1);
-            game.cards[ctx.member.id].push(cards[0]);
+            game.cards[id].push(cards[0]);
             game.deck = newDeck;
             if (game.settings.allowSkipping) ctx.editOriginal({
-                content: game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
-                components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
+                content: game.cards[id].map(c => cardEmotes[c]).join(" "),
+                components: PickCardSelect(game, cardArrayToCount(game.cards[id]), asClyde)
             });
             else ctx.deleteOriginal();
         }
@@ -129,26 +132,26 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     else {
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
-        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
+        game.cards[id].splice(game.cards[id].indexOf(cardPlayed), 1);
         if (variant === "reverse") {
             game.players = game.players.reverse();
             if (game.players.length === 2) {
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
                 const trolledMember = getPlayerMember(game, game.currentPlayer);
-                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`;
+                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer)}** was skipped`;
             }
         }
         if (variant === "+2") {
-            const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
+            const nextPlayer = next(game.players, game.players.indexOf(id));
             if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
                 game.drawStackCounter += 2;
             }
-            else if (game.cards[ctx.member.id].length > 0) {
+            else if (game.cards[id].length > 0) {
                 const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
                 game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
                 game.deck = newDeck;
                 const trolledMember = getPlayerMember(game, nextPlayer);
-                extraInfo = `**${trolledMember.nick ?? trolledMember.username}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
+                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
                 game.drawStackCounter = 0;
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             }
@@ -156,7 +159,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (variant === "block") {
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             const trolledMember = getPlayerMember(game, game.currentPlayer);
-            extraInfo = `**${trolledMember.nick ?? trolledMember.username}** was skipped`;
+            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer)}** was skipped`;
         }
         if (game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         ctx.deleteOriginal();
@@ -164,13 +167,13 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     clearTimeout(game.timeout);
     game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
-    if (game.cards[ctx.member.id].length !== 0) {
+    if (game.cards[id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
-                ? `**${ctx.member.nick ?? ctx.member.username}** drew a card`
+                ? `**${getUsername(id)}** drew a card`
                 : cardPlayed === "skip"
-                    ? `**${ctx.member.nick ?? ctx.member.username}** skipped their turn`
-                    : `**${ctx.member.nick ?? ctx.member.username}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
+                    ? `**${getUsername(id)}** skipped their turn`
+                    : `**${getUsername(id)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         );
         if (cardPlayed !== "draw" || !game.settings.allowSkipping) {

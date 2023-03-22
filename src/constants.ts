@@ -1,5 +1,11 @@
 import { Card, UnoGameSettings } from "./types.js";
 
+// start of clyde constants
+
+export const clyde = "1081004946872352958";
+
+// end of clyde constants
+
 export const devs = ["406028027768733696"];
 
 export const colors = ["red", "yellow", "green", "blue",] as const;
@@ -108,13 +114,18 @@ export const ButtonIDs = Object.freeze({
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
-    LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game"
+    LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
+    CLYDE_GET_CARDS: "clyde-cards",
+    CLYDE_PLAY: "play-as-clyde"
 });
 
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
+    CLYDE_CHOOSE_CARD: "choose-card-clyde",
+    CLYDE_CHOOSE_COLOR: "choose-color-clyde",
+    CLYDE_FORCEFUL_DRAW: "draw-or-stack-clyde",
     EDIT_GAME_SETTINGS: "change-settings"
 });
 

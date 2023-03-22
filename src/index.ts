@@ -26,6 +26,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag);
+    // client.rest.users.get(clyde);
     client.editStatus("online", [{ name: `ping with funny status ideas pls - ${prefix}uno`, type: ActivityTypes.GAME }]);
 });
 client.on("error", console.error);

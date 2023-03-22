@@ -7,7 +7,7 @@ import { leaveGame, onGameButtonPress } from "./started.js";
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import database from "../database.js";
-import { GameButtons, SettingsSelectMenu, toHumanReadableTime } from "../utils.js";
+import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime } from "../utils.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {};
 export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
@@ -68,14 +68,14 @@ export function makeStartMessage(game: UnoGame<false>) {
         .setDescription(`
 Current game host: ${client.users.get(game.host)?.username ?? `<@${game.host}>`}
 \`\`\`
-${game.players.map(p => client.users.get(p)?.username ?? `Unknown [${p}]`).join("\n")}
+${game.players.map(p => getUsername(p) ?? `Unknown [${p}]`).join("\n")}
 \`\`\`
     `)
         .setColor(defaultColor)
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${client.users.get(playerID)?.username ?? `Unknown [${playerID}]`}: \
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
@@ -85,7 +85,7 @@ export function sendGameMessage(game: UnoGame<true>) {
         embeds: [new EmbedBuilder()
             .setTitle("The Buno.")
             .setDescription(`
-Currently playing: **${client.users.get(game.currentPlayer)?.username ?? `<@${game.currentPlayer}>`}**
+Currently playing: **${getUsername(game.currentPlayer) ?? `<@${game.currentPlayer}>`}**
 Current card: ${currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
@@ -99,7 +99,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
-        components: GameButtons
+        components: GameButtons(!!game.commandChannel)
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
         if (game.message?.channel) deleteMessage(game.message);
@@ -124,6 +124,8 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.VIEW_CARDS:
         case ButtonIDs.PLAY_CARD:
         case ButtonIDs.LEAVE_GAME:
+        case ButtonIDs.CLYDE_GET_CARDS:
+        case ButtonIDs.CLYDE_PLAY:
             if (!game || !hasStarted(game)) return;
             onGameButtonPress(ctx, game);
             break;
@@ -147,6 +149,9 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (ctx.data.customID === SelectIDs.CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game);
+    else if (ctx.data.customID === SelectIDs.CLYDE_CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game, false, true);
+    else if (ctx.data.customID === SelectIDs.CLYDE_CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game, true);
+    else if (ctx.data.customID === SelectIDs.CLYDE_FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game, true);
     else if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS && !hasStarted(game)) onSettingsChange(ctx, game);
 }
 

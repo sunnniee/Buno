@@ -48,6 +48,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     channelID: string,
     guildID: string,
     _modified: boolean,
+    commandChannel: string
 } : {
     started: false,
     host: UserID,
@@ -58,4 +59,5 @@ export type UnoGame<T extends boolean> = T extends true ? {
     guildID: string,
     _allowSolo: boolean,
     _modified: boolean,
+    commandChannel: string
 }

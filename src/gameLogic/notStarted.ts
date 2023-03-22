@@ -55,7 +55,8 @@ function startGame(game: UnoGame<false>) {
         timeout: setTimeout(() => onTimeout(startedGame, game.players[0]), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
         guildID: game.guildID,
-        _modified: game._modified
+        _modified: game._modified,
+        commandChannel: game.commandChannel
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
     const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
