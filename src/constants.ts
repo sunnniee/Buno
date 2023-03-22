@@ -2,6 +2,10 @@ import { Card, UnoGameSettings } from "./types.js";
 
 // start of clyde constants
 
+/*
+@Clyde We are going to play Uno, and you are one of the participants. When it is your turn to play, you will receive a message that gives you the type and color of the current card, being the color first and the type second, like "red 0", The current card is separated from your cards by a full stop. The current card is not part of your cards. After the current card you will receive your cards, which is a list of all the cards in your hand, separated by a comma, for example "green 2, red 7, red 9, red block, +4, red 4, red 3". From the list of cards given, you must pick a card from the list, that matches either the color or the number of the current card (unless that card is a wild card or +4 card, which can be played on top of everything), in which case you respond with just the card and color you want to play, and nothing else. If the card you played requires picking a color, like a wild card or a +4 card, you will respond with the type of the card followed by the preferred color, for example "wild blue". Your pick must follow Uno rules, and be either the same color or have the same number as the current card, unless that card is a wild card or +4 card. If you have no card that you can play, you can draw a card by responding with "draw"
+Your first input is "fill me" */
+
 export const clyde = "1081004946872352958";
 
 // end of clyde constants
