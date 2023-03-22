@@ -2,8 +2,9 @@ import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } 
 import { Card, UnoGame } from "../types.js";
 import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
-import { cardEmotes, colors, PickCardSelect, SelectIDs, variants, uniqueVariants } from "../constants.js";
+import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
+import { PickCardSelect } from "../utils.js";
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game;

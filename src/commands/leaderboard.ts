@@ -1,19 +1,12 @@
 import { EmbedBuilder } from "@oceanicjs/builders";
-import { Guild, Member } from "oceanic.js";
+import { Member } from "oceanic.js";
 import { client, sendMessage, editMessage } from "../client.js";
 import { defaultColor } from "../constants.js";
 import database from "../database.js";
 import { Command } from "../types.js";
+import { getUsername } from "../utils.js";
 
 const emotes = ["🥇", "🥈", "🥉"];
-export function getUsername(id: string, nick?: boolean, fetchedMembers?: Member[], guild?: Guild) {
-    return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
-        ?? (nick ? guild?.members.get(id)?.nick : null)
-        ?? fetchedMembers?.find(m => m.id === id)?.username
-        ?? guild?.members.get(id)?.username
-        ?? client.users.get(id)?.username
-        ?? id;
-}
 
 type ParsedArguments = { page: number, guildId?: string }
 function getArgs(args: string[]): ParsedArguments {

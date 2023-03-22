@@ -1,6 +1,6 @@
 import { AnyInteractionGateway } from "oceanic.js";
 import { sendMessage } from "./client.js";
-import { onMsgError } from "./constants.js";
+import { onMsgError } from "./utils.js";
 
 function onInteractionError(e: Error, ctx: AnyInteractionGateway) {
     if (e.message.includes("Unknown ")) {
