@@ -1,4 +1,4 @@
-import { respond, client } from "../client.js";
+import { respond } from "../client.js";
 import { Command, UnoGame } from "../types";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, MessageActionRow } from "oceanic.js";
@@ -11,8 +11,6 @@ export const cmd = {
         const existingGame = games[msg.channel.id];
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
-        const commandChannel = client.getChannel(args[0]);
-        if (!commandChannel) return respond(msg, "Can't find command channel");
         const gameObj = {
             started: false,
             host: msg.author.id,
@@ -22,7 +20,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             _modified: false,
             channelID: msg.channel.id,
             guildID: msg.channel.guild.id,
-            commandChannel: args[0]
+            clyde: true
         } as UnoGame<false>;
         respond(msg, {
             embeds: [makeStartMessage(gameObj)],

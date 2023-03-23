@@ -99,7 +99,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
-        components: GameButtons(!!game.commandChannel)
+        components: GameButtons(game.clyde)
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
         if (game.message?.channel) deleteMessage(game.message);

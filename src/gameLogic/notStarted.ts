@@ -56,7 +56,7 @@ function startGame(game: UnoGame<false>) {
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified,
-        commandChannel: game.commandChannel
+        clyde: game.clyde
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
     const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
