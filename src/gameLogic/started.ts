@@ -75,7 +75,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
             return ctx.createFollowup({
-                content: `${toTitleCase(game.currentCard).toLowerCase()}. ${toTitleCase(game.cards[clyde].join(", ")).toLowerCase()}`,
+                content: `${toTitleCase(game.currentCard).toLowerCase()}. your cards are: ${toTitleCase(game.cards[clyde].join(", ")).toLowerCase()}`,
                 flags: MessageFlags.EPHEMERAL
             });
         }
