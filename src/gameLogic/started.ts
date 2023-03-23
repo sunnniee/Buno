@@ -80,6 +80,10 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             });
         }
         case ButtonIDs.CLYDE_PLAY: {
+            if (game.host !== ctx.member.id) return ctx.createFollowup({
+                content: "This can only be used by the game's host",
+                flags: MessageFlags.EPHEMERAL
+            });
             if (!game.players.includes(clyde)) return ctx.createFollowup({
                 content: "You aren't in the game!",
                 flags: MessageFlags.EPHEMERAL
