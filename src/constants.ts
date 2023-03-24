@@ -1,7 +1,5 @@
 import { Card, UnoGameSettings } from "./types.js";
 
-export const devs = ["406028027768733696"];
-
 export const colors = ["red", "yellow", "green", "blue",] as const;
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
 export const uniqueVariants = ["wild", "+4",] as const;
@@ -108,13 +106,18 @@ export const ButtonIDs = Object.freeze({
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
-    LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game"
+    LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
+    CLYDE_GET_CARDS: "clyde-cards",
+    CLYDE_PLAY: "play-as-clyde"
 });
 
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
+    CLYDE_CHOOSE_CARD: "choose-card-clyde",
+    CLYDE_CHOOSE_COLOR: "choose-color-clyde",
+    CLYDE_FORCEFUL_DRAW: "draw-or-stack-clyde",
     EDIT_GAME_SETTINGS: "change-settings"
 });
 

@@ -7,6 +7,7 @@ import * as constants from "../constants.js";
 import { games } from "../gameLogic/index.js";
 import * as gameLogic from "../gameLogic/index.js";
 import database from "../database.js";
+import { config } from "../index.js";
 client; gameLogic; database;
 
 const MAX_RESPONSE_LENGTH = 1950;
@@ -14,7 +15,7 @@ const MAX_RESPONSE_LENGTH = 1950;
 export const cmd = {
     name: "eval",
     execute: (msg, args) => {
-        if (!constants.devs.includes(msg.author.id)) return;
+        if (!config.developerIds.includes(msg.author.id)) return;
         const code = args.join(" ");
         const reportError = (e: Error): void => {
             clientUtils.respond(msg, `Error\n\`\`\`ts\n${e}\`\`\``);

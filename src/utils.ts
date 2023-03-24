@@ -3,27 +3,45 @@ import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Gu
 import { client } from "./client.js";
 import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings } from "./constants.js";
 import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js";
+import { config } from "./index.js";
 import { UnoGame, Card } from "./types.js";
 
-export const GameButtons = new ComponentBuilder<MessageActionRow>()
-    .addInteractionButton({
-        style: ButtonStyles.SECONDARY,
-        customID: ButtonIDs.VIEW_CARDS,
-        label: "View",
-        emoji: ComponentBuilder.emojiToPartial("🔍", "default")
-    })
-    .addInteractionButton({
-        style: ButtonStyles.PRIMARY,
-        customID: ButtonIDs.PLAY_CARD,
-        label: "Play",
-        emoji: ComponentBuilder.emojiToPartial("🃏", "default")
-    })
-    .addInteractionButton({
-        style: ButtonStyles.DANGER,
-        customID: ButtonIDs.LEAVE_GAME,
-        emoji: ComponentBuilder.emojiToPartial("🚪", "default")
-    })
-    .toJSON();
+
+
+export const GameButtons = ((clyde = false) => {
+    const components = new ComponentBuilder<MessageActionRow>()
+        .addInteractionButton({
+            style: ButtonStyles.SECONDARY,
+            customID: ButtonIDs.VIEW_CARDS,
+            label: "View",
+            emoji: ComponentBuilder.emojiToPartial("🔍", "default")
+        })
+        .addInteractionButton({
+            style: ButtonStyles.PRIMARY,
+            customID: ButtonIDs.PLAY_CARD,
+            label: "Play",
+            emoji: ComponentBuilder.emojiToPartial("🃏", "default")
+        })
+        .addInteractionButton({
+            style: ButtonStyles.DANGER,
+            customID: ButtonIDs.LEAVE_GAME,
+            emoji: ComponentBuilder.emojiToPartial("🚪", "default")
+        });
+    if (clyde) components.addRow()
+        .addInteractionButton({
+            style: ButtonStyles.SECONDARY,
+            customID: ButtonIDs.CLYDE_GET_CARDS,
+            label: "Get Clyde Cards",
+            emoji: ComponentBuilder.emojiToPartial("🔍", "default")
+        })
+        .addInteractionButton({
+            style: ButtonStyles.PRIMARY,
+            customID: ButtonIDs.CLYDE_PLAY,
+            label: "Play as Clyde",
+            emoji: ComponentBuilder.emojiToPartial("🃏", "default")
+        });
+    return components.toJSON();
+});
 
 export function onMsgError(e, ctx: { channelID: string }) {
     console.log(e);
@@ -32,9 +50,9 @@ export function onMsgError(e, ctx: { channelID: string }) {
     }).catch(() => { });
 }
 
-export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
+export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }, asClyde = false) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
-        customID: SelectIDs.CHOOSE_CARD,
+        customID: asClyde ? SelectIDs.CLYDE_CHOOSE_CARD : SelectIDs.CHOOSE_CARD,
         placeholder: "Choose a card",
         options: [
             ...Object.keys(cards).map(c => {
@@ -59,9 +77,9 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
         type: ComponentTypes.STRING_SELECT
     })
     .toJSON();
-export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
+export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }, asClyde = false) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
-        customID: SelectIDs.FORCEFUL_DRAW,
+        customID: asClyde ? SelectIDs.CLYDE_FORCEFUL_DRAW : SelectIDs.FORCEFUL_DRAW,
         options: [{
             label: `Draw ${game.drawStackCounter} cards`,
             value: "draw-forceful",
@@ -117,6 +135,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
     .toJSON();
 
 export function getUsername(id: string, nick?: boolean, fetchedMembers?: Member[], guild?: Guild) {
+    if (id === config.clyde.id) return config.clyde.name;
     return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
         ?? (nick ? guild?.members.get(id)?.nick : null)
         ?? fetchedMembers?.find(m => m.id === id)?.username

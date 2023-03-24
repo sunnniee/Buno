@@ -17,9 +17,11 @@
     "dependencies": {
         "@oceanicjs/builders": "^1.1.7",
         "dotenv": "^16.0.3",
-        "oceanic.js": "^1.5.1"
+        "oceanic.js": "^1.5.1",
+        "toml": "^3.0.0"
     },
     "devDependencies": {
+        "@types/node": "^18.15.7",
         "@typescript-eslint/eslint-plugin": "^5.54.1",
         "@typescript-eslint/parser": "^5.54.1",
         "eslint": "^8.35.0",

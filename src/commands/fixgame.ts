@@ -2,6 +2,7 @@ import { deleteMessage, respond } from "../client.js";
 import { games, hasStarted, sendGameMessage, updateStats } from "../gameLogic/index.js";
 import { Command } from "../types";
 import { getUsername } from "../utils.js";
+import { config } from "../index.js";
 
 export const cmd = {
     name: "fixgame",
@@ -9,6 +10,11 @@ export const cmd = {
         const game = games[msg.channel.id];
         if (!game) return respond(msg, "There's no game in this channel");
         if (!hasStarted(game)) {
+            if (game.host === config.clyde.id) {
+                deleteMessage(game.message);
+                delete games[msg.channel.id];
+                return respond(msg, "👍 Deleted the game in this channel");
+            }
             msg.channel.getMessage(game.message.id)
                 .then(() => respond(msg, `Couldn't find anything wrong.
 https://discord.com/channels/${game.message.channel.guild.id}/${game.message.channel.id}/${game.message.id}`))

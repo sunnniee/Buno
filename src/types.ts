@@ -1,6 +1,19 @@
 import { colors, uniqueVariants, variants } from "./constants.js";
 import { AnyGuildTextChannel, Message } from "oceanic.js";
 
+export type Config = {
+    prefix: string,
+    status: string,
+    developerIds: string[],
+    devPrefix: string,
+    clyde: {
+        enabled: boolean,
+        id: string,
+        name: string,
+        guilds: string[]
+    }
+}
+
 export type Command = {
     name: string,
     aliases?: string[]
@@ -48,6 +61,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     channelID: string,
     guildID: string,
     _modified: boolean,
+    clyde?: boolean
 } : {
     started: false,
     host: UserID,
@@ -58,4 +72,5 @@ export type UnoGame<T extends boolean> = T extends true ? {
     guildID: string,
     _allowSolo: boolean,
     _modified: boolean,
+    clyde?: boolean
 }
