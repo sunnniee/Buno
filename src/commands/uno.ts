@@ -7,6 +7,7 @@ import { ButtonIDs, defaultSettings } from "../constants.js";
 
 export const cmd = {
     name: "uno",
+    aliases: ["buno"],
     execute: (msg, args) => {
         const existingGame = games[msg.channel.id];
         if (existingGame) return respond(msg, `Someone already started a game
