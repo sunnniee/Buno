@@ -10,7 +10,7 @@ Your first input is "fill me"
 */
 
 export const clyde = "1081004946872352958";
-export const clydeGuild = "1087733131949396042";
+export const clydeGuilds = ["1087733131949396042", "1078688103457357894"];
 
 // end of clyde constants
 

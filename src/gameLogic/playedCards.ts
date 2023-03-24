@@ -56,7 +56,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         game.drawStackCounter = 0;
         ctx.deleteOriginal();
         sendGameMessage(game);
-    } else onCardPlayed(ctx, game, true);
+    } else onCardPlayed(ctx, game, true, asClyde);
 }
 
 export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false, asClyde = false) {
