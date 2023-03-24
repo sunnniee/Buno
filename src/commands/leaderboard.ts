@@ -42,7 +42,7 @@ export const cmd = {
             .setColor(defaultColor)
             .setDescription(sortedLbSegment
                 .map(([id, stats], i) =>
-                    `\`${emotes[off(i)] ?? `${off(i)}.`}\` __${getUsername(id, false, fetchedMembers, guild)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
+                    `\`${emotes[off(i)] ?? `${off(i) + 1}.`}\` __${getUsername(id, false, fetchedMembers, guild)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
 ${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}\
 ${i === 2 ? "\n" : ""}`
                 ))
