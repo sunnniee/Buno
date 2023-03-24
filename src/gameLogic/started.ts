@@ -1,10 +1,11 @@
-import { ButtonIDs, cardEmotes, clyde } from "../constants.js";
+import { ButtonIDs, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { UnoGame } from "../types.js";
 import { sendGameMessage, cardArrayToCount, next, toTitleCase } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { sendMessage } from "../client.js";
 import { DrawStackedCardSelect, PickCardSelect } from "../utils.js";
+import { config } from "../index.js";
 
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
@@ -75,7 +76,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
             return ctx.createFollowup({
-                content: `${toTitleCase(game.currentCard).toLowerCase()}. ${toTitleCase(game.cards[clyde].join(", ")).toLowerCase()}`,
+                content: `${toTitleCase(game.currentCard).toLowerCase()}. ${toTitleCase(game.cards[config.clyde.id].join(", ")).toLowerCase()}`,
                 flags: MessageFlags.EPHEMERAL
             });
         }
@@ -84,22 +85,22 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
-            if (!game.players.includes(clyde)) return ctx.createFollowup({
+            if (!game.players.includes(config.clyde.id)) return ctx.createFollowup({
                 content: "You aren't in the game!",
                 flags: MessageFlags.EPHEMERAL
             });
-            if (game.currentPlayer !== clyde) return ctx.createFollowup({
+            if (game.currentPlayer !== config.clyde.id) return ctx.createFollowup({
                 content: "It's not your turn!",
                 flags: MessageFlags.EPHEMERAL
             });
             if (game.drawStackCounter) return ctx.createFollowup({
                 content: "Choose an option",
-                components: DrawStackedCardSelect(game, cardArrayToCount(game.cards[clyde]), true),
+                components: DrawStackedCardSelect(game, cardArrayToCount(game.cards[config.clyde.id]), true),
                 flags: MessageFlags.EPHEMERAL
             });
             ctx.createFollowup({
-                content: game.cards[clyde].map(c => cardEmotes[c]).join(" "),
-                components: PickCardSelect(game, cardArrayToCount(game.cards[clyde]), true),
+                content: game.cards[config.clyde.id].map(c => cardEmotes[c]).join(" "),
+                components: PickCardSelect(game, cardArrayToCount(game.cards[config.clyde.id]), true),
                 flags: MessageFlags.EPHEMERAL
             });
             break;

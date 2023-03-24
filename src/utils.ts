@@ -1,8 +1,9 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Guild, Member } from "oceanic.js";
 import { client } from "./client.js";
-import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings, clyde } from "./constants.js";
+import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings } from "./constants.js";
 import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js";
+import { config } from "./index.js";
 import { UnoGame, Card } from "./types.js";
 
 
@@ -134,7 +135,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
     .toJSON();
 
 export function getUsername(id: string, nick?: boolean, fetchedMembers?: Member[], guild?: Guild) {
-    if (id === clyde) return "Clyde";
+    if (id === config.clyde.id) return config.clyde.name;
     return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
         ?? (nick ? guild?.members.get(id)?.nick : null)
         ?? fetchedMembers?.find(m => m.id === id)?.username

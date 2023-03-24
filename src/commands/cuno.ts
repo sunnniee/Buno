@@ -3,12 +3,14 @@ import { Command, UnoGame } from "../types";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, MessageActionRow } from "oceanic.js";
 import { games, makeStartMessage } from "../gameLogic/index.js";
-import { ButtonIDs, clyde, defaultSettings, clydeGuilds } from "../constants.js";
+import { ButtonIDs, defaultSettings } from "../constants.js";
+import { config } from "../index.js";
 
 export const cmd = {
     name: "cuno",
     execute: (msg, args) => {
-        if (!clydeGuilds.includes(msg.channel.guild.id)) return respond(msg, "no clyde? <:nobitches:1075897235415502909>");
+        if (!config.clyde.enabled) return;
+        if (!config.clyde.guilds.includes(msg.channel.guild.id)) return;
         const existingGame = games[msg.channel.id];
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
@@ -16,7 +18,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             started: false,
             host: msg.author.id,
             settings: { ...defaultSettings },
-            players: [msg.author.id, clyde],
+            players: [msg.author.id, config.clyde.id],
             _allowSolo: args[0]?.toLowerCase() === "solo",
             _modified: false,
             channelID: msg.channel.id,

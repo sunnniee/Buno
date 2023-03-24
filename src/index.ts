@@ -1,11 +1,20 @@
 import { client } from "./client.js";
-import { readdir } from "fs";
-import { Command } from "./types.js";
+import { readdir, readFileSync } from "fs";
+import { parse } from "toml";
+import { Command, Config } from "./types.js";
 import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { ActivityTypes, InteractionTypes } from "oceanic.js";
 import { patch } from "./patchContext.js";
 
-const prefix = process.argv[2] === "--dev" ? "]]" : "]";
+export let config: Config;
+try {
+    config = parse(readFileSync("config.toml", "utf-8"));
+} catch (e) {
+    console.error("Invalid or nonexistent config file");
+    setTimeout(() => process.exit(1), 30_000);
+}
+
+const prefix = process.argv[2] === "--dev" ? config.devPrefix : config.prefix;
 
 const commands: { [k: string]: Command } = {};
 // why the fuck does it need ./src specified
@@ -26,8 +35,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag);
-    // client.rest.users.get(clyde);
-    client.editStatus("online", [{ name: `ping with funny status ideas pls - ${prefix}uno`, type: ActivityTypes.GAME }]);
+    client.editStatus("online", [{ name: `${config.status} - ${prefix}uno`, type: ActivityTypes.GAME }]);
 });
 client.on("error", console.error);
 

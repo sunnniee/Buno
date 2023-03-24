@@ -1,6 +1,19 @@
 import { colors, uniqueVariants, variants } from "./constants.js";
 import { AnyGuildTextChannel, Message } from "oceanic.js";
 
+export type Config = {
+    prefix: string,
+    status: string,
+    developerIds: string[],
+    devPrefix: string,
+    clyde: {
+        enabled: boolean,
+        id: string,
+        name: string,
+        guilds: string[]
+    }
+}
+
 export type Command = {
     name: string,
     aliases?: string[]

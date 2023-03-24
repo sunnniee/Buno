@@ -2,12 +2,13 @@ import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } 
 import { Card, UnoGame } from "../types.js";
 import { cardArrayToCount, games, sendGameMessage, next, toTitleCase, wasLastTurnBlocked, onTimeout, getPlayerMember } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
-import { cardEmotes, colors, SelectIDs, variants, uniqueVariants, clyde } from "../constants.js";
+import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { getUsername, PickCardSelect } from "../utils.js";
+import { config } from "../index.js";
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
-    const id = asClyde ? clyde : ctx.member.id;
+    const id = asClyde ? config.clyde.id : ctx.member.id;
     const { currentPlayer } = game;
     if (currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as `${typeof colors[number]}-${typeof uniqueVariants[number]}`;
@@ -44,7 +45,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
 }
 
 export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
-    const id = asClyde ? clyde : ctx.member.id;
+    const id = asClyde ? config.clyde.id : ctx.member.id;
     if (game.currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw-forceful";
     if (cardPlayed === "draw-forceful") {
@@ -60,7 +61,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
 }
 
 export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false, asClyde = false) {
-    const id = asClyde ? clyde : ctx.member.id;
+    const id = asClyde ? config.clyde.id : ctx.member.id;
     if (game.currentPlayer !== id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip";
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];

@@ -1,21 +1,5 @@
 import { Card, UnoGameSettings } from "./types.js";
 
-// start of clyde constants
-
-/*
-@Clyde We are going to play Uno, and you are one of the participants. When it is your turn to play, you will receive a message that gives you the type and colour of the current card, being the colour first and the type second, like "red 0", The current card is separated from your cards by a full stop. The current card is not part of your cards. After the current card you have your cards, and you will receive a list of all the cards in your hand, separated by a comma, for example "green 2, red 7, red 9, red block, +4, red 4, red 3". Only from the list of cards given, you can pick any card which matches either the colour or the type of the current card. The type of the card can be a number, "+2", "reverse" or "block". The only exception to this rule is when playing a wild card or +4 card, and all other cards must match either the colour or the type of the current card. If the card you played requires picking a colour, you will respond with the type of the card followed by the preferred colour, for example "wild blue". Your pick must follow Uno rules, and have either the same colour or the same type as the current card. A type is can be a number, "+2", "reverse" or "block". This rule applies to all cards that are not wild cards or +4 cards. If none of the cards in your hand can be played, you will respond with "draw". If the card you picked is unable to be played, you will be told so with "that does not match the colour or the type of the current card". In that case, you have to look back at your current cards, and pick any card from your cards that matches the colour or the type of the current card provided in the last message, unless you have a wild card or +4 card, in which case you will respond with that card and the colour you want to change the game to.
-Your first input is "fill me"
-
-"that does not match the colour or the type of the current card" if it gets it wrong
-*/
-
-export const clyde = "1081004946872352958";
-export const clydeGuilds = ["1087733131949396042", "1078688103457357894"];
-
-// end of clyde constants
-
-export const devs = ["406028027768733696"];
-
 export const colors = ["red", "yellow", "green", "blue",] as const;
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
 export const uniqueVariants = ["wild", "+4",] as const;
