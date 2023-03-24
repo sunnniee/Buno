@@ -1,7 +1,7 @@
 import { ButtonIDs, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { UnoGame } from "../types.js";
-import { sendGameMessage, cardArrayToCount, next, toTitleCase } from "./index.js";
+import { sendGameMessage, cardArrayToCount, next, toTitleCase, shuffle } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { sendMessage } from "../client.js";
 import { DrawStackedCardSelect, PickCardSelect } from "../utils.js";
@@ -76,7 +76,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
             return ctx.createFollowup({
-                content: `${toTitleCase(game.currentCard).toLowerCase()}. ${toTitleCase(game.cards[config.clyde.id].join(", ")).toLowerCase()}`,
+                content: `${toTitleCase(game.currentCard).toLowerCase()}. ${toTitleCase(shuffle(game.cards[config.clyde.id]).join(", ")).toLowerCase()}`,
                 flags: MessageFlags.EPHEMERAL
             });
         }
