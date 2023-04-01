@@ -22,10 +22,11 @@ function startGame(game: UnoGame<false>) {
     });
     games[game.channelID].started = true;
     const settings = game.settings || { ...defaultSettings };
+    const players = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
     const startedGame = {
         started: true,
         message: game.message,
-        players: new Proxy(game.players, {
+        players: new Proxy(players, {
             deleteProperty(t, p) {
                 delete t[p];
                 if (t.filter(Boolean).length <= 1) {
@@ -50,10 +51,10 @@ function startGame(game: UnoGame<false>) {
         host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         drawStackCounter: 0,
-        currentPlayer: game.players[0],
+        currentPlayer: players[0],
         lastPlayer: { id: null, duration: 0 },
         settings,
-        timeout: setTimeout(() => onTimeout(startedGame, game.players[0]), game.settings.timeoutDuration * 1000),
+        timeout: setTimeout(() => onTimeout(startedGame, players[0]), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified,
@@ -144,6 +145,10 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
         }
         case SettingsIDs.ALLOW_CARD_STACKING: {
             game.settings.allowStacking = !game.settings.allowStacking;
+            break;
+        }
+        case SettingsIDs.RANDOMIZE_PLAYER_LIST: {
+            game.settings.randomizePlayerList = !game.settings.randomizePlayerList;
             break;
         }
     }

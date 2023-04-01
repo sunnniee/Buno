@@ -90,7 +90,8 @@ export const defaultSettings: UnoGameSettings = {
     kickOnTimeout: true,
     allowSkipping: true,
     antiSabotage: true,
-    allowStacking: true
+    allowStacking: true,
+    randomizePlayerList: true
 } as const;
 
 // its "just" 25 days but i still doubt a game will go on for longer than that
@@ -128,5 +129,6 @@ export const SettingsIDs = Object.freeze({
     KICK_ON_TIMEOUT: "kick-on-timeout-setting",
     ALLOW_SKIPPING: "allow-skipping",
     ANTI_SABOTAGE: "anti-sabotage",
-    ALLOW_CARD_STACKING: "allow-stacking"
+    ALLOW_CARD_STACKING: "allow-stacking",
+    RANDOMIZE_PLAYER_LIST: "randomize-list"
 });

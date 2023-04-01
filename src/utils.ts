@@ -130,6 +130,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Stack +2's and +4's",
             value: SettingsIDs.ALLOW_CARD_STACKING,
             description: game.settings.allowStacking ? "Enabled" : "Disabled"
+        },
+        {
+            label: "Randomize order of players",
+            value: SettingsIDs.RANDOMIZE_PLAYER_LIST,
+            description: game.settings.randomizePlayerList ? "Enabled" : "Disabled"
         }]
     })
     .toJSON();
