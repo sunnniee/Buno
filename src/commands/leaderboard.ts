@@ -42,14 +42,14 @@ export const cmd = {
             .setColor(defaultColor)
             .setDescription(sortedLbSegment
                 .map(([id, stats], i) =>
-                    `\`${emotes[off(i)] ?? `${off(i) + 1}.`}\` __${getUsername(id, false, fetchedMembers, guild)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
+                    `\`${emotes[off(i)] ?? `${off(i) + 1}.`}\` __${getUsername(id, false, guild, fetchedMembers)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
 ${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}\
 ${i === 2 ? "\n" : ""}`
                 ))
-            .addField("Your rank", yourStats ? `\`${emotes[yourIndex] ?? `${yourIndex}.`}\` __${getUsername(msg.author.id, false, fetchedMembers, guild)}__\
+            .addField("Your rank", yourStats ? `\`${emotes[yourIndex] ?? `${yourIndex}.`}\` __${getUsername(msg.author.id, false, guild, fetchedMembers)}__\
 - **${yourStats[1].wins}** win${yourStats[1].wins === 1 ? "" : "s"}, \
 ${yourStats[1].losses ? `**${(yourStats[1].wins / yourStats[1].losses).toFixed(2)}** W/L` : "**No** losses"}`
-                : `\`??.\` __${getUsername(msg.author.id, false, fetchedMembers, guild)}__  - No stats`)
+                : `\`??.\` __${getUsername(msg.author.id, false, guild, fetchedMembers)}__  - No stats`)
             .setFooter(`Page ${page} of ${Math.ceil(sortedLb.length / 10)}`)
             .toJSON();
         const lbMsg = sendMessage(msg.channel.id, {

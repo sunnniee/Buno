@@ -134,7 +134,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
     })
     .toJSON();
 
-export function getUsername(id: string, nick?: boolean, fetchedMembers?: Member[], guild?: Guild) {
+export function getUsername(id: string, nick: boolean, guild: Guild, fetchedMembers?: Member[]) {
     if (id === config.clyde.id) return config.clyde.name;
     return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
         ?? (nick ? guild?.members.get(id)?.nick : null)

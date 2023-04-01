@@ -68,14 +68,14 @@ export function makeStartMessage(game: UnoGame<false>) {
         .setDescription(`
 Current game host: ${client.users.get(game.host)?.username ?? `<@${game.host}>`}
 \`\`\`
-${game.players.map(p => getUsername(p) ?? `Unknown [${p}]`).join("\n")}
+${game.players.map(p => getUsername(p, false, game.message?.channel?.guild) ?? `Unknown [${p}]`).join("\n")}
 \`\`\`
     `)
         .setColor(defaultColor)
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID) ?? `Unknown [${playerID}]`}: \
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, false, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
@@ -85,7 +85,7 @@ export function sendGameMessage(game: UnoGame<true>) {
         embeds: [new EmbedBuilder()
             .setTitle("The Buno.")
             .setDescription(`
-Currently playing: **${getUsername(game.currentPlayer) ?? `<@${game.currentPlayer}>`}**
+Currently playing: **${getUsername(game.currentPlayer, false, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
 Current card: ${currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \

@@ -1,14 +1,14 @@
-/* eslint-disable unused-imports/no-unused-imports */
 import { Command } from "../types";
 import { inspect } from "util";
 import { client } from "../client.js";
 import * as clientUtils from "../client.js";
 import * as constants from "../constants.js";
+import * as utils from "../utils.js";
 import { games } from "../gameLogic/index.js";
 import * as gameLogic from "../gameLogic/index.js";
 import database from "../database.js";
 import { config } from "../index.js";
-client; gameLogic; database;
+client; gameLogic; database; constants; utils;
 
 const MAX_RESPONSE_LENGTH = 1950;
 

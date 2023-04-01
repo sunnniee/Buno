@@ -26,7 +26,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
             game.deck = newDeck;
             const trolledMember = getPlayerMember(game, nextPlayer);
-            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
+            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
             game.drawStackCounter = 0;
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         }
@@ -38,7 +38,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     ctx.deleteOriginal();
     if (game.cards[id].length === 0) return;
     sendMessage(ctx.channel.id, `
-    ${`**${getUsername(id)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${`**${getUsername(id, true, ctx.guild)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `);
     sendGameMessage(game);
@@ -53,7 +53,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         game.cards[game.currentPlayer] = game.cards[game.currentPlayer].concat(cards);
         game.deck = newDeck;
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-        sendMessage(ctx.channel.id, `**${getUsername(id)}** drew ${game.drawStackCounter} cards`);
+        sendMessage(ctx.channel.id, `**${getUsername(id, true, ctx.guild)}** drew ${game.drawStackCounter} cards`);
         game.drawStackCounter = 0;
         ctx.deleteOriginal();
         sendGameMessage(game);
@@ -139,7 +139,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             if (game.players.length === 2) {
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
                 const trolledMember = getPlayerMember(game, game.currentPlayer);
-                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer)}** was skipped`;
+                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
             }
         }
         if (variant === "+2") {
@@ -152,7 +152,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
                 game.deck = newDeck;
                 const trolledMember = getPlayerMember(game, nextPlayer);
-                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
+                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
                 game.drawStackCounter = 0;
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             }
@@ -160,7 +160,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (variant === "block") {
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             const trolledMember = getPlayerMember(game, game.currentPlayer);
-            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer)}** was skipped`;
+            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
         }
         if (game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         ctx.deleteOriginal();
@@ -171,10 +171,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (game.cards[id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
-                ? `**${getUsername(id)}** drew a card`
+                ? `**${getUsername(id, true, ctx.guild)}** drew a card`
                 : cardPlayed === "skip"
-                    ? `**${getUsername(id)}** skipped their turn`
-                    : `**${getUsername(id)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
+                    ? `**${getUsername(id, true, ctx.guild)}** skipped their turn`
+                    : `**${getUsername(id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         );
         if (cardPlayed !== "draw" || !game.settings.allowSkipping) {

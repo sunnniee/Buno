@@ -9,6 +9,7 @@ export const cmd = {
     execute: (msg, args) => {
         const game = games[msg.channel.id];
         if (!game) return respond(msg, "There's no game in this channel");
+        const guild = game.message?.channel?.guild;
         if (!hasStarted(game)) {
             if (game.host === config.clyde.id) {
                 deleteMessage(game.message);
@@ -31,14 +32,14 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                 clearTimeout(game.timeout);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
-**${getUsername(possiblyTheWinner, true)}** would've "won"`);
+**${getUsername(possiblyTheWinner, true, guild)}** would've "won"`);
             } else if (Object.values(game.cards).some(a => a.length === 0)) {
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);
                 clearTimeout(game.timeout);
                 delete games[msg.channel.id];
-                respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true)}** the win`);
+                respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
             } else {
                 msg.channel.getMessage(game.message.id)
                     .then(() => respond(msg, `Couldn't find anything wrong.

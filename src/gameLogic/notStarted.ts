@@ -24,6 +24,7 @@ function startGame(game: UnoGame<false>) {
     const settings = game.settings || { ...defaultSettings };
     const startedGame = {
         started: true,
+        message: game.message,
         players: new Proxy(game.players, {
             deleteProperty(t, p) {
                 delete t[p];
