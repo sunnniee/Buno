@@ -2,10 +2,10 @@ import { respond, sendMessage } from "../client.js";
 import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
-import { games, sendGameMessage, makeStartMessage, shuffle, onTimeout, updateStats, toTitleCase, getPlayerMember } from "./index.js";
+import { games, sendGameMessage, makeStartMessage, onTimeout } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import database from "../database.js";
-import { SettingsSelectMenu } from "../utils.js";
+import { getPlayerMember, SettingsSelectMenu, shuffle, toTitleCase, updateStats } from "../utils.js";
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0];

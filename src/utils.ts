@@ -1,10 +1,11 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Guild, Member } from "oceanic.js";
 import { client } from "./client.js";
-import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings } from "./constants.js";
-import { toTitleCase, wasLastTurnBlocked } from "./gameLogic/index.js";
+import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings, cards } from "./constants.js";
+import database from "./database.js";
+import { games } from "./gameLogic/index.js";
 import { config } from "./index.js";
-import { UnoGame, Card } from "./types.js";
+import { UnoGame, Card, PlayerStorage } from "./types.js";
 
 
 
@@ -139,6 +140,45 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
     })
     .toJSON();
 
+export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
+    return game.started;
+}
+export function shuffle<T>(array: T[]): T[] {
+    return array
+        .map(c => ({ c, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ c }) => c);
+}
+export function next<T>(array: T[], n: number) {
+    if (n < array.length - 1) return array[n + 1];
+    else return array[0];
+}
+
+export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
+
+export const wasLastTurnBlocked = (game: UnoGame<true>) =>
+    game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1]);
+export const cardArrayToCount = (a: Card[]) => a
+    .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
+    .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj; }, {} as { [k in Card]: number });
+export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
+export function cancelGameMessageFail(game: UnoGame<boolean>) {
+    getPlayerMember(game, game.host).user.createDM()
+        .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
+        .catch(() => { });
+    delete games[game.channelID];
+}
+export function updateStats(game: UnoGame<true>, winner: string) {
+    if (game._modified) return;
+    const newStats: { [id: string]: PlayerStorage } = {};
+    game.players.forEach(id => {
+        const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 };
+        if (id === winner) val.wins++;
+        else val.losses++;
+        newStats[id] = val;
+    });
+    database.setMultiple(game.guildID, newStats);
+}
 export function getUsername(id: string, nick: boolean, guild: Guild, fetchedMembers?: Member[]) {
     if (id === config.clyde.id) return config.clyde.name;
     return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)

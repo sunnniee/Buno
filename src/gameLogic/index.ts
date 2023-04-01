@@ -1,52 +1,14 @@
 import { client, deleteMessage, sendMessage } from "../client.js";
 import { ComponentInteraction, ComponentTypes, ModalSubmitInteraction } from "oceanic.js";
-import { Card, PlayerStorage, UnoGame } from "../types.js";
+import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, cards, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime } from "../constants.js";
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
-import database from "../database.js";
-import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime } from "../utils.js";
+import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {};
-export function hasStarted(game: UnoGame<boolean>): game is UnoGame<true> {
-    return game.started;
-}
-export function shuffle<T>(array: T[]): T[] {
-    return array
-        .map(c => ({ c, sort: Math.random() }))
-        .sort((a, b) => a.sort - b.sort)
-        .map(({ c }) => c);
-}
-export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
-export function next<T>(array: T[], n: number) {
-    if (n < array.length - 1) return array[n + 1];
-    else return array[0];
-}
-export const wasLastTurnBlocked = (game: UnoGame<true>) =>
-    game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1]);
-export const cardArrayToCount = (a: Card[]) => a
-    .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
-    .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj; }, {} as { [k in Card]: number });
-export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
-export function cancelGameMessageFail(game: UnoGame<boolean>) {
-    getPlayerMember(game, game.host).user.createDM()
-        .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
-        .catch(() => { });
-    delete games[game.channelID];
-}
-export function updateStats(game: UnoGame<true>, winner: string) {
-    if (game._modified) return;
-    const newStats: { [id: string]: PlayerStorage } = {};
-    game.players.forEach(id => {
-        const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 };
-        if (id === winner) val.wins++;
-        else val.losses++;
-        newStats[id] = val;
-    });
-    database.setMultiple(game.guildID, newStats);
-}
 
 export function onTimeout(game: UnoGame<true>, player: string) {
     if (!games[game.channelID]) return;
