@@ -70,6 +70,16 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
         }
+        case ButtonIDs.VIEW_GAME_SETTINGS: {
+            return ctx.createFollowup({
+                content: `Kick on timeout: **${game.settings.kickOnTimeout ? "Enabled" : "Disabled"}**
+                Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
+                Randomize player order: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
+                Anti sabotage: **find out 🚎**`
+                    .replace(/ {8,}/g, ""),
+                flags: MessageFlags.EPHEMERAL
+            });
+        }
         case ButtonIDs.CLYDE_GET_CARDS: {
             if (game.host !== ctx.member.id) return ctx.createFollowup({
                 content: "This can only be used by the game's host",

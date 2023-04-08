@@ -109,7 +109,8 @@ export const ButtonIDs = Object.freeze({
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
     CLYDE_GET_CARDS: "clyde-cards",
-    CLYDE_PLAY: "play-as-clyde"
+    CLYDE_PLAY: "play-as-clyde",
+    VIEW_GAME_SETTINGS: "view-settings"
 });
 
 export const SelectIDs = Object.freeze({

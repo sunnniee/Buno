@@ -88,6 +88,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.LEAVE_GAME:
         case ButtonIDs.CLYDE_GET_CARDS:
         case ButtonIDs.CLYDE_PLAY:
+        case ButtonIDs.VIEW_GAME_SETTINGS:
             if (!game || !hasStarted(game)) return;
             onGameButtonPress(ctx, game);
             break;

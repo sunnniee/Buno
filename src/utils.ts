@@ -27,6 +27,11 @@ export const GameButtons = ((clyde = false) => {
             style: ButtonStyles.DANGER,
             customID: ButtonIDs.LEAVE_GAME,
             emoji: ComponentBuilder.emojiToPartial("🚪", "default")
+        })
+        .addInteractionButton({
+            style: ButtonStyles.SECONDARY,
+            customID: ButtonIDs.VIEW_GAME_SETTINGS,
+            emoji: ComponentBuilder.emojiToPartial("⚙", "default")
         });
     if (clyde) components.addRow()
         .addInteractionButton({
