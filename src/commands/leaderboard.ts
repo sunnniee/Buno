@@ -33,9 +33,9 @@ export const cmd = {
             .sort(([, a], [, b]) => b.wins - a.wins || a.losses - b.losses);
         if (sortedLb.length < (page - 1) * 10) page = 1;
         const sortedLbSegment = sortedLb
-            .slice((page - 1) * 10, (page - 1) * 10 + 9);
+            .slice((page - 1) * 10, (page - 1) * 10 + 10);
         const yourStats = sortedLb.find(i => i[0] === msg.author.id);
-        const yourIndex = sortedLb.indexOf(yourStats);
+        const yourIndex = sortedLb.indexOf(yourStats) + 1;
         const off = (i: number) => i + (page - 1) * 10;
         const lbEmbed = (fetchedMembers?: Member[]) => new EmbedBuilder()
             .setTitle(`Leaderboard for ${guild.name}`)
