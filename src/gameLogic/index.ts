@@ -1,4 +1,4 @@
-import { client, deleteMessage, sendMessage } from "../client.js";
+import { deleteMessage, sendMessage } from "../client.js";
 import { ComponentInteraction, ComponentTypes, ModalSubmitInteraction } from "oceanic.js";
 import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
@@ -28,16 +28,16 @@ export function makeStartMessage(game: UnoGame<false>) {
     return new EmbedBuilder()
         .setTitle("The Buno.")
         .setDescription(`
-Current game host: ${client.users.get(game.host)?.username ?? `<@${game.host}>`}
+Current game host: ${getUsername(game.host, true, game.message?.channel?.guild)}
 \`\`\`
-${game.players.map(p => getUsername(p, false, game.message?.channel?.guild) ?? `Unknown [${p}]`).join("\n")}
+${game.players.map(p => getUsername(p, true, game.message?.channel?.guild) ?? `Unknown [${p}]`).join("\n")}
 \`\`\`
     `)
         .setColor(defaultColor)
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, false, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
@@ -47,7 +47,7 @@ export function sendGameMessage(game: UnoGame<true>) {
         embeds: [new EmbedBuilder()
             .setTitle("The Buno.")
             .setDescription(`
-Currently playing: **${getUsername(game.currentPlayer, false, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
+Currently playing: **${getUsername(game.currentPlayer, true, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
 Current card: ${currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \

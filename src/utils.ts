@@ -181,10 +181,11 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 }
 export function getUsername(id: string, nick: boolean, guild: Guild, fetchedMembers?: Member[]) {
     if (id === config.clyde.id) return config.clyde.name;
-    return (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
+    const name = (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
         ?? (nick ? guild?.members.get(id)?.nick : null)
         ?? fetchedMembers?.find(m => m.id === id)?.username
         ?? guild?.members.get(id)?.username
         ?? client.users.get(id)?.username
         ?? id;
+    return name.replace(/([*_~`|])/g, "$1\u200b");
 }
