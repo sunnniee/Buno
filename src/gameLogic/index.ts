@@ -28,6 +28,7 @@ export function makeStartMessage(game: UnoGame<false>) {
     return new EmbedBuilder()
         .setTitle("The Buno.")
         .setDescription(`
+**Game will start <t:${game.starting}:R>**
 Current game host: ${getUsername(game.host, true, game.message?.channel?.guild)}
 \`\`\`
 ${game.players.map(p => getUsername(p, true, game.message?.channel?.guild) ?? `Unknown [${p}]`).join("\n")}

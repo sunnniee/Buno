@@ -66,6 +66,8 @@ export type UnoGame<T extends boolean> = T extends true ? {
     clyde?: boolean
 } : {
     started: false,
+    starting: number,
+    startingTimeout: NodeJS.Timeout
     host: UserID,
     players: UserID[],
     settings: UnoGameSettings,
