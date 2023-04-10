@@ -8,9 +8,14 @@ import { games } from "../gameLogic/index.js";
 import * as gameLogic from "../gameLogic/index.js";
 import database from "../database.js";
 import { config } from "../index.js";
+import { execSync } from "child_process";
 client; gameLogic; database; constants; utils;
 
 const MAX_RESPONSE_LENGTH = 1950;
+
+const bash = (cmd: string) => execSync(cmd, { encoding: "utf8" });
+const update = () => bash("git pull && npm run build");
+update;
 
 export const cmd = {
     name: "eval",
