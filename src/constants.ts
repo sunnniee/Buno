@@ -95,6 +95,8 @@ export const defaultSettings: UnoGameSettings = {
     resendGameMessage: true
 } as const;
 
+export const autoStartTimeout = 305;
+
 // its "just" 25 days but i still doubt a game will go on for longer than that
 export const veryLongTime = 2_147_483.647;
 
