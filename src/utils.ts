@@ -141,6 +141,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Randomize order of players",
             value: SettingsIDs.RANDOMIZE_PLAYER_LIST,
             description: game.settings.randomizePlayerList ? "Enabled" : "Disabled"
+        },
+        {
+            label: "Resend game message",
+            value: SettingsIDs.RESEND_GAME_MESSAGE,
+            description: `if it gets sent too far up because of chat. ${game.settings.resendGameMessage ? "Enabled" : "Disabled"}`
         }]
     })
     .toJSON();

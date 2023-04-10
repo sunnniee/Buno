@@ -1,5 +1,5 @@
-import { deleteMessage, sendMessage } from "../client.js";
-import { ComponentInteraction, ComponentTypes, ModalSubmitInteraction } from "oceanic.js";
+import { deleteMessage, sendMessage, client } from "../client.js";
+import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
 import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
@@ -134,4 +134,14 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
             components: SettingsSelectMenu(game)
         });
     }
+}
+
+export function handleGameResend(msg: Message<AnyGuildTextChannel>) {
+    if (msg.author.id === client.user.id) return;
+    const game = games[msg.channel.id];
+    if (!game || !hasStarted(game) || !game.settings.resendGameMessage) return;
+    const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyGuildTextChannel>>)
+        .filter(m => BigInt(m.id) > BigInt(game.message.id))
+        .reduce((weight, msg2) => (msg2.content.length > 800 || !msg2.attachments.empty || msg2.embeds.length ? 2 : 1) + weight, 0);
+    if (scrolledWeight > 25) sendGameMessage(game);
 }

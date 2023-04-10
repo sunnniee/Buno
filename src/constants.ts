@@ -91,7 +91,8 @@ export const defaultSettings: UnoGameSettings = {
     allowSkipping: true,
     antiSabotage: true,
     allowStacking: true,
-    randomizePlayerList: true
+    randomizePlayerList: true,
+    resendGameMessage: true
 } as const;
 
 // its "just" 25 days but i still doubt a game will go on for longer than that
@@ -110,7 +111,7 @@ export const ButtonIDs = Object.freeze({
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
     CLYDE_GET_CARDS: "clyde-cards",
     CLYDE_PLAY: "play-as-clyde",
-    VIEW_GAME_SETTINGS: "view-settings"
+    VIEW_GAME_SETTINGS: "view-settings",
 });
 
 export const SelectIDs = Object.freeze({
@@ -120,7 +121,7 @@ export const SelectIDs = Object.freeze({
     CLYDE_CHOOSE_CARD: "choose-card-clyde",
     CLYDE_CHOOSE_COLOR: "choose-color-clyde",
     CLYDE_FORCEFUL_DRAW: "draw-or-stack-clyde",
-    EDIT_GAME_SETTINGS: "change-settings"
+    EDIT_GAME_SETTINGS: "change-settings",
 });
 
 export const SettingsIDs = Object.freeze({
@@ -131,5 +132,6 @@ export const SettingsIDs = Object.freeze({
     ALLOW_SKIPPING: "allow-skipping",
     ANTI_SABOTAGE: "anti-sabotage",
     ALLOW_CARD_STACKING: "allow-stacking",
-    RANDOMIZE_PLAYER_LIST: "randomize-list"
+    RANDOMIZE_PLAYER_LIST: "randomize-list",
+    RESEND_GAME_MESSAGE: "resend-game-message",
 });

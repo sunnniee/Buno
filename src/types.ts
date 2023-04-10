@@ -39,7 +39,8 @@ export type UnoGameSettings = {
     allowSkipping: boolean,
     antiSabotage: boolean,
     allowStacking: boolean,
-    randomizePlayerList: boolean
+    randomizePlayerList: boolean,
+    resendGameMessage: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {
     started: true,

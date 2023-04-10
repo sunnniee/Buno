@@ -2,7 +2,7 @@ import { client } from "./client.js";
 import { readdir, readFileSync } from "fs";
 import { parse } from "toml";
 import { Command, Config } from "./types.js";
-import { onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
+import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { ActivityTypes, InteractionTypes } from "oceanic.js";
 import { patch } from "./patchContext.js";
 
@@ -41,6 +41,7 @@ client.on("error", console.error);
 
 client.on("messageCreate", msg => {
     if (!msg.inCachedGuildChannel()) return;
+    handleGameResend(msg);
     if (!msg.content.startsWith(prefix)) return;
     const args = msg.content.slice(prefix.length).split(/ +/);
     const command = args.shift();
