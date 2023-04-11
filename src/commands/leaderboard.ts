@@ -1,12 +1,14 @@
 import { EmbedBuilder } from "@oceanicjs/builders";
-import { Member } from "oceanic.js";
-import { client, sendMessage, editMessage } from "../client.js";
-import { defaultColor } from "../constants.js";
+import { Guild } from "oceanic.js";
+import { client, respond } from "../client.js";
 import database from "../database.js";
-import { Command } from "../types.js";
+import { Command, PlayerStorage } from "../types.js";
 import { getUsername } from "../utils.js";
+import { defaultColor } from "../constants.js";
 
-const emotes = ["🥇", "🥈", "🥉"];
+interface Stats extends PlayerStorage {
+    id: string
+}
 
 type ParsedArguments = { page: number, guildId?: string }
 function getArgs(args: string[]): ParsedArguments {
@@ -20,52 +22,49 @@ function getArgs(args: string[]): ParsedArguments {
     return res;
 }
 
+const emotes = ["🥇", "🥈", "🥉"];
+
+function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, guild: Guild) {
+    const getText = (i: number) => emotes[i + page * 10] || `${i + page * 10 + 1}.`;
+    const stats = fullStats.slice(page * 10, page * 10 + 9);
+    const yourStats = fullStats.find(s => s.id === author);
+    const yourStatsIndex = fullStats.indexOf(yourStats);
+    return new EmbedBuilder()
+        .setTitle(`Leaderboard for ${guild.name}`)
+        .setColor(defaultColor)
+        .setDescription(stats.map((s, i) => `\`${getText(i)}\`: __${getUsername(s.id, false, guild)}__ - **${s.wins}** wins, \
+${s.losses ? `**${(s.wins / s.losses).toFixed(2)}** W/L` : "**No** losses"}`
+        ).join("\n"))
+        .addField("Your stats", yourStats
+            ? `\`${emotes[yourStatsIndex] || `${yourStatsIndex + 1}.`}\`: ${getUsername(yourStats.id, false, guild)} - **${yourStats.wins}** wins, \
+${yourStats.losses ? `**${(yourStats.wins / yourStats.losses).toFixed(2)}** W/L` : "**No** losses"}`
+            : `\`??.\` ${getUsername(author, false, guild)} - No stats`)
+        .setFooter(`Page ${page + 1} of ${Math.ceil(fullStats.length / 10)}`)
+        .toJSON();
+}
+
 export const cmd = {
     name: "leaderboard",
     aliases: ["lb"],
     execute: (msg, args) => {
-        // eslint-disable-next-line prefer-const
-        let { page, guildId } = getArgs(args);
+        const { page: _page, guildId } = getArgs(args);
         const guild = client.guilds.get(guildId) ?? msg.channel.guild;
-        const stats = database.getAllForGuild(guild.id);
-        if (!stats) return;
-        const sortedLb = Object.entries(stats)
-            .sort(([, a], [, b]) => b.wins - a.wins || a.losses - b.losses);
-        if (sortedLb.length < (page - 1) * 10) page = 1;
-        const sortedLbSegment = sortedLb
-            .slice((page - 1) * 10, (page - 1) * 10 + 10);
-        const yourStats = sortedLb.find(i => i[0] === msg.author.id);
-        const yourIndex = sortedLb.indexOf(yourStats) + 1;
-        const off = (i: number) => i + (page - 1) * 10;
-        const lbEmbed = (fetchedMembers?: Member[]) => new EmbedBuilder()
-            .setTitle(`Leaderboard for ${guild.name}`)
-            .setColor(defaultColor)
-            .setDescription(sortedLbSegment
-                .map(([id, stats], i) =>
-                    `\`${emotes[off(i)] ?? `${off(i) + 1}.`}\` __${getUsername(id, false, guild, fetchedMembers)}__ - **${stats.wins}** win${stats.wins === 1 ? "" : "s"}, \
-${stats.losses ? `**${(stats.wins / stats.losses).toFixed(2)}** W/L` : "**No** losses"}\
-${i === 2 ? "\n" : ""}`
-                ))
-            .addField("Your rank", yourStats ? `\`${emotes[yourIndex] ?? `${yourIndex}.`}\` __${getUsername(msg.author.id, false, guild, fetchedMembers)}__\
-- **${yourStats[1].wins}** win${yourStats[1].wins === 1 ? "" : "s"}, \
-${yourStats[1].losses ? `**${(yourStats[1].wins / yourStats[1].losses).toFixed(2)}** W/L` : "**No** losses"}`
-                : `\`??.\` __${getUsername(msg.author.id, false, guild, fetchedMembers)}__  - No stats`)
-            .setFooter(`Page ${page} of ${Math.ceil(sortedLb.length / 10)}`)
-            .toJSON();
-        const lbMsg = sendMessage(msg.channel.id, {
-            embeds: [lbEmbed()]
+        const stats: Stats[] = Object.entries(database.getAllForGuild(guild.id)).map(([id, v]) => ({
+            id,
+            ...v
+        })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+        const page = (_page <= Math.ceil(stats.length / 10) ? _page : 1) - 1;
+        const statsSegment = stats.slice(page * 10, page * 10 + 9);
+
+        respond(msg, {
+            embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)]
+        }).then(m => {
+            if (!m) return;
+            const missingMembers = statsSegment.filter(({ id }) => getUsername(id, false, guild) === id);
+            if (missingMembers.length) guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
+                .then(() => m.edit({
+                    embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)]
+                }));
         });
-        const ids = sortedLbSegment.map(i => i[0]),
-            cachedMembers = guild.members.filter(m => ids.includes(m.id));
-        if (cachedMembers.length !== sortedLbSegment.length) {
-            const missing = sortedLbSegment.filter(([id]) => !cachedMembers.find(m => m.id === id)).map(i => i[0]);
-            guild.fetchMembers({ userIDs: missing }).then(async members => {
-                const m = await lbMsg;
-                if (!m) return;
-                editMessage(m, {
-                    embeds: [lbEmbed(members)]
-                });
-            });
-        }
     },
 } as Command;

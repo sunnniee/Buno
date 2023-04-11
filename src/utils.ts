@@ -1,5 +1,5 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Guild, Member } from "oceanic.js";
+import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Guild } from "oceanic.js";
 import { client } from "./client.js";
 import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings, cards } from "./constants.js";
 import database from "./database.js";
@@ -189,13 +189,12 @@ export function updateStats(game: UnoGame<true>, winner: string) {
     });
     database.setMultiple(game.guildID, newStats);
 }
-export function getUsername(id: string, nick: boolean, guild: Guild, fetchedMembers?: Member[]) {
+
+export function getUsername(id: string, nick: boolean, guild: Guild) {
     if (id === config.clyde.id) return config.clyde.name;
-    const name = (nick ? fetchedMembers?.find(m => m.id === id)?.nick : null)
-        ?? (nick ? guild?.members.get(id)?.nick : null)
-        ?? fetchedMembers?.find(m => m.id === id)?.username
-        ?? guild?.members.get(id)?.username
-        ?? client.users.get(id)?.username
-        ?? id;
+    const name = (nick && guild?.members.get(id)?.nick)
+        || guild?.members.get(id)?.username
+        || client.users.get(id)?.username
+        || id;
     return name.replace(/([*_~`|])/g, "$1\u200b");
 }
