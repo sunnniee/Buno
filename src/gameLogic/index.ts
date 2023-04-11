@@ -7,6 +7,7 @@ import { leaveGame, onGameButtonPress } from "./started.js";
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
+import { onLeaderboardButtonPress } from "../commands/leaderboard.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = {};
 
@@ -75,7 +76,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
     ctx.deferUpdate();
 
     const game = games[ctx.channel.id];
-    switch (ctx.data.customID as typeof ButtonIDs[keyof typeof ButtonIDs]) {
+    switch (ctx.data.customID.split("__")[0] as typeof ButtonIDs[keyof typeof ButtonIDs]) {
         case ButtonIDs.JOIN_GAME:
         case ButtonIDs.LEAVE_GAME_BEFORE_START:
         case ButtonIDs.START_GAME:
@@ -99,6 +100,10 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
             break;
         case ButtonIDs.LEAVE_GAME_CONFIRMATION_NO:
             ctx.deleteOriginal();
+            break;
+        case ButtonIDs.LEADERBOARD_LAST:
+        case ButtonIDs.LEADERBOARD_NEXT:
+            onLeaderboardButtonPress(ctx);
             break;
     }
 }

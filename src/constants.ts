@@ -100,6 +100,7 @@ export const autoStartTimeout = 305;
 // its "just" 25 days but i still doubt a game will go on for longer than that
 export const veryLongTime = 2_147_483.647;
 
+// do NOT use "__" in id's
 export const ButtonIDs = Object.freeze({
     JOIN_GAME: "join",
     LEAVE_GAME_BEFORE_START: "leave",
@@ -114,6 +115,8 @@ export const ButtonIDs = Object.freeze({
     CLYDE_GET_CARDS: "clyde-cards",
     CLYDE_PLAY: "play-as-clyde",
     VIEW_GAME_SETTINGS: "view-settings",
+    LEADERBOARD_NEXT: "lb-forwards",
+    LEADERBOARD_LAST: "lb-backwards"
 });
 
 export const SelectIDs = Object.freeze({
