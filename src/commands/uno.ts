@@ -61,10 +61,11 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
                 .toJSON()
         }).then(m => {
             if (!m) return msg.createReaction("‼");
+            timeouts.delete(gameObj.channelID);
             gameObj.message = m;
             timeouts.set(gameObj.channelID, () => {
                 const g = games[msg.channel.id];
-                if (!hasStarted(g)) startGame(g);
+                if (!hasStarted(g)) startGame(g, true);
             }, autoStartTimeout * 1000);
             games[msg.channel.id] = gameObj;
         });

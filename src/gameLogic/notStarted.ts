@@ -1,4 +1,4 @@
-import { respond, sendMessage } from "../client.js";
+import { deleteMessage, respond, sendMessage } from "../client.js";
 import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
@@ -15,10 +15,17 @@ const drawUntilNotSpecial = (game: UnoGame<true>) => {
 };
 function dupe<T>(a: T[]): T[] { return a.concat(a); }
 
-export function startGame(game: UnoGame<false>) {
+export function startGame(game: UnoGame<false>, automatic: boolean) {
     if (hasStarted(game)) return;
-    if (game.players.length === 1 && !game._allowSolo)
-        return respond(game.message, "You can't start a game by yourself!");
+    if (game.players.length === 1 && !game._allowSolo) {
+        respond(game.message, "You can't start a game by yourself!");
+        if (automatic) {
+            deleteMessage(game.message);
+            timeouts.delete(game.channelID);
+            delete games[game.channelID];
+        }
+        return;
+    }
     game.players.forEach(id => {
         if (!database.get(game.guildID, id)) database.set(game.guildID, id, { wins: 0, losses: 0 });
     });
@@ -189,7 +196,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
-            startGame(game);
+            startGame(game, false);
             break;
         }
         case ButtonIDs.EDIT_GAME_SETTINGS: {

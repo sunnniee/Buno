@@ -26,6 +26,11 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
+    if (game.players.length <= 1) {
+        timeouts.delete(game.channelID);
+        deleteMessage(game.message);
+        return;
+    }
     timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     sendGameMessage(game);
 }
