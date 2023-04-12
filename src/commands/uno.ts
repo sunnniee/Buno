@@ -15,6 +15,7 @@ export const cmd = {
         const existingGame = games[msg.channel.id];
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
+        games[msg.channel.id] = { started: false } as UnoGame<false>;
         const gameObj = {
             uid: Math.random().toString().substring(2),
             started: false,
@@ -60,7 +61,10 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
                 })
                 .toJSON()
         }).then(m => {
-            if (!m) return msg.createReaction("‼");
+            if (!m) {
+                delete games[msg.channel.id];
+                return msg.createReaction("‼");
+            }
             timeouts.delete(gameObj.channelID);
             gameObj.message = m;
             timeouts.set(gameObj.channelID, () => {
