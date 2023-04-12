@@ -49,11 +49,12 @@ export const GameButtons = ((clyde = false) => {
     return components.toJSON();
 });
 
-export function onMsgError(e, ctx: { channelID: string }) {
-    console.log(e);
-    return client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
+export function onMsgError(e: Error, ctx: { channelID: string }) {
+    client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
         content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
     }).catch(() => { });
+    if (e.message.includes("Unknown Message") || e.message.includes("Unknown Interaction")) return;
+    console.log(e);
 }
 
 export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }, asClyde = false) => new ComponentBuilder<MessageActionRow>()

@@ -3,9 +3,8 @@ import { sendMessage } from "./client.js";
 import { onMsgError } from "./utils.js";
 
 function onInteractionError(e: Error, ctx: AnyInteractionGateway) {
-    if (e.message.includes("Unknown ")) {
-        console.log(e);
-        return sendMessage(ctx.channel.id, `<@${ctx.member.id}> Unknown interaction, please try again`);
+    if (e.message.includes("Unknown Interaction")) {
+        return sendMessage(ctx.channel.id, `<@${ctx.member.id}> Discord couldn't handle the request`);
     }
     else onMsgError(e, ctx);
 }
