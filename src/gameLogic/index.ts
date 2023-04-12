@@ -149,5 +149,5 @@ export function handleGameResend(msg: Message<AnyGuildTextChannel>) {
     const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyGuildTextChannel>>)
         .filter(m => BigInt(m.id) > BigInt(game.message.id))
         .reduce((weight, msg2) => (msg2.content.length > 800 || !msg2.attachments.empty || msg2.embeds.length ? 2 : 1) + weight, 0);
-    if (scrolledWeight > 25) sendGameMessage(game);
+    if (scrolledWeight > 20) sendGameMessage(game);
 }
