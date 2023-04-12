@@ -41,6 +41,7 @@ export type UnoGameSettings = {
     resendGameMessage: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {
+    uid: string,
     started: true,
     players: string[],
     host: string,
@@ -62,6 +63,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     _modified: boolean,
     clyde?: boolean
 } : {
+    uid: string,
     started: false,
     starting: number,
     host: string,

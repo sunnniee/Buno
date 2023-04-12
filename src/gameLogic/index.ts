@@ -19,8 +19,7 @@ export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
 });
 
 export function onTimeout(game: UnoGame<true>, player: string) {
-    if (!games[game.channelID]) return;
-    if (player !== game.currentPlayer) return;
+    if (!games[game.channelID] || player !== game.currentPlayer || game.uid !== games[game.channelID].uid) return;
     const kickedPlayer = getPlayerMember(game, player);
     game.currentPlayer = next(game.players, game.players.indexOf(player));
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(player), 1);

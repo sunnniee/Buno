@@ -164,13 +164,15 @@ export function next<T>(array: T[], n: number) {
     else return array[0];
 }
 
-export const toTitleCase = (n: string) => n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
-
+export const toTitleCase = (n: string) =>
+    n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
 export const wasLastTurnBlocked = (game: UnoGame<true>) =>
     game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1]);
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
-    .reduce((obj, c) => { obj[c] = (obj[c] + 1) || 1; return obj; }, {} as { [k in Card]: number });
+    .reduce((obj, c) => {
+        obj[c] = (obj[c] + 1) || 1; return obj;
+    }, {} as { [k in Card]: number; });
 export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
 export function cancelGameMessageFail(game: UnoGame<boolean>) {
     getPlayerMember(game, game.host).user.createDM()
@@ -180,7 +182,7 @@ export function cancelGameMessageFail(game: UnoGame<boolean>) {
 }
 export function updateStats(game: UnoGame<true>, winner: string) {
     if (game._modified) return;
-    const newStats: { [id: string]: PlayerStorage } = {};
+    const newStats: { [id: string]: PlayerStorage; } = {};
     game.players.forEach(id => {
         const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 };
         if (id === winner) val.wins++;

@@ -49,6 +49,7 @@ export function startGame(game: UnoGame<false>) {
         },
     });
     const startedGame = {
+        uid: game.uid,
         started: true,
         message: game.message,
         players,

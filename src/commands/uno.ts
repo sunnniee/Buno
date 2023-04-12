@@ -16,6 +16,7 @@ export const cmd = {
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
         const gameObj = {
+            uid: Math.random().toString().substring(2),
             started: false,
             starting: Math.floor(Date.now() / 1000) + autoStartTimeout,
             host: msg.author.id,
