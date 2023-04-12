@@ -30,9 +30,7 @@ export type PlayerStatsDatabaseInfo = {
     }
 }
 
-export type UserID = string;
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]
-
 export type UnoGameSettings = {
     timeoutDuration: number
     kickOnTimeout: boolean
@@ -44,17 +42,17 @@ export type UnoGameSettings = {
 }
 export type UnoGame<T extends boolean> = T extends true ? {
     started: true,
-    players: UserID[],
-    host: UserID,
-    cards: { [player: UserID]: Card[] },
+    players: string[],
+    host: string,
+    cards: { [player: string]: Card[] },
     currentCard: Card,
     currentCardColor: typeof colors[number],
     deck: Card[],
     draw: (amount: number) => { cards: Card[], newDeck: Card[] },
     drawStackCounter: number,
-    currentPlayer: UserID,
+    currentPlayer: string,
     lastPlayer: {
-        id: UserID,
+        id: string,
         duration: number,
     },
     timeout: NodeJS.Timeout,
@@ -68,8 +66,8 @@ export type UnoGame<T extends boolean> = T extends true ? {
     started: false,
     starting: number,
     startingTimeout: NodeJS.Timeout
-    host: UserID,
-    players: UserID[],
+    host: string,
+    players: string[],
     settings: UnoGameSettings,
     message: Message<AnyGuildTextChannel>,
     channelID: string,
