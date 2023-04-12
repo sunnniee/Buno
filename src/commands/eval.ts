@@ -19,6 +19,7 @@ update;
 
 export const cmd = {
     name: "eval",
+    aliases: ["adminabuse"],
     execute: (msg, args) => {
         if (!config.developerIds.includes(msg.author.id)) return;
         const code = args.join(" ");
