@@ -111,9 +111,11 @@ export const cmd = {
             if (!m) return;
             const missingMembers = statsSegment.filter(({ id }) => getUsername(id, false, guild) === id);
             if (missingMembers.length) guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
-                .then(() => m.edit({
-                    embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)]
-                }));
+                .then(members => {
+                    if (members.length) m.edit({
+                        embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)]
+                    });
+                });
         });
     },
 } as Command;
