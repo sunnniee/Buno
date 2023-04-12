@@ -59,6 +59,11 @@ ${yourStats.losses ? `**${(yourStats.wins / yourStats.losses).toFixed(2)}** W/L`
 }
 
 export function onLeaderboardButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {
+    const initialMessage = ctx.channel.messages.get(ctx.message.messageReference!.messageID);
+    if (!initialMessage) return ctx.editOriginal({
+        components: makeButtons(true, true, "hi")
+    });
+    if (initialMessage.author?.id !== ctx.member.id) return;
     const [interactionId, guildId] = ctx.data.customID.split("__");
     const direction = interactionId === ButtonIDs.LEADERBOARD_LAST ? -2 : 0; // trolley
     const currentPage = parseInt(ctx.message.embeds[0]?.footer?.text?.match(/Page (\d+) of/)?.[1], 10) || 1;
@@ -70,7 +75,7 @@ export function onLeaderboardButtonPress(ctx: ComponentInteraction<ComponentType
         ...v
     })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
     const endPage = Math.ceil(stats.length / 10);
-    const statsSegment = stats.slice(currentPage * 10, currentPage * 10 + 9);
+    const statsSegment = stats.slice(page * 10, page * 10 + 9);
 
     ctx.editOriginal({
         embeds: [makeLeaderboardEmbed(stats, page, ctx.member.id, guild)],
