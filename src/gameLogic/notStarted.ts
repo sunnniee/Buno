@@ -71,10 +71,9 @@ export function startGame(game: UnoGame<false>) {
                 if (p === "length" && n === 0) {
                     // TODO: check that the card shown here is the correct one and dont just pray it is
                     const card = startedGame.currentCard;
-                    const winnerID = startedGame.players.find(id => startedGame.cards[id]?.filter(Boolean).length === 0);
-                    const winner = getPlayerMember(startedGame, winnerID);
+                    const winner = getPlayerMember(startedGame, id);
                     clearTimeout(startedGame.timeout);
-                    updateStats(startedGame, winnerID);
+                    updateStats(startedGame, id);
                     delete games[startedGame.channelID];
                     sendMessage(startedGame.channelID, {
                         content: `**${winner?.nick ?? winner?.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
