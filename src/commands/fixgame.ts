@@ -3,6 +3,7 @@ import { games, sendGameMessage } from "../gameLogic/index.js";
 import { Command } from "../types";
 import { getUsername, hasStarted, updateStats } from "../utils.js";
 import { config } from "../index.js";
+import timeouts from "../timeouts.js";
 
 export const cmd = {
     name: "fixgame",
@@ -29,7 +30,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
             if (game.players.length <= 1) {
                 const possiblyTheWinner = /\d{17,20}/.test(game.currentPlayer) ? game.currentPlayer : game.lastPlayer.id;
                 deleteMessage(game.message);
-                clearTimeout(game.timeout);
+                timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner, true, guild)}** would've "won"`);
@@ -37,7 +38,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);
-                clearTimeout(game.timeout);
+                timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
             } else {

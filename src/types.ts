@@ -55,7 +55,6 @@ export type UnoGame<T extends boolean> = T extends true ? {
         id: string,
         duration: number,
     },
-    timeout: NodeJS.Timeout,
     settings: UnoGameSettings,
     message: Message<AnyGuildTextChannel>,
     channelID: string,
@@ -65,7 +64,6 @@ export type UnoGame<T extends boolean> = T extends true ? {
 } : {
     started: false,
     starting: number,
-    startingTimeout: NodeJS.Timeout
     host: string,
     players: string[],
     settings: UnoGameSettings,

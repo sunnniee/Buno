@@ -6,6 +6,7 @@ import { games, makeStartMessage } from "../gameLogic/index.js";
 import { ButtonIDs, defaultSettings, autoStartTimeout } from "../constants.js";
 import { startGame } from "../gameLogic/notStarted.js";
 import { hasStarted } from "../utils.js";
+import timeouts from "../timeouts.js";
 
 export const cmd = {
     name: "uno",
@@ -60,7 +61,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
         }).then(m => {
             if (!m) return msg.createReaction("‼");
             gameObj.message = m;
-            gameObj.startingTimeout = setTimeout(() => {
+            timeouts.set(gameObj.channelID, () => {
                 const g = games[msg.channel.id];
                 if (!hasStarted(g)) startGame(g);
             }, autoStartTimeout * 1000);

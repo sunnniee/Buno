@@ -2,10 +2,11 @@ import { respond, sendMessage } from "../client.js";
 import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
-import { games, sendGameMessage, makeStartMessage, onTimeout } from "./index.js";
+import { games, sendGameMessage, makeStartMessage } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import database from "../database.js";
 import { getPlayerMember, SettingsSelectMenu, shuffle, toTitleCase, updateStats, hasStarted } from "../utils.js";
+import timeouts from "../timeouts.js";
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0];
@@ -21,42 +22,42 @@ export function startGame(game: UnoGame<false>) {
     game.players.forEach(id => {
         if (!database.get(game.guildID, id)) database.set(game.guildID, id, { wins: 0, losses: 0 });
     });
-    clearInterval(game.startingTimeout);
+    timeouts.delete(game.channelID);
     games[game.channelID].started = true;
     const settings = game.settings || { ...defaultSettings };
-    const players = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
+    const playerList = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
+    const players = new Proxy(playerList, {
+        deleteProperty(t, p) {
+            delete t[p];
+            if (t.filter(Boolean).length <= 1) {
+                const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
+                timeouts.delete(game.channelID);
+                delete games[startedGame.channelID];
+                sendMessage(startedGame.channelID, {
+                    content: `**${winner?.nick ?? winner?.username}** won by default`,
+                    components: new ComponentBuilder<MessageActionRow>()
+                        .addInteractionButton({
+                            style: ButtonStyles.SUCCESS,
+                            emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                            disabled: true,
+                            customID: "we-have-a-nerd-here🤓"
+                        })
+                        .toJSON()
+                });
+            }
+            return true;
+        },
+    });
     const startedGame = {
         started: true,
         message: game.message,
-        players: new Proxy(players, {
-            deleteProperty(t, p) {
-                delete t[p];
-                if (t.filter(Boolean).length <= 1) {
-                    const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
-                    clearTimeout(startedGame.timeout);
-                    delete games[startedGame.channelID];
-                    sendMessage(startedGame.channelID, {
-                        content: `**${winner?.nick ?? winner?.username}** won by default`,
-                        components: new ComponentBuilder<MessageActionRow>()
-                            .addInteractionButton({
-                                style: ButtonStyles.SUCCESS,
-                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                                disabled: true,
-                                customID: "we-have-a-nerd-here🤓"
-                            })
-                            .toJSON()
-                    });
-                }
-                return true;
-            },
-        }),
+        players,
         host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         drawStackCounter: 0,
         currentPlayer: players[0],
         lastPlayer: { id: null, duration: 0 },
         settings,
-        timeout: setTimeout(() => onTimeout(startedGame, players[0]), game.settings.timeoutDuration * 1000),
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified,
@@ -72,7 +73,7 @@ export function startGame(game: UnoGame<false>) {
                     // TODO: check that the card shown here is the correct one and dont just pray it is
                     const card = startedGame.currentCard;
                     const winner = getPlayerMember(startedGame, id);
-                    clearTimeout(startedGame.timeout);
+                    timeouts.delete(game.channelID);
                     updateStats(startedGame, id);
                     delete games[startedGame.channelID];
                     sendMessage(startedGame.channelID, {
@@ -207,7 +208,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
-            clearTimeout(game.startingTimeout);
+            timeouts.delete(game.channelID);
             respond(ctx.message, `👋 - game stopped by <@${ctx.member.id}>`)
                 .then(() => ctx.deleteOriginal());
             delete games[ctx.channel.id];

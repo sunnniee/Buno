@@ -8,8 +8,15 @@ import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVa
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
 import { onLeaderboardButtonPress } from "../commands/leaderboard.js";
+import timeouts from "../timeouts.js";
 
-export const games: { [channelId: string]: UnoGame<boolean> } = {};
+export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
+    deleteProperty(t: { [channelId: string]: UnoGame<boolean> }, p: string) {
+        timeouts.delete(t[p].channelID);
+        delete t[p];
+        return true;
+    }
+});
 
 export function onTimeout(game: UnoGame<true>, player: string) {
     if (!games[game.channelID]) return;
@@ -20,8 +27,7 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
-    clearTimeout(game.timeout);
-    game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
+    timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     sendGameMessage(game);
 }
 
@@ -67,6 +73,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
         if (game.message?.channel) deleteMessage(game.message);
+        timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
         game.message = msg;
         games[game.channelID] = game;
     });

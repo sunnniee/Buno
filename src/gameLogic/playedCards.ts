@@ -1,11 +1,12 @@
 import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 import { Card, UnoGame } from "../types.js";
-import { games, sendGameMessage, onTimeout } from "./index.js";
+import { games, onTimeout, sendGameMessage } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
 import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { cardArrayToCount, getPlayerMember, getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
 import { config } from "../index.js";
+import timeouts from "../timeouts.js";
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
     const id = asClyde ? config.clyde.id : ctx.member.id;
@@ -166,8 +167,6 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal();
     }
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-    clearTimeout(game.timeout);
-    game.timeout = setTimeout(() => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     if (game.cards[id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
@@ -180,6 +179,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (cardPlayed !== "draw" || !game.settings.allowSkipping) {
             sendGameMessage(game);
         } else {
+            timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
             games[ctx.message.channel.id] = game;
         }
     } else deleteMessage(game.message);
