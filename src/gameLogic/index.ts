@@ -51,7 +51,7 @@ ${game.players.map(p => getUsername(p, true, game.message?.channel?.guild) ?? `U
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
-export function sendGameMessage(game: UnoGame<true>) {
+export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
     const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
     sendMessage(game.channelID, {
         content: `<@${game.currentPlayer}> it's now your turn`,
@@ -77,7 +77,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
         if (game.message?.channel) deleteMessage(game.message);
-        timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
+        if (!keepTimeout) timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
         game.message = msg;
         games[game.channelID] = game;
     });
@@ -160,5 +160,5 @@ export function handleGameResend(msg: Message<AnyGuildTextChannel>) {
     const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyGuildTextChannel>>)
         .filter(m => BigInt(m.id) > BigInt(game.message.id))
         .reduce((weight, msg2) => (msg2.content.length > 800 || !msg2.attachments.empty || msg2.embeds.length ? 2 : 1) + weight, 0);
-    if (scrolledWeight > 20) sendGameMessage(game);
+    if (scrolledWeight > 20) sendGameMessage(game, true);
 }
