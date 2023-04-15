@@ -18,8 +18,7 @@ export const cmd = {
                 return respond(msg, "👍 Deleted the game in this channel");
             }
             msg.channel.getMessage(game.message.id)
-                .then(() => respond(msg, `Couldn't find anything wrong.
-https://discord.com/channels/${game.message.channel.guild.id}/${game.message.channel.id}/${game.message.id}`))
+                .then(() => respond(msg, "Couldn't find anything wrong."))
                 .catch(e => {
                     if (e.message.includes("Unknown Message")) {
                         delete games[msg.channel.id];
@@ -43,8 +42,7 @@ https://discord.com/channels/${game.message.channel.guild.id}/${game.message.cha
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
             } else {
                 msg.channel.getMessage(game.message.id)
-                    .then(() => respond(msg, `Couldn't find anything wrong.
-https://discord.com/channels/${game.message.channel.guild.id}/${game.message.channel.id}/${game.message.id}`))
+                    .then(() => respond(msg, "Couldn't find anything wrong."))
                     .catch(e => {
                         if (e.message.includes("Unknown Message")) sendGameMessage(game);
                         else console.log(e);
