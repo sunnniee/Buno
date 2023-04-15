@@ -3,6 +3,7 @@ import { AnyGuildTextChannel, Message } from "oceanic.js";
 
 export type Config = {
     prefix: string,
+    emoteless: boolean,
     status: string,
     developerIds: string[],
     devPrefix: string,

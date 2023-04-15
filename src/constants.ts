@@ -1,13 +1,21 @@
+import { config } from "./index.js";
 import { Card, UnoGameSettings } from "./types.js";
 
 export const colors = ["red", "yellow", "green", "blue",] as const;
+export const colorEmotes: { [k in typeof colors[number] | "other"]: string } = {
+    red: "🟥",
+    yellow: "🟨",
+    green: "🟩",
+    blue: "🟦",
+    other: "⬛"
+} as const;
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
 export const uniqueVariants = ["wild", "+4",] as const;
 export const cards = (colors
     .map(c => variants.map(v => `${c}-${v}`))
     .flat() as Card[])
     .concat(uniqueVariants);
-export const cardEmotes: { [k in Card]: string } = {
+export const cardEmojis = {
     "red-0": "<:R0:1079758914909900890>",
     "red-1": "<:R1:1079758916491149332>",
     "red-2": "<:R2:1079758919066468423>",
@@ -63,6 +71,15 @@ export const cardEmotes: { [k in Card]: string } = {
     "wild": "<:Wn:1083073225371693056>",
     "+4": "<:d4:1083073222230155295>",
 };
+export let cardEmotes: { [k in Card]: string };
+setImmediate(() => cardEmotes = config.emoteless
+    // this has to be some of the most insane code i've written
+    ? colors
+        .map(c => variants.map(v => [`${c}-${v}`, colorEmotes[c]]))
+        .concat([uniqueVariants.map(v => [v, colorEmotes.other])])
+        .reduce((obj, val) => { val.forEach(([k, v]) => obj[k] = v); return obj; }, {}) as { [k in Card]: string }
+    : cardEmojis
+);
 export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniqueVariants[number]}`] } = {
     "red-wild": "<:Wr:1083073403197587476>",
     "red-+4": "<:4r:1083073363360108545>",

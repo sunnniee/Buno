@@ -4,11 +4,12 @@ import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime } from "../constants.js";
+import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime, cardEmojis } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
 import { onLeaderboardButtonPress } from "../commands/leaderboard.js";
 import timeouts from "../timeouts.js";
+import { config } from "../index.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
     deleteProperty(t: { [channelId: string]: UnoGame<boolean> }, p: string) {
@@ -60,7 +61,7 @@ export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
             .setTitle("The Buno.")
             .setDescription(`
 Currently playing: **${getUsername(game.currentPlayer, true, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
-Current card: ${currentCardEmote} \
+Current card: ${config.emoteless && uniqueVariants.includes(game.currentCard as any) ? cardEmotes[game.currentCard] : currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
 ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
@@ -68,7 +69,9 @@ ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** 
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`
 `.trim())
-            .setThumbnail(`https://cdn.discordapp.com/emojis/${currentCardEmote.match(/<:\w+:(\d+)>/)[1]}.png`)
+            .setThumbnail(`https://cdn.discordapp.com/emojis/${config.emoteless && uniqueVariants.includes(game.currentCard as any)
+                ? currentCardEmote.match(/<:\w+:(\d+)>/)[1]
+                : cardEmojis[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
             .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)

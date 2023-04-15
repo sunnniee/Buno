@@ -66,7 +66,7 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
                 return {
                     label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
                     value: c,
-                    emoji: ComponentBuilder.emojiToPartial(cardEmotes[c], "custom")
+                    emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
                 };
             }),
             {

@@ -46,7 +46,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
             ctx.createFollowup({
-                content: game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
+                content: config.emoteless ? null : game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
                 components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
             });
