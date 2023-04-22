@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "moduleResolution": "Node",
-        "target": "ES2021",
+        "target": "ES2022",
         "allowSyntheticDefaultImports": true,
         "alwaysStrict": true,
         "outDir": "dist",
