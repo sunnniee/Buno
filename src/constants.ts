@@ -91,13 +91,13 @@ export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniq
     "blue-+4": "<:4b:1083073359404867716>"
 };
 
-// yes i like catppuccin how could you tell
 export const rainbowColors = [
     0xf38ba8,
     0xfab387,
     0xf9e2af,
     0xa6e3a1,
-    0x74e7bc,
+    0x89b4fa,
+    0xcba6f7,
     0xf5c2e7
 ] as const;
 export const defaultColor = 0x6c7086;
