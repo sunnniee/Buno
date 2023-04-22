@@ -199,5 +199,6 @@ export function getUsername(id: string, nick: boolean, guild: Guild) {
         || guild?.members.get(id)?.username
         || client.users.get(id)?.username
         || id;
+    if (!name) return "[this shouldn't be here]";
     return name.replace(/([*_~`|])/g, "$1\u200b");
 }
