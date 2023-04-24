@@ -53,7 +53,8 @@ const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
-    const currentCardEmote = uniqueVariants.includes(game.currentCard as any) ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
+    const isUnique = uniqueVariants.includes(game.currentCard as any);
+    const currentCardEmote = isUnique ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
     sendMessage(game.channelID, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
@@ -61,7 +62,7 @@ export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
             .setTitle("The Buno.")
             .setDescription(`
 Currently playing: **${getUsername(game.currentPlayer, true, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
-Current card: ${config.emoteless && uniqueVariants.includes(game.currentCard as any) ? cardEmotes[game.currentCard] : currentCardEmote} \
+Current card: ${config.emoteless && isUnique ? cardEmotes[game.currentCard] : currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
 ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
@@ -69,8 +70,8 @@ ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** 
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`
 `.trim())
-            .setThumbnail(`https://cdn.discordapp.com/emojis/${config.emoteless && uniqueVariants.includes(game.currentCard as any)
-                ? currentCardEmote.match(/<:\w+:(\d+)>/)[1]
+            .setThumbnail(`https://cdn.discordapp.com/emojis/${isUnique
+                ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`].match(/<:\w+:(\d+)>/)[1]
                 : cardEmojis[game.currentCard].match(/<:\w+:(\d+)>/)[1]}.png`)
             .setColor(rainbowColors[game.players.indexOf(game.currentPlayer) % 7] || defaultColor)
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
