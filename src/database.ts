@@ -1,6 +1,8 @@
 import { PlayerStatsDatabaseInfo, PlayerStorage } from "./types.js";
 import { readdir, readFile, writeFile as _writeFile } from "fs/promises";
 import { client } from "./client.js";
+import { GuildStorage } from "./types";
+import { defaultSettings } from "./constants.js";
 
 const writeFile = new Proxy(_writeFile, {
     apply(target, thisArg, argArray) {
@@ -10,9 +12,17 @@ const writeFile = new Proxy(_writeFile, {
 
 class PlayerStatsDatabase {
     private cache: PlayerStatsDatabaseInfo = {};
+    private latestSettingsVersion = 2 as const;
     private hasInitalized = false;
     private waitingForInit = false;
     private writeOps: { [guildID: string]: Promise<void> } = {};
+
+    defaultValue: PlayerStorage = {
+        wins: 0,
+        losses: 0,
+        preferredSettings: defaultSettings
+    } as const;
+
     private init = async () => {
         if (this.hasInitalized) return;
         const savedGuilds = (await readdir(process.cwd() + "/database")).filter(f => f.endsWith(".json"));
@@ -26,7 +36,8 @@ class PlayerStatsDatabase {
         this.waitingForInit = false;
         [...client.guilds.keys()].forEach(async i => {
             if (!savedGuilds.includes(`${i}.json`)) {
-                this.cache[i] = {};
+                // @ts-expect-error
+                this.cache[i] = { settingsVersion: this.latestSettingsVersion };
                 await this.write(i);
             }
         });
@@ -35,30 +46,70 @@ class PlayerStatsDatabase {
         );
         this.hasInitalized = true;
     };
+
+    private migrateSettings = (object: GuildStorage) => {
+        if (!object) return;
+        const version = object.settingsVersion ?? 1;
+        switch (version) {
+            case 1: { /* { wins: number, losses: number } */
+                Object.keys(object).forEach(k => object[k] = {
+                    ...object[k],
+                    preferredSettings: defaultSettings
+                });
+                break;
+            }
+            case 2: { /* { wins: number, losses: number, preferredSettings: UnoGameSettings } */
+                break;
+            }
+        }
+        object.settingsVersion = this.latestSettingsVersion;
+        return object;
+    };
+
     private write = async (guildId: string) => {
         if (this.writeOps[guildId]) this.writeOps[guildId].then(() => writeFile(`${process.cwd()}/database/${guildId}.json`, JSON.stringify(this.cache[guildId])));
         else this.writeOps[guildId] = writeFile(`${process.cwd()}/database/${guildId}.json`, JSON.stringify(this.cache[guildId]));
     };
 
-    get(guildId: string, playerId: string): PlayerStorage {
+    get(guildId: string, playerId: string): PlayerStorage | undefined {
         if (!this.hasInitalized) return;
-        return this.cache[guildId][playerId];
+        const guild = this.cache[guildId];
+        if (guild.settingsVersion !== this.latestSettingsVersion) {
+            this.cache[guildId] = this.migrateSettings(guild);
+            this.write(guildId);
+        }
+        return guild[playerId];
     }
 
-    getAllForGuild(guildId: string) {
-        if (!this.hasInitalized) return {};
-        return this.cache[guildId];
+    getAllForGuild(guildId: string): GuildStorage | undefined {
+        if (!this.hasInitalized) return {} as any;
+        const guild = this.cache[guildId];
+        if (guild.settingsVersion !== this.latestSettingsVersion) {
+            this.cache[guildId] = this.migrateSettings(guild);
+            this.write(guildId);
+        }
+        return guild;
     }
 
-    set(guildId: string, playerId: string, newValue: PlayerStorage): void {
+    set(guildId: string, playerId: string, newValue: Partial<PlayerStorage>): void {
         if (!this.hasInitalized) return;
-        this.cache[guildId][playerId] = newValue;
+        let current = this.cache[guildId][playerId];
+        if (!current) current = { ...this.defaultValue };
+        this.cache[guildId][playerId] = { ...newValue, ...current };
+        if (this.cache[guildId].settingsVersion !== this.latestSettingsVersion)
+            this.cache[guildId] = this.migrateSettings(this.cache[guildId]);
         this.write(guildId);
     }
 
-    setMultiple(guildId: string, values: { [id: string]: PlayerStorage }): void {
+    setBulk(guildId: string, values: { [id: string]: Partial<PlayerStorage> }): void {
         if (!this.hasInitalized) return;
-        Object.entries(values).forEach(([id, value]) => this.cache[guildId][id] = value);
+        Object.entries(values).forEach(([id, value]) => {
+            let current = this.cache[guildId][id];
+            if (!current) current = { ...this.defaultValue };
+            this.cache[guildId][id] = { ...value, ...current };
+        });
+        if (this.cache[guildId].settingsVersion !== this.latestSettingsVersion)
+            this.cache[guildId] = this.migrateSettings(this.cache[guildId]);
         this.write(guildId);
     }
 

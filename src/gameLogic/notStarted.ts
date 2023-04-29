@@ -161,8 +161,18 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
             game.settings.randomizePlayerList = !game.settings.randomizePlayerList;
             break;
         }
+        case SettingsIDs.RESEND_GAME_MESSAGE: {
+            game.settings.resendGameMessage = !game.settings.resendGameMessage;
+            break;
+        }
+        default: {
+            ctx.createFollowup({
+                content: `The **${ctx.data.values.raw[0]}** setting is missing a handler. this is a bug`
+            });
+        }
     }
     games[ctx.channel.id] = game;
+    database.set(ctx.guild.id, ctx.member.id, { preferredSettings: game.settings });
     ctx.editOriginal({
         components: SettingsSelectMenu(game)
     });

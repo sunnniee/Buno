@@ -164,6 +164,11 @@ export function next<T>(array: T[], n: number) {
     if (n < array.length - 1) return array[n + 1];
     else return array[0];
 }
+export function without<T extends Record<string, any>, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
+    const obj2 = { ...obj };
+    keys.forEach(k => { delete obj2[k]; });
+    return obj2;
+}
 
 export const toTitleCase = (n: string) =>
     n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
@@ -185,12 +190,12 @@ export function updateStats(game: UnoGame<true>, winner: string) {
     if (game._modified) return;
     const newStats: { [id: string]: PlayerStorage; } = {};
     game.players.forEach(id => {
-        const val: PlayerStorage = database.get(game.guildID, id) ?? { wins: 0, losses: 0 };
+        const val: PlayerStorage = database.get(game.guildID, id) ?? database.defaultValue;
         if (id === winner) val.wins++;
         else val.losses++;
         newStats[id] = val;
     });
-    database.setMultiple(game.guildID, newStats);
+    database.setBulk(game.guildID, newStats);
 }
 
 export function getUsername(id: string, nick: boolean, guild: Guild) {

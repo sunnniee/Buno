@@ -3,7 +3,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, Guild, MessageActio
 import { client, respond } from "../client.js";
 import database from "../database.js";
 import { Command, PlayerStorage } from "../types.js";
-import { getUsername } from "../utils.js";
+import { getUsername, without } from "../utils.js";
 import { defaultColor, ButtonIDs } from "../constants.js";
 
 interface Stats extends PlayerStorage {
@@ -70,7 +70,9 @@ export function onLeaderboardButtonPress(ctx: ComponentInteraction<ComponentType
     const page = currentPage + direction;
 
     const guild = client.guilds.get(guildId);
-    const stats: Stats[] = Object.entries(database.getAllForGuild(guild.id)).map(([id, v]) => ({
+    const stats: Stats[] = Object.entries(
+        without(database.getAllForGuild(guild.id), "settingsVersion")
+    ).map(([id, v]) => ({
         id,
         ...v
     })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
@@ -96,7 +98,9 @@ export const cmd = {
     execute: (msg, args) => {
         const { page: _page, guildId } = getArgs(args);
         const guild = client.guilds.get(guildId) ?? msg.channel.guild;
-        const stats: Stats[] = Object.entries(database.getAllForGuild(guild.id)).map(([id, v]) => ({
+        const stats: Stats[] = Object.entries(
+            without(database.getAllForGuild(guild.id), "settingsVersion")
+        ).map(([id, v]) => ({
             id,
             ...v
         })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);

@@ -7,6 +7,7 @@ import { ButtonIDs, defaultSettings, autoStartTimeout } from "../constants.js";
 import { startGame } from "../gameLogic/notStarted.js";
 import { hasStarted } from "../utils.js";
 import timeouts from "../timeouts.js";
+import database from "../database.js";
 
 export const cmd = {
     name: "uno",
@@ -16,12 +17,13 @@ export const cmd = {
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
         games[msg.channel.id] = { started: false } as UnoGame<false>;
+        const data = database.get(msg.channel.guild.id, msg.author.id);
         const gameObj = {
             uid: Math.random().toString().substring(2),
             started: false,
             starting: Math.floor(Date.now() / 1000) + autoStartTimeout,
             host: msg.author.id,
-            settings: { ...defaultSettings },
+            settings: data?.preferredSettings ?? { ...defaultSettings },
             players: [msg.author.id],
             _allowSolo: args[0]?.toLowerCase() === "solo",
             _modified: false,

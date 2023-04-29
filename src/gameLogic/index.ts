@@ -10,6 +10,7 @@ import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getP
 import { onLeaderboardButtonPress } from "../commands/leaderboard.js";
 import timeouts from "../timeouts.js";
 import { config } from "../index.js";
+import database from "../database.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
     deleteProperty(t: { [channelId: string]: UnoGame<boolean> }, p: string) {
@@ -150,6 +151,7 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
         if (timeoutDuration < 0 || timeoutDuration > 3600) timeoutDuration = veryLongTime; // :slight_smile:
         if (timeoutDuration < 20) timeoutDuration = 20;
         game.settings.timeoutDuration = timeoutDuration;
+        database.set(ctx.guild.id, ctx.member.id, { preferredSettings: game.settings });
         games[ctx.channel.id] = game;
         ctx.editOriginal({
             components: SettingsSelectMenu(game)

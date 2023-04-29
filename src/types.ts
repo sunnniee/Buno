@@ -23,12 +23,17 @@ export type Command = {
 
 export type PlayerStorage = {
     wins: number
-    losses: number
+    losses: number,
+    preferredSettings: UnoGameSettings
+}
+export type GuildStorage = {
+    settingsVersion: number
+    // typescript jumpscare
+} & {
+    [userID: string]: PlayerStorage
 }
 export type PlayerStatsDatabaseInfo = {
-    [guildID: string]: {
-        [userID: string]: PlayerStorage
-    }
+    [guildID: string]: GuildStorage
 }
 
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]

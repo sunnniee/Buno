@@ -74,8 +74,10 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
         case ButtonIDs.VIEW_GAME_SETTINGS: {
             return ctx.createFollowup({
                 content: `Kick on timeout: **${game.settings.kickOnTimeout ? "Enabled" : "Disabled"}**
+                Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**
                 Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
-                Randomize player order: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
+                Randomize order of players: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
+                Resend game message: **${game.settings.resendGameMessage ? "Enabled" : "Disabled"}**
                 Anti sabotage: **find out 🚎**`
                     .replace(/ {8,}/g, ""),
                 flags: MessageFlags.EPHEMERAL
