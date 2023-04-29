@@ -10,6 +10,7 @@ import { config } from "../index.js";
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
+        delete game.cards[ctx.member.id];
         if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** left the game.`);
         ctx.deleteOriginal();
