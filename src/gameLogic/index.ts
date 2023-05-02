@@ -1,5 +1,5 @@
 import { deleteMessage, sendMessage, client } from "../client.js";
-import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
+import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
 import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
@@ -37,14 +37,14 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     sendGameMessage(game);
 }
 
-export function makeStartMessage(game: UnoGame<false>) {
+export function makeStartMessage(game: UnoGame<false>, guild?: Guild) {
     return new EmbedBuilder()
         .setTitle("The Buno.")
         .setDescription(`
 **Game will start <t:${game.starting}:R>**
-Current game host: ${getUsername(game.host, true, game.message?.channel?.guild)}
+Current game host: ${getUsername(game.host, true, guild ?? game.message?.channel?.guild)}
 \`\`\`
-${game.players.map(p => getUsername(p, true, game.message?.channel?.guild) ?? `Unknown [${p}]`).join("\n")}
+${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.guild, true) ?? `Unknown [${p}]`).join("\n")}
 \`\`\`
     `)
         .setColor(defaultColor)
@@ -68,7 +68,7 @@ ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
 ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
 \`\`\`diff
-${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
+${game.players.map((p, i) => makeGameLine(game, p, i), true).join("\n")}
 \`\`\`
 `.trim())
             .setThumbnail(`https://cdn.discordapp.com/emojis/${isUnique

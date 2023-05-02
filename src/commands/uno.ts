@@ -31,7 +31,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             guildID: msg.channel.guild.id
         } as UnoGame<false>;
         respond(msg, {
-            embeds: [makeStartMessage(gameObj)],
+            embeds: [makeStartMessage(gameObj, msg.channel.guild)],
             components: new ComponentBuilder<MessageActionRow>()
                 .addInteractionButton({
                     style: ButtonStyles.PRIMARY,
