@@ -49,7 +49,7 @@ client.on("messageCreate", msg => {
 });
 
 client.on("interactionCreate", ctx => {
-    ctx = patch(ctx);
+    patch(ctx);
     if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
         if (ctx.isButtonComponentInteraction()) onButtonPress(ctx);
         else onSelectMenu(ctx);

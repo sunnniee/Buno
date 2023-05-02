@@ -9,7 +9,7 @@ function onInteractionError(e: Error, ctx: AnyInteractionGateway) {
     else onMsgError(e, ctx);
 }
 
-export function patch<T extends AnyInteractionGateway>(ctx: T): T {
+export function patch<T extends AnyInteractionGateway>(ctx: T) {
     const methods = [
         "createFollowup", "createMessage", "createModal",
         "defer", "deferUpdate",
@@ -22,5 +22,4 @@ export function patch<T extends AnyInteractionGateway>(ctx: T): T {
             return target.apply(thisArg, argArray).catch(e => onInteractionError(e, ctx));
         },
     })));
-    return ctx;
 }
