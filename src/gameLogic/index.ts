@@ -51,7 +51,7 @@ ${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.gui
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild) ?? `Unknown [${playerID}]`}: \
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild, true) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
     const isUnique = uniqueVariants.includes(game.currentCard as any);
@@ -68,7 +68,7 @@ ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
 ${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
 \`\`\`diff
-${game.players.map((p, i) => makeGameLine(game, p, i), true).join("\n")}
+${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`
 `.trim())
             .setThumbnail(`https://cdn.discordapp.com/emojis/${isUnique
