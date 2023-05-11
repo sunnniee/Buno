@@ -24,7 +24,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
         }
         else {
             const { cards, newDeck } = game.draw(4 + game.drawStackCounter);
-            game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
+            game.cards[nextPlayer].push(...cards);
             game.deck = newDeck;
             const trolledMember = getPlayerMember(game, nextPlayer);
             extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
@@ -51,7 +51,7 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw-forceful";
     if (cardPlayed === "draw-forceful") {
         const { cards, newDeck } = game.draw(game.drawStackCounter);
-        game.cards[game.currentPlayer] = game.cards[game.currentPlayer].concat(cards);
+        game.cards[game.currentPlayer].push(...cards);
         game.deck = newDeck;
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         sendMessage(ctx.channel.id, `**${getUsername(id, true, ctx.guild)}** drew ${game.drawStackCounter} cards`);
@@ -150,7 +150,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             }
             else if (game.cards[id].length > 0) {
                 const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
-                game.cards[nextPlayer] = game.cards[nextPlayer].concat(cards);
+                game.cards[nextPlayer].push(...cards);
                 game.deck = newDeck;
                 const trolledMember = getPlayerMember(game, nextPlayer);
                 extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;

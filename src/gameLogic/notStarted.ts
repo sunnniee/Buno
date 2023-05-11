@@ -128,10 +128,22 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
             }
         });
     });
+    // startedGame.cards = new Proxy(cardsToBeUsed, {
+    //     set(t, p, n) {
+    //         throw new Error("Attempted to replace cards array - from [" + t[p as string] + "] to [" + n + "]");
+    //     }
+    // });
     startedGame.cards = cardsToBeUsed;
     startedGame.currentCard = drawUntilNotSpecial(startedGame);
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any;
     startedGame.deck = startedGame.draw(0).newDeck;
+    // sendGameMessage(new Proxy(startedGame, {
+    //     set(t, p, n) {
+    //         if (p === "players")
+    //             throw new Error("Attempted to replace cards array - from " + t[p as string] + " to " + n);
+    //         return true;
+    //     },
+    // }));
     sendGameMessage(startedGame);
 }
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
