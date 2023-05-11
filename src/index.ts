@@ -36,6 +36,9 @@ readdir("./src/commands", (err, res) => {
 client.on("ready", () => {
     console.log("Ready as", client.user.tag);
     client.editStatus("online", [{ name: `${config.status} - ${prefix}uno`, type: ActivityTypes.GAME }]);
+    if (config.logChannel) client.rest.channels.createMessage(config.logChannel, {
+        content: `Restarted (<t:${Math.floor(Date.now() / 1000)}>)`
+    }).catch(() => { });
 });
 client.on("error", console.error);
 

@@ -7,6 +7,7 @@ export type Config = {
     status: string,
     developerIds: string[],
     devPrefix: string,
+    logChannel?: string
     clyde: {
         enabled: boolean,
         id: string,
@@ -34,6 +35,12 @@ export type GuildStorage = {
 }
 export type PlayerStatsDatabaseInfo = {
     [guildID: string]: GuildStorage
+}
+
+export interface DebugState {
+    type: "delete-player" | "set-cards",
+    newState: string[],
+    meetsEndCondition: [boolean, number]
 }
 
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]
@@ -67,6 +74,13 @@ export type UnoGame<T extends boolean> = T extends true ? {
     channelID: string,
     guildID: string,
     _modified: boolean,
+    _debug: {
+        _state: (Omit<UnoGame<true>, "_debug" | "message" | "deck"> & {
+            action: DebugState,
+            _index: number
+        })[],
+        pushState(state: DebugState): void
+    }
     clyde?: boolean
 } : {
     uid: string,

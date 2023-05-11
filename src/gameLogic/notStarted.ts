@@ -1,11 +1,11 @@
 import { deleteMessage, respond, sendMessage } from "../client.js";
 import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
-import { Card, UnoGame } from "../types.js";
+import { Card, DebugState, UnoGame } from "../types.js";
 import { games, sendGameMessage, makeStartMessage } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import database from "../database.js";
-import { getPlayerMember, SettingsSelectMenu, shuffle, toTitleCase, updateStats, hasStarted } from "../utils.js";
+import { getPlayerMember, SettingsSelectMenu, shuffle, toTitleCase, updateStats, hasStarted, without } from "../utils.js";
 import timeouts from "../timeouts.js";
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
@@ -14,6 +14,19 @@ const drawUntilNotSpecial = (game: UnoGame<true>) => {
     return card;
 };
 function dupe<T>(a: T[]): T[] { return a.concat(a); }
+
+function pushStateFactory(game: UnoGame<true>): (state: DebugState) => void {
+    const MAX_STATE_LENGTH = 8;
+    return state => {
+        game._debug._state.push({
+            ...without(game, "_debug", "message", "deck"),
+            action: state,
+            _index: (game._debug._state.at(-1)?._index ?? 0) + 1
+        });
+        if (game._debug._state.length > MAX_STATE_LENGTH) game._debug._state.shift();
+        games[game.channelID] = game;
+    };
+}
 
 export function startGame(game: UnoGame<false>, automatic: boolean) {
     if (hasStarted(game)) return;
@@ -36,6 +49,11 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     const players = new Proxy(playerList, {
         deleteProperty(t, p) {
             delete t[p];
+            startedGame._debug.pushState({
+                type: "delete-player",
+                newState: t,
+                meetsEndCondition: [t.filter(Boolean).length <= 1, t.filter(Boolean).length]
+            });
             if (t.filter(Boolean).length <= 1) {
                 const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
                 timeouts.delete(game.channelID);
@@ -72,11 +90,20 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         clyde: game.clyde
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
+    startedGame._debug = {
+        _state: [],
+        pushState: pushStateFactory(startedGame)
+    };
     const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
             set(t, p, n) {
                 t[p] = n;
+                if (p === "length") startedGame._debug.pushState({
+                    type: "set-cards",
+                    newState: t,
+                    meetsEndCondition: [p === "length" && n === 0, n]
+                });
                 if (p === "length" && n === 0) {
                     // TODO: check that the card shown here is the correct one and dont just pray it is
                     const card = startedGame.currentCard;

@@ -1,9 +1,30 @@
-import { deleteMessage, respond } from "../client.js";
+import { inspect } from "util";
+import { client, deleteMessage, respond } from "../client.js";
 import { games, sendGameMessage } from "../gameLogic/index.js";
-import { Command } from "../types";
-import { getUsername, hasStarted, updateStats } from "../utils.js";
+import { Command, UnoGame } from "../types";
+import { getUsername, hasStarted, updateStats, without } from "../utils.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
+import { ChannelTypes } from "oceanic.js";
+
+function sendDebugLog(game: UnoGame<true>, reason: "player left" | "card was played") {
+    const debugChannel = client.getChannel(config.logChannel);
+    if (!debugChannel || debugChannel.type !== ChannelTypes.GUILD_TEXT) return;
+    debugChannel.createMessage({
+        content: `Debug log from <t:${Math.floor(Date.now() / 1000)}> (<t:${Math.floor(Date.now() / 1000)}:R>)
+Reason: ${reason}
+${config.developerIds.map(id => `<@${id}>`).join(" ")}`,
+        allowedMentions: { users: true },
+        attachments: [{
+            id: "0",
+            filename: "game.json"
+        }],
+        files: [{
+            name: "game.json",
+            contents: Buffer.from(inspect(without(game, "message"), { depth: Infinity }))
+        }]
+    });
+}
 
 export const cmd = {
     name: "fixgame",
@@ -27,6 +48,7 @@ export const cmd = {
                 });
         } else {
             if (game.players.length <= 1) {
+                sendDebugLog({ ...game }, "player left");
                 const possiblyTheWinner = /\d{17,20}/.test(game.currentPlayer) ? game.currentPlayer : game.lastPlayer.id;
                 deleteMessage(game.message);
                 timeouts.delete(game.channelID);
@@ -34,6 +56,7 @@ export const cmd = {
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner, true, guild)}** would've "won"`);
             } else if (Object.values(game.cards).some(a => a.length === 0)) {
+                sendDebugLog({ ...game }, "card was played");
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);

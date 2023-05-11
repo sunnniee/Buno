@@ -8,6 +8,7 @@ status = "hi"
 # ⚠ don't just goof around if you don't know what you're doing
 developerIds = [""]
 devPrefix = "]]"
+logChannel = ""
 
 [clyde]
     # as this is a partially joke bot made for some friends, it has an option to add an additional player controlled by the host
