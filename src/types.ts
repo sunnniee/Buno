@@ -37,8 +37,8 @@ export type PlayerStatsDatabaseInfo = {
     [guildID: string]: GuildStorage
 }
 
+export type DebugStateType = "delete-player" | "set-cards";
 export interface DebugState {
-    type: "delete-player" | "set-cards",
     newState: string[],
     meetsEndCondition: [boolean, number]
 }
@@ -75,11 +75,13 @@ export type UnoGame<T extends boolean> = T extends true ? {
     guildID: string,
     _modified: boolean,
     _debug: {
-        _state: (Omit<UnoGame<true>, "_debug" | "message" | "deck"> & {
-            action: DebugState,
-            _index: number
-        })[],
-        pushState(state: DebugState): void
+        _state: {
+            [k in DebugStateType]: (Omit<UnoGame<true>, "_debug" | "message" | "deck"> & {
+                action: DebugState,
+                _index: number
+            })[]
+        },
+        pushState(state: DebugState & { type: DebugStateType }): void
     }
     clyde?: boolean
 } : {

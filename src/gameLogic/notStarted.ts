@@ -1,7 +1,7 @@
 import { deleteMessage, respond, sendMessage } from "../client.js";
 import { cards, ButtonIDs, uniqueVariants, defaultSettings, SettingsIDs, veryLongTime, cardEmotes } from "../constants.js";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
-import { Card, DebugState, UnoGame } from "../types.js";
+import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
 import { games, sendGameMessage, makeStartMessage } from "./index.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import database from "../database.js";
@@ -15,15 +15,17 @@ const drawUntilNotSpecial = (game: UnoGame<true>) => {
 };
 function dupe<T>(a: T[]): T[] { return a.concat(a); }
 
-function pushStateFactory(game: UnoGame<true>): (state: DebugState) => void {
+function pushStateFactory(game: UnoGame<true>): (state: DebugState & { type: DebugStateType }) => void {
     const MAX_STATE_LENGTH = 8;
     return state => {
-        game._debug._state.push({
+        const stateArray = game._debug._state[state.type];
+        stateArray.push({
             ...without(game, "_debug", "message", "deck"),
             action: state,
-            _index: (game._debug._state.at(-1)?._index ?? 0) + 1
+            _index: (stateArray.at(-1)?._index ?? 0) + 1
         });
-        if (game._debug._state.length > MAX_STATE_LENGTH) game._debug._state.shift();
+        if (stateArray.length > MAX_STATE_LENGTH) stateArray.shift();
+        game._debug._state[state.type] = stateArray;
         games[game.channelID] = game;
     };
 }
@@ -91,7 +93,10 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
     startedGame._debug = {
-        _state: [],
+        _state: {
+            "delete-player": [],
+            "set-cards": []
+        },
         pushState: pushStateFactory(startedGame)
     };
     const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
