@@ -121,7 +121,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.cards[id].push(cards[0]);
             game.deck = newDeck;
             if (game.settings.allowSkipping) ctx.editOriginal({
-                content: game.cards[id].map(c => cardEmotes[c]).join(" "),
+                content: config.emoteless ? null : game.cards[id].map(c => cardEmotes[c]).join(" "),
                 components: PickCardSelect(game, cardArrayToCount(game.cards[id]), asClyde)
             });
             else ctx.deleteOriginal();

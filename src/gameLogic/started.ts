@@ -26,6 +26,10 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: "You aren't in the game!",
                 flags: MessageFlags.EPHEMERAL
             });
+            if (config.emoteless) return ctx.createFollowup({
+                content: game.cards[ctx.member.id].map(c => `${cardEmotes[c]} ${toTitleCase(c)}`).join(", "),
+                flags: MessageFlags.EPHEMERAL
+            });
             ctx.createFollowup({
                 content: game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
                 flags: MessageFlags.EPHEMERAL
