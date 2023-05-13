@@ -82,7 +82,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         flags: MessageFlags.EPHEMERAL
     });
     if (uniqueVariants.includes(color as typeof uniqueVariants[number])) {
-        return ctx.editOriginal({
+        return ctx.createFollowup({
             content: "Choose a color",
             components: new ComponentBuilder<MessageActionRow>()
                 .addSelectMenu({
