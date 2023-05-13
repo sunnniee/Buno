@@ -1,11 +1,11 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { MessageActionRow, ButtonStyles, AnyGuildTextChannel, ComponentTypes, Guild } from "oceanic.js";
+import { AnyGuildTextChannel, ButtonStyles, ComponentTypes, Guild, MessageActionRow } from "oceanic.js";
 import { client } from "./client.js";
-import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings, cards } from "./constants.js";
+import { ButtonIDs, SelectIDs, SettingsIDs, cardEmotes, cards, defaultSettings } from "./constants.js";
 import database from "./database.js";
 import { games } from "./gameLogic/index.js";
 import { config } from "./index.js";
-import { UnoGame, Card, PlayerStorage } from "./types.js";
+import { Card, PlayerStorage, UnoGame } from "./types.js";
 
 
 
@@ -207,4 +207,11 @@ export function getUsername(id: string, nick: boolean, guild: Guild, inCodeblock
     if (!name) return "[this shouldn't be here]";
     if (inCodeblock) return name.replace(/```/g, "`\u200b`\u200b`");
     return name.replace(/([*_~`|])/g, "\\$1");
+}
+
+export function getMention(id: string, guild: Guild): string {
+    if (id === config.clyde.id) return config.clyde.name;
+    return guild?.members.get(id)?.mention
+        || client.users.get(id)?.mention
+        || `<@${id}>`;
 }

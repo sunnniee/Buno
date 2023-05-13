@@ -1,10 +1,10 @@
 import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, Guild, MessageActionRow } from "oceanic.js";
 import { client, respond } from "../client.js";
+import { ButtonIDs, defaultColor } from "../constants.js";
 import database from "../database.js";
 import { Command, PlayerStorage } from "../types.js";
-import { getUsername, without } from "../utils.js";
-import { defaultColor, ButtonIDs } from "../constants.js";
+import { getMention, getUsername, without } from "../utils.js";
 
 interface Stats extends PlayerStorage {
     id: string
@@ -47,11 +47,11 @@ function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, 
     return new EmbedBuilder()
         .setTitle(`Leaderboard for ${guild.name}`)
         .setColor(defaultColor)
-        .setDescription(stats.map((s, i) => `\`${getText(i)}\`: __${getUsername(s.id, false, guild)}__ - **${s.wins}** wins, \
+        .setDescription(stats.map((s, i) => `\`${getText(i)}\`: __${getMention(s.id, guild)}__ - **${s.wins}** wins, \
 ${s.losses ? `**${(s.wins / s.losses).toFixed(2)}** W/L` : "**No** losses"}`
         ).join("\n"))
         .addField("Your stats", yourStats
-            ? `\`${emotes[yourStatsIndex] || `${yourStatsIndex + 1}.`}\`: ${getUsername(yourStats.id, false, guild)} - **${yourStats.wins}** wins, \
+            ? `\`${emotes[yourStatsIndex] || `${yourStatsIndex + 1}.`}\`: ${getMention(yourStats.id, guild)} - **${yourStats.wins}** wins, \
 ${yourStats.losses ? `**${(yourStats.wins / yourStats.losses).toFixed(2)}** W/L` : "**No** losses"}`
             : `\`??.\` ${getUsername(author, false, guild)} - No stats`)
         .setFooter(`Page ${page + 1} of ${Math.ceil(fullStats.length / 10)}`)
