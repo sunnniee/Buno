@@ -78,7 +78,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
-        components: GameButtons(game.clyde)
+        components: GameButtons()
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
         if (game.message?.channel) deleteMessage(game.message);
@@ -104,8 +104,6 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.VIEW_CARDS:
         case ButtonIDs.PLAY_CARD:
         case ButtonIDs.LEAVE_GAME:
-        case ButtonIDs.CLYDE_GET_CARDS:
-        case ButtonIDs.CLYDE_PLAY:
         case ButtonIDs.VIEW_GAME_SETTINGS:
             if (!game || !hasStarted(game)) return;
             onGameButtonPress(ctx, game);
@@ -134,9 +132,6 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (ctx.data.customID === SelectIDs.CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game);
-    else if (ctx.data.customID === SelectIDs.CLYDE_CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game, false, true);
-    else if (ctx.data.customID === SelectIDs.CLYDE_CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game, true);
-    else if (ctx.data.customID === SelectIDs.CLYDE_FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game, true);
     else if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS && !hasStarted(game)) onSettingsChange(ctx, game);
 }
 

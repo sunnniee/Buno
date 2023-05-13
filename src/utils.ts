@@ -4,12 +4,11 @@ import { client } from "./client.js";
 import { ButtonIDs, SelectIDs, cardEmotes, SettingsIDs, defaultSettings, cards } from "./constants.js";
 import database from "./database.js";
 import { games } from "./gameLogic/index.js";
-import { config } from "./index.js";
 import { UnoGame, Card, PlayerStorage } from "./types.js";
 
 
 
-export const GameButtons = ((clyde = false) => {
+export const GameButtons = (() => {
     const components = new ComponentBuilder<MessageActionRow>()
         .addInteractionButton({
             style: ButtonStyles.SECONDARY,
@@ -33,19 +32,6 @@ export const GameButtons = ((clyde = false) => {
             customID: ButtonIDs.VIEW_GAME_SETTINGS,
             emoji: ComponentBuilder.emojiToPartial("⚙", "default")
         });
-    if (clyde) components.addRow()
-        .addInteractionButton({
-            style: ButtonStyles.SECONDARY,
-            customID: ButtonIDs.CLYDE_GET_CARDS,
-            label: "Get Clyde Cards",
-            emoji: ComponentBuilder.emojiToPartial("🔍", "default")
-        })
-        .addInteractionButton({
-            style: ButtonStyles.PRIMARY,
-            customID: ButtonIDs.CLYDE_PLAY,
-            label: "Play as Clyde",
-            emoji: ComponentBuilder.emojiToPartial("🃏", "default")
-        });
     return components.toJSON();
 });
 
@@ -57,36 +43,38 @@ export function onMsgError(e: Error, ctx: { channelID: string }) {
     console.log(e);
 }
 
-export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }, asClyde = false) => new ComponentBuilder<MessageActionRow>()
+export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) =>
+    new ComponentBuilder<MessageActionRow>()
+        .addSelectMenu({
+            customID: SelectIDs.CHOOSE_CARD,
+            placeholder: "Choose a card",
+            options: [
+                ...Object.keys(cards).map(c => {
+                    return {
+                        label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
+                        value: c,
+                        emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
+                    };
+                }),
+                {
+                    label: "Draw a card",
+                    value: "draw",
+                    emoji: ComponentBuilder.emojiToPartial("🃏")
+                }
+            ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
+                (game.players.length === 2 ? (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true) : true)
+                ? [{
+                    label: "Skip your turn",
+                    value: "skip",
+                    emoji: ComponentBuilder.emojiToPartial("➡")
+                }] : []),
+            type: ComponentTypes.STRING_SELECT
+        })
+        .toJSON();
+
+export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
-        customID: asClyde ? SelectIDs.CLYDE_CHOOSE_CARD : SelectIDs.CHOOSE_CARD,
-        placeholder: "Choose a card",
-        options: [
-            ...Object.keys(cards).map(c => {
-                return {
-                    label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
-                    value: c,
-                    emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
-                };
-            }),
-            {
-                label: "Draw a card",
-                value: "draw",
-                emoji: ComponentBuilder.emojiToPartial("🃏")
-            }
-        ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
-            (game.players.length === 2 ? (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true) : true)
-            ? [{
-                label: "Skip your turn",
-                value: "skip",
-                emoji: ComponentBuilder.emojiToPartial("➡")
-            }] : []),
-        type: ComponentTypes.STRING_SELECT
-    })
-    .toJSON();
-export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }, asClyde = false) => new ComponentBuilder<MessageActionRow>()
-    .addSelectMenu({
-        customID: asClyde ? SelectIDs.CLYDE_FORCEFUL_DRAW : SelectIDs.FORCEFUL_DRAW,
+        customID: SelectIDs.FORCEFUL_DRAW,
         options: [{
             label: `Draw ${game.drawStackCounter} cards`,
             value: "draw-forceful",
@@ -199,7 +187,6 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 }
 
 export function getUsername(id: string, nick: boolean, guild: Guild, inCodeblock = false) {
-    if (id === config.clyde.id) return config.clyde.name;
     const name = (nick && guild?.members.get(id)?.nick)
         || guild?.members.get(id)?.username
         || client.users.get(id)?.username

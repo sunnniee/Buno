@@ -8,17 +8,16 @@ import { cardArrayToCount, getUsername, next, PickCardSelect, toTitleCase, wasLa
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 
-export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
-    const id = asClyde ? config.clyde.id : ctx.member.id;
+export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game;
-    if (currentPlayer !== id) return;
+    if (currentPlayer !== ctx.member.id) return;
     const cardPlayed = ctx.data.values.raw[0] as `${typeof colors[number]}-${typeof uniqueVariants[number]}`;
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number], typeof uniqueVariants[number]];
     let extraInfo = "";
     if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++;
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 };
     if (variant === "+4") {
-        const nextPlayer = next(game.players, game.players.indexOf(id));
+        const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
         if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c === `${color}-+2`)) {
             game.drawStackCounter += 4;
         }
@@ -33,40 +32,38 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     }
     game.currentCard = variant;
     game.currentCardColor = color;
-    game.cards[id].splice(game.cards[id].indexOf(variant), 1);
+    game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1);
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
-    if (game.cards[id].length === 0) return;
+    if (game.cards[ctx.member.id].length === 0) return;
     sendMessage(ctx.channel.id, `
-    ${`**${getUsername(id, true, ctx.guild)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
+    ${`**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
     ${extraInfo.length ? `\n${extraInfo}` : ""}
     `);
     sendGameMessage(game);
 }
 
-export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, asClyde = false) {
-    const id = asClyde ? config.clyde.id : ctx.member.id;
-    if (game.currentPlayer !== id) return;
+export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
+    if (game.currentPlayer !== ctx.member.id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw-forceful";
     if (cardPlayed === "draw-forceful") {
         const { cards, newDeck } = game.draw(game.drawStackCounter);
         game.cards[game.currentPlayer].push(...cards);
         game.deck = newDeck;
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-        sendMessage(ctx.channel.id, `**${getUsername(id, true, ctx.guild)}** drew ${game.drawStackCounter} cards`);
+        sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** drew ${game.drawStackCounter} cards`);
         game.drawStackCounter = 0;
         ctx.deleteOriginal();
         sendGameMessage(game);
-    } else onCardPlayed(ctx, game, true, asClyde);
+    } else onCardPlayed(ctx, game, true);
 }
 
-export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false, asClyde = false) {
-    const id = asClyde ? config.clyde.id : ctx.member.id;
-    if (game.currentPlayer !== id) return;
+export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false) {
+    if (game.currentPlayer !== ctx.member.id) return;
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip";
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
     const [ccColor, ccVariant] = game.currentCard.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
-    if (game.cards[id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
+    if (game.cards[ctx.member.id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
     });
@@ -86,7 +83,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             content: "Choose a color",
             components: new ComponentBuilder<MessageActionRow>()
                 .addSelectMenu({
-                    customID: asClyde ? SelectIDs.CLYDE_CHOOSE_COLOR : SelectIDs.CHOOSE_COLOR,
+                    customID: SelectIDs.CHOOSE_COLOR,
                     options: Object.values(colors).map(c => {
                         return {
                             label: toTitleCase(c),
@@ -109,18 +106,18 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     let extraInfo = "";
     if (cardPlayed === "draw") {
         if (game.lastPlayer.duration >= 4 && game.settings.antiSabotage) {
-            game.players.splice(game.players.indexOf(id), 1);
+            game.players.splice(game.players.indexOf(ctx.member.id), 1);
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             game.lastPlayer.duration = 0;
             sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
             return sendGameMessage(game);
         } else {
             const { cards, newDeck } = game.draw(1);
-            game.cards[id].push(cards[0]);
+            game.cards[ctx.member.id].push(cards[0]);
             game.deck = newDeck;
             if (game.settings.allowSkipping) ctx.editOriginal({
-                content: config.emoteless ? null : game.cards[id].map(c => cardEmotes[c]).join(" "),
-                components: PickCardSelect(game, cardArrayToCount(game.cards[id]), asClyde)
+                content: config.emoteless ? null : game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
+                components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
             });
             else ctx.deleteOriginal();
         }
@@ -132,7 +129,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     else {
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
-        game.cards[id].splice(game.cards[id].indexOf(cardPlayed), 1);
+        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
         if (variant === "reverse") {
             game.players = game.players.reverse();
             if (game.players.length === 2) {
@@ -141,11 +138,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             }
         }
         if (variant === "+2") {
-            const nextPlayer = next(game.players, game.players.indexOf(id));
+            const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
             if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
                 game.drawStackCounter += 2;
             }
-            else if (game.cards[id].length > 0) {
+            else if (game.cards[ctx.member.id].length > 0) {
                 const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
                 game.cards[nextPlayer].push(...cards);
                 game.deck = newDeck;
@@ -162,13 +159,13 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal();
     }
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-    if (game.cards[id].length !== 0) {
+    if (game.cards[ctx.member.id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
-                ? `**${getUsername(id, true, ctx.guild)}** drew a card`
+                ? `**${getUsername(ctx.member.id, true, ctx.guild)}** drew a card`
                 : cardPlayed === "skip"
-                    ? `**${getUsername(id, true, ctx.guild)}** skipped their turn`
-                    : `**${getUsername(id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
+                    ? `**${getUsername(ctx.member.id, true, ctx.guild)}** skipped their turn`
+                    : `**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         );
         if (cardPlayed !== "draw" || !game.settings.allowSkipping) {

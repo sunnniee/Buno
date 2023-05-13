@@ -33,11 +33,6 @@ export const cmd = {
         if (!game) return respond(msg, "There's no game in this channel");
         const guild = game.message?.channel?.guild;
         if (!hasStarted(game)) {
-            if (game.host === config.clyde.id) {
-                deleteMessage(game.message);
-                delete games[msg.channel.id];
-                return respond(msg, "👍 Deleted the game in this channel");
-            }
             msg.channel.getMessage(game.message.id)
                 .then(() => respond(msg, "Couldn't find anything wrong."))
                 .catch(e => {

@@ -89,7 +89,6 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified,
-        clyde: game.clyde
     } as UnoGame<true>;
     startedGame.draw = drawFactory(startedGame);
     startedGame._debug = {

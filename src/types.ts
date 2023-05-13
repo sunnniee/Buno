@@ -8,12 +8,6 @@ export type Config = {
     developerIds: string[],
     devPrefix: string,
     logChannel?: string
-    clyde: {
-        enabled: boolean,
-        id: string,
-        name: string,
-        guilds: string[]
-    }
 }
 
 export type Command = {
@@ -83,7 +77,6 @@ export type UnoGame<T extends boolean> = T extends true ? {
         },
         pushState(state: DebugState & { type: DebugStateType }): void
     }
-    clyde?: boolean
 } : {
     uid: string,
     started: false,
@@ -96,5 +89,4 @@ export type UnoGame<T extends boolean> = T extends true ? {
     guildID: string,
     _allowSolo: boolean,
     _modified: boolean,
-    clyde?: boolean
 }
