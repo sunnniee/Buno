@@ -158,6 +158,14 @@ export function without<T extends Record<string, any>, K extends keyof T>(obj: T
     return obj2;
 }
 
+export class Queue {
+    private promise = new Promise<void>(res => res());
+
+    push(item: () => Promise<any>) {
+        this.promise = this.promise.then(() => item());
+    }
+}
+
 export const toTitleCase = (n: string) =>
     n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
 export const wasLastTurnBlocked = (game: UnoGame<true>) =>

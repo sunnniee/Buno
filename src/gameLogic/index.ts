@@ -7,7 +7,6 @@ import { leaveGame, onGameButtonPress } from "./started.js";
 import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime, cardEmojis } from "../constants.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
-import { onLeaderboardButtonPress } from "../commands/leaderboard.js";
 import timeouts from "../timeouts.js";
 import { config } from "../index.js";
 import database from "../database.js";
@@ -114,10 +113,6 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
             break;
         case ButtonIDs.LEAVE_GAME_CONFIRMATION_NO:
             ctx.deleteOriginal();
-            break;
-        case ButtonIDs.LEADERBOARD_LAST:
-        case ButtonIDs.LEADERBOARD_NEXT:
-            onLeaderboardButtonPress(ctx);
             break;
     }
 }

@@ -1,31 +1,16 @@
-import { ComponentBuilder, EmbedBuilder } from "@oceanicjs/builders";
-import { ButtonStyles, ComponentInteraction, ComponentTypes, Guild, MessageActionRow } from "oceanic.js";
+import { EmbedBuilder } from "@oceanicjs/builders";
+import { Guild } from "oceanic.js";
 import { client, respond } from "../client.js";
 import database from "../database.js";
 import { Command, PlayerStorage } from "../types.js";
-import { getUsername, without } from "../utils.js";
-import { defaultColor, ButtonIDs } from "../constants.js";
+import { Queue, getUsername, without } from "../utils.js";
+import { defaultColor } from "../constants.js";
 
 interface Stats extends PlayerStorage {
     id: string
 }
 
 const emotes = ["🥇", "🥈", "🥉"];
-const makeButtons = (lastDisabled: boolean, nextDisabled: boolean, guildId: string) =>
-    new ComponentBuilder<MessageActionRow>()
-        .addInteractionButton({
-            customID: `${ButtonIDs.LEADERBOARD_LAST}__${guildId}`,
-            style: ButtonStyles.PRIMARY,
-            emoji: ComponentBuilder.emojiToPartial("◀", "default"),
-            disabled: lastDisabled
-        })
-        .addInteractionButton({
-            customID: `${ButtonIDs.LEADERBOARD_NEXT}__${guildId}`,
-            style: ButtonStyles.PRIMARY,
-            emoji: ComponentBuilder.emojiToPartial("▶", "default"),
-            disabled: nextDisabled
-        })
-        .toJSON();
 
 type ParsedArguments = { page: number, guildId?: string }
 function getArgs(args: string[]): ParsedArguments {
@@ -39,7 +24,15 @@ function getArgs(args: string[]): ParsedArguments {
     return res;
 }
 
-function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, guild: Guild) {
+const queue = new Queue();
+const retryFetchAfter = 3_600_000;
+const cannotBeFetchedTimestamp: { [id: string]: number } = new Proxy({}, {
+    get(t, p) {
+        return t[p] ?? 0;
+    }
+});
+
+function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, guild: Guild, markMissing: boolean) {
     const getText = (i: number) => emotes[i + page * 10] || `${i + page * 10 + 1}.`;
     const stats = fullStats.slice(page * 10, page * 10 + 9);
     const yourStats = fullStats.find(s => s.id === author);
@@ -47,8 +40,12 @@ function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, 
     return new EmbedBuilder()
         .setTitle(`Leaderboard for ${guild.name}`)
         .setColor(defaultColor)
-        .setDescription(stats.map((s, i) => `\`${getText(i)}\`: __${getUsername(s.id, false, guild)}__ - **${s.wins}** wins, \
-${s.losses ? `**${(s.wins / s.losses).toFixed(2)}** W/L` : "**No** losses"}`
+        .setDescription(stats.map((s, i) => {
+            const username = getUsername(s.id, false, guild);
+            if (username === s.id && markMissing) cannotBeFetchedTimestamp[s.id] = Date.now();
+            return `\`${getText(i)}\`: __${username}__ - **${s.wins}** wins, \
+${s.losses ? `**${(s.wins / s.losses).toFixed(2)}** W/L` : "**No** losses"}`;
+        }
         ).join("\n"))
         .addField("Your stats", yourStats
             ? `\`${emotes[yourStatsIndex] || `${yourStatsIndex + 1}.`}\`: ${getUsername(yourStats.id, false, guild)} - **${yourStats.wins}** wins, \
@@ -56,40 +53,6 @@ ${yourStats.losses ? `**${(yourStats.wins / yourStats.losses).toFixed(2)}** W/L`
             : `\`??.\` ${getUsername(author, false, guild)} - No stats`)
         .setFooter(`Page ${page + 1} of ${Math.ceil(fullStats.length / 10)}`)
         .toJSON();
-}
-
-export function onLeaderboardButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) {
-    const initialMessage = ctx.channel.messages.get(ctx.message.messageReference!.messageID);
-    if (!initialMessage) return ctx.editOriginal({
-        components: makeButtons(true, true, "hi")
-    });
-    if (initialMessage.author?.id !== ctx.member.id) return;
-    const [interactionId, guildId] = ctx.data.customID.split("__");
-    const direction = interactionId === ButtonIDs.LEADERBOARD_LAST ? -2 : 0; // trolley
-    const currentPage = parseInt(ctx.message.embeds[0]?.footer?.text?.match(/Page (\d+) of/)?.[1], 10) || 1;
-    const page = currentPage + direction;
-
-    const guild = client.guilds.get(guildId);
-    const stats: Stats[] = Object.entries(
-        without(database.getAllForGuild(guild.id), "settingsVersion")
-    ).map(([id, v]) => ({
-        id,
-        ...v
-    })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
-    const endPage = Math.ceil(stats.length / 10);
-    const statsSegment = stats.slice(page * 10, page * 10 + 9);
-
-    ctx.editOriginal({
-        embeds: [makeLeaderboardEmbed(stats, page, ctx.member.id, guild)],
-        components: makeButtons(page === 0, page === endPage - 1, guild.id)
-    }).then(m => {
-        if (!m) return;
-        const missingMembers = statsSegment.filter(({ id }) => getUsername(id, false, guild) === id);
-        if (missingMembers.length) guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
-            .then(() => m.edit({
-                embeds: [makeLeaderboardEmbed(stats, page, ctx.member.id, guild)]
-            }));
-    });
 }
 
 export const cmd = {
@@ -109,17 +72,34 @@ export const cmd = {
         const statsSegment = stats.slice(page * 10, page * 10 + 9);
 
         respond(msg, {
-            embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)],
-            components: makeButtons(page === 0, page === endPage - 1, guild.id)
+            embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild, false)],
         }).then(m => {
             if (!m) return;
             const missingMembers = statsSegment.filter(({ id }) => getUsername(id, false, guild) === id);
-            if (missingMembers.length) guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
-                .then(members => {
-                    if (members.length) m.edit({
-                        embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild)]
+            if (missingMembers.length && missingMembers.every(m => cannotBeFetchedTimestamp[m.id] + retryFetchAfter < Date.now()))
+                guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
+                    .then(members => {
+                        if (members.length !== missingMembers.length) {
+                            const stillMissingMembers = missingMembers.filter(({ id }) => !members.some(m => m.id === id));
+                            if (stillMissingMembers.length >= 5) queue.push(
+                                () => m.edit({
+                                    content: "Fetching missing users, this will take a bit",
+                                    allowedMentions: { repliedUser: false }
+                                })
+                            );
+                            stillMissingMembers.forEach(({ id }) => {
+                                if (cannotBeFetchedTimestamp[id] + retryFetchAfter < Date.now())
+                                    queue.push(() => client.rest.users.get(id));
+                            });
+                        }
+                        queue.push(
+                            () => m.edit({
+                                content: null,
+                                embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild, true)],
+                                allowedMentions: { repliedUser: false }
+                            })
+                        );
                     });
-                });
         });
     },
 } as Command;

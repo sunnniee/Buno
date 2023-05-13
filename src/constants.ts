@@ -130,8 +130,6 @@ export const ButtonIDs = Object.freeze({
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
     VIEW_GAME_SETTINGS: "view-settings",
-    LEADERBOARD_NEXT: "lb-forwards",
-    LEADERBOARD_LAST: "lb-backwards"
 });
 
 export const SelectIDs = Object.freeze({
