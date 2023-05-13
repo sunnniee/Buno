@@ -129,8 +129,6 @@ export const ButtonIDs = Object.freeze({
     LEAVE_GAME: "leave-game",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
-    CLYDE_GET_CARDS: "clyde-cards",
-    CLYDE_PLAY: "play-as-clyde",
     VIEW_GAME_SETTINGS: "view-settings",
     LEADERBOARD_NEXT: "lb-forwards",
     LEADERBOARD_LAST: "lb-backwards"
@@ -140,9 +138,6 @@ export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
-    CLYDE_CHOOSE_CARD: "choose-card-clyde",
-    CLYDE_CHOOSE_COLOR: "choose-color-clyde",
-    CLYDE_FORCEFUL_DRAW: "draw-or-stack-clyde",
     EDIT_GAME_SETTINGS: "change-settings",
 });
 

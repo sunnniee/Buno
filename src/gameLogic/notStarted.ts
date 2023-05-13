@@ -145,6 +145,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     //     set(t, p, n) {
     //         if (p === "players")
     //             throw new Error("Attempted to replace cards array - from " + t[p as string] + " to " + n);
+    //         t[p] = n;
     //         return true;
     //     },
     // }));
