@@ -109,12 +109,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
 
     let extraInfo = "";
     if (cardPlayed === "draw") {
-        if (game.lastPlayer.duration >= 5 && game.settings.antiSabotage) {
+        if (game.lastPlayer.duration >= 4 && game.settings.antiSabotage) {
             game.players.splice(game.players.indexOf(id), 1);
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             game.lastPlayer.duration = 0;
-            const kickedPlayer = getPlayerMember(game, game.lastPlayer.id);
-            sendMessage(ctx.channel.id, `Removed **${kickedPlayer?.nick ?? kickedPlayer?.username ?? game.lastPlayer.id}** for attempting to sabotage the game`);
+            sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
             return sendGameMessage(game);
         } else {
             const { cards, newDeck } = game.draw(1);
