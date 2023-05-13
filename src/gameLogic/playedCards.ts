@@ -4,7 +4,7 @@ import { games, onTimeout, sendGameMessage } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
 import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { cardArrayToCount, getPlayerMember, getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
+import { cardArrayToCount, getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 
@@ -26,8 +26,7 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
             const { cards, newDeck } = game.draw(4 + game.drawStackCounter);
             game.cards[nextPlayer].push(...cards);
             game.deck = newDeck;
-            const trolledMember = getPlayerMember(game, nextPlayer);
-            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
+            extraInfo = `**${getUsername(nextPlayer, true, ctx.guild)}** drew **${4 + game.drawStackCounter}** cards and was skipped`;
             game.drawStackCounter = 0;
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         }
@@ -138,8 +137,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.players = game.players.reverse();
             if (game.players.length === 2) {
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-                const trolledMember = getPlayerMember(game, game.currentPlayer);
-                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
+                extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
             }
         }
         if (variant === "+2") {
@@ -151,16 +149,14 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
                 const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
                 game.cards[nextPlayer].push(...cards);
                 game.deck = newDeck;
-                const trolledMember = getPlayerMember(game, nextPlayer);
-                extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
+                extraInfo = `**${getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
                 game.drawStackCounter = 0;
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             }
         }
         if (variant === "block") {
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-            const trolledMember = getPlayerMember(game, game.currentPlayer);
-            extraInfo = `**${trolledMember?.nick ?? trolledMember?.username ?? getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
+            extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
         }
         if (game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         ctx.deleteOriginal();
