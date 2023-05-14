@@ -60,17 +60,18 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
                 const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
                 timeouts.delete(game.channelID);
                 delete games[startedGame.channelID];
-                sendMessage(startedGame.channelID, {
-                    content: `**${winner?.nick ?? winner?.username}** won by default`,
-                    components: new ComponentBuilder<MessageActionRow>()
-                        .addInteractionButton({
-                            style: ButtonStyles.SUCCESS,
-                            emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                            disabled: true,
-                            customID: "we-have-a-nerd-here🤓"
-                        })
-                        .toJSON()
-                });
+                setTimeout(() =>
+                    sendMessage(startedGame.channelID, {
+                        content: `**${winner?.nick ?? winner?.username}** won by default`,
+                        components: new ComponentBuilder<MessageActionRow>()
+                            .addInteractionButton({
+                                style: ButtonStyles.SUCCESS,
+                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                                disabled: true,
+                                customID: "we-have-a-nerd-here🤓"
+                            })
+                            .toJSON()
+                    }), 50);
             }
             return true;
         },
