@@ -107,9 +107,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (cardPlayed === "draw") {
         if (game.lastPlayer.duration >= 4 && game.settings.antiSabotage) {
             game.players.splice(game.players.indexOf(ctx.member.id), 1);
+            sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
+            if (game.players.length <= 1) return;
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
             game.lastPlayer.duration = 0;
-            sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
             return sendGameMessage(game);
         } else {
             const { cards, newDeck } = game.draw(1);

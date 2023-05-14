@@ -200,6 +200,6 @@ export function getUsername(id: string, nick: boolean, guild: Guild, inCodeblock
         || client.users.get(id)?.username
         || id;
     if (!name) return "[this shouldn't be here]";
-    if (inCodeblock) return name.replace(/```/g, "`\u200b`\u200b`");
+    if (inCodeblock) return name.replace(/`/g, "`\u200b");
     return name.replace(/([*_~`|])/g, "\\$1");
 }
