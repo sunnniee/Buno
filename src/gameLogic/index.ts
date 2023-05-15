@@ -65,7 +65,7 @@ Currently playing: **${getUsername(game.currentPlayer, true, game.message?.chann
 Current card: ${config.emoteless && isUnique ? cardEmotes[game.currentCard] : currentCardEmote} \
 ${toTitleCase(game.currentCard)} \
 ${uniqueVariants.includes(game.currentCard as typeof uniqueVariants[number]) ? ` (${game.currentCardColor})` : ""} \
-${game.drawStackCounter ? `\nNext player must draw **${game.drawStackCounter}** cards` : ""}
+${game.drawStackCounter ? `\n\nNext player must draw **${game.drawStackCounter} cards**` : ""}
 \`\`\`diff
 ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
 \`\`\`

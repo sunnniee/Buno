@@ -46,7 +46,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
             if (game.drawStackCounter) return ctx.createFollowup({
-                content: "Choose an option",
+                content: `You have to respond or draw **${game.drawStackCounter}** cards`,
                 components: DrawStackedCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
             });
