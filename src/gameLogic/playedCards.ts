@@ -113,11 +113,15 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.lastPlayer.duration = 0;
             return sendGameMessage(game);
         } else {
-            const { cards, newDeck } = game.draw(1);
-            game.cards[ctx.member.id].push(cards[0]);
+            const { cards: newCards, newDeck } = game.draw(1);
+            game.cards[ctx.member.id].push(newCards[0]);
+            game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
             game.deck = newDeck;
             if (game.settings.allowSkipping) ctx.editOriginal({
-                content: config.emoteless ? null : game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
+                content: config.emoteless
+                    ? `You drew a ${cardEmotes[newCards[0]]} ${toTitleCase(newCards[0])}`
+                    : `${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}
+You drew ${cardEmotes[newCards[0]]}`,
                 components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
             });
             else ctx.deleteOriginal();
