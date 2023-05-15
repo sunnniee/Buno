@@ -99,7 +99,9 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         },
         pushState: pushStateFactory(startedGame)
     };
-    const cardsToBeUsed = Object.fromEntries(game.players.map(p => [p, startedGame.draw(7).cards]));
+    const cardsToBeUsed = Object.fromEntries(game.players.map(p =>
+        [p, startedGame.draw(7).cards.sort((a, b) => cards.indexOf(a) - cards.indexOf(b))]
+    ));
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
             set(t, p, n) {

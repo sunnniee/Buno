@@ -2,7 +2,7 @@ import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } 
 import { Card, UnoGame } from "../types.js";
 import { games, onTimeout, sendGameMessage } from "./index.js";
 import { sendMessage, deleteMessage } from "../client.js";
-import { cardEmotes, colors, SelectIDs, variants, uniqueVariants } from "../constants.js";
+import { cardEmotes, colors, SelectIDs, variants, uniqueVariants, cards } from "../constants.js";
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { cardArrayToCount, getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
 import { config } from "../index.js";
@@ -160,6 +160,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         ctx.deleteOriginal();
     }
     if (!game.settings.allowSkipping) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+    game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
     if (game.cards[ctx.member.id].length !== 0) {
         sendMessage(ctx.channel.id,
             `${cardPlayed === "draw"
