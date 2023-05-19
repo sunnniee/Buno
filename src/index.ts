@@ -1,10 +1,11 @@
-import { client } from "./client.js";
 import { readdir, readFileSync } from "fs";
-import { parse } from "toml";
-import { Command, Config } from "./types.js";
-import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { ActivityTypes, InteractionTypes } from "oceanic.js";
+import { parse } from "toml";
+
+import { client } from "./client.js";
+import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { patch } from "./patchContext.js";
+import { Command, Config } from "./types.js";
 
 declare global {
     interface Array<T> {

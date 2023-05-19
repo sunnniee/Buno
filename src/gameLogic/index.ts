@@ -1,15 +1,16 @@
-import { deleteMessage, sendMessage, client } from "../client.js";
-import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
-import { UnoGame } from "../types.js";
 import { EmbedBuilder } from "@oceanicjs/builders";
-import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
-import { leaveGame, onGameButtonPress } from "./started.js";
-import { cardEmotes, defaultColor, rainbowColors, SelectIDs, ButtonIDs, uniqueVariants, SettingsIDs, defaultSettings, coloredUniqueCards, veryLongTime, cardEmojis } from "../constants.js";
-import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
-import { GameButtons, getUsername, SettingsSelectMenu, toHumanReadableTime, getPlayerMember, next, cancelGameMessageFail, hasStarted, toTitleCase } from "../utils.js";
-import timeouts from "../timeouts.js";
-import { config } from "../index.js";
+import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
+
+import { client, deleteMessage, sendMessage } from "../client.js";
+import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
+import { config } from "../index.js";
+import timeouts from "../timeouts.js";
+import { UnoGame } from "../types.js";
+import { cancelGameMessageFail, GameButtons, getPlayerMember, getUsername, hasStarted, next, SettingsSelectMenu, toHumanReadableTime, toTitleCase } from "../utils.js";
+import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
+import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
+import { leaveGame, onGameButtonPress } from "./started.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
     deleteProperty(t: { [channelId: string]: UnoGame<boolean> }, p: string) {

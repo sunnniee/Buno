@@ -1,5 +1,6 @@
 import { config } from "dotenv"; config();
 import { AnyGuildTextChannel, Client, CreateMessageOptions, Message } from "oceanic.js";
+
 import { onMsgError } from "./utils.js";
 
 export const client = new Client({

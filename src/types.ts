@@ -1,5 +1,6 @@
-import { colors, uniqueVariants, variants } from "./constants.js";
 import { AnyGuildTextChannel, Message } from "oceanic.js";
+
+import { colors, uniqueVariants, variants } from "./constants.js";
 
 export type Config = {
     prefix: string,

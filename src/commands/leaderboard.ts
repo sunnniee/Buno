@@ -1,10 +1,11 @@
 import { EmbedBuilder } from "@oceanicjs/builders";
 import { Guild } from "oceanic.js";
+
 import { client, respond } from "../client.js";
+import { defaultColor } from "../constants.js";
 import database from "../database.js";
 import { Command, PlayerStorage } from "../types.js";
-import { Queue, getUsername, without } from "../utils.js";
-import { defaultColor } from "../constants.js";
+import { getUsername, Queue, without } from "../utils.js";
 
 interface Stats extends PlayerStorage {
     id: string

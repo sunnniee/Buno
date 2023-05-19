@@ -2,7 +2,7 @@
     "root": true,
     "parser": "@typescript-eslint/parser",
     "ignorePatterns": ["dist"],
-    "plugins": ["@typescript-eslint", "unused-imports"],
+    "plugins": ["@typescript-eslint", "unused-imports", "simple-import-sort"],
     "rules": {
         "quotes": ["error", "double", { "avoidEscape": true }],
         "jsx-quotes": ["error", "prefer-double"],
@@ -49,6 +49,9 @@
         "use-isnan": "error",
         "prefer-const": "error",
         "prefer-spread": "error",
+
+        "simple-import-sort/imports": "error",
+        "simple-import-sort/exports": "error",
 
         "unused-imports/no-unused-imports": "error"
     }

@@ -1,8 +1,9 @@
-import { PlayerStatsDatabaseInfo, PlayerStorage } from "./types.js";
 import { readdir, readFile, writeFile as _writeFile } from "fs/promises";
+
 import { client } from "./client.js";
-import { GuildStorage } from "./types";
 import { defaultSettings } from "./constants.js";
+import { GuildStorage } from "./types";
+import { PlayerStatsDatabaseInfo, PlayerStorage } from "./types.js";
 
 const writeFile = new Proxy(_writeFile, {
     apply(target, thisArg, argArray) {

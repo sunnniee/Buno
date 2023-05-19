@@ -1,11 +1,12 @@
+import { ChannelTypes } from "oceanic.js";
 import { inspect } from "util";
+
 import { client, deleteMessage, respond } from "../client.js";
 import { games, sendGameMessage } from "../gameLogic/index.js";
-import { Command, UnoGame } from "../types";
-import { getUsername, hasStarted, updateStats, without } from "../utils.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
-import { ChannelTypes } from "oceanic.js";
+import { Command, UnoGame } from "../types";
+import { getUsername, hasStarted, updateStats, without } from "../utils.js";
 
 function sendDebugLog(game: UnoGame<true>, reason: "player left" | "card was played") {
     const debugChannel = client.getChannel(config.logChannel);
