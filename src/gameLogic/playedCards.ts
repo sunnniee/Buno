@@ -63,7 +63,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     const cardPlayed = ctx.data.values.raw[0] as Card | "draw" | "skip";
     const [color, variant] = cardPlayed.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
     const [ccColor, ccVariant] = game.currentCard.split("-") as [typeof colors[number] | typeof uniqueVariants[number], typeof variants[number]];
-    if (game.cards[ctx.member.id].indexOf(cardPlayed as any) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
+    if (game.cards[ctx.member.id].indexOf(cardPlayed as Card) === -1 && !["draw", "skip"].includes(cardPlayed)) return ctx.createFollowup({
         content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
         flags: MessageFlags.EPHEMERAL
     });
@@ -78,7 +78,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         content: "https://tenor.com/view/nuh-uh-24435520",
         flags: MessageFlags.EPHEMERAL
     });
-    if (uniqueVariants.includes(color as typeof uniqueVariants[number])) {
+    if (uniqueVariants.includes(color)) {
         return ctx.createFollowup({
             content: "Choose a color",
             components: new ComponentBuilder<MessageActionRow>()

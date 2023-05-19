@@ -6,6 +6,15 @@ import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./
 import { ActivityTypes, InteractionTypes } from "oceanic.js";
 import { patch } from "./patchContext.js";
 
+declare global {
+    interface Array<T> {
+        includes<U>(searchElement: U, fromIndex?: number): U extends T ? boolean : false;
+    }
+    interface ReadonlyArray<T> {
+        includes<U>(searchElement: U, fromIndex?: number): U extends T ? boolean : false;
+    }
+}
+
 export let config: Config;
 try {
     config = parse(readFileSync("config.toml", "utf-8"));

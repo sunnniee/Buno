@@ -10,7 +10,9 @@ import timeouts from "../timeouts.js";
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0];
-    while (uniqueVariants.includes(card as any)) card = game.draw(1).cards[0];
+    while (uniqueVariants.includes(card)) {
+        card = game.draw(1).cards[0];
+    }
     return card;
 };
 function dupe<T>(a: T[]): T[] { return a.concat(a); }
@@ -142,6 +144,9 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     // });
     startedGame.cards = cardsToBeUsed;
     startedGame.currentCard = drawUntilNotSpecial(startedGame);
+    // TODO: how the fuck, genuinely, how the fuck, can it be undefined
+    // i have no idea how it happens it just fucking does ?????????????
+    if (!startedGame.currentCard) startedGame.currentCard = "green-block";
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any;
     startedGame.deck = startedGame.draw(0).newDeck;
     // sendGameMessage(new Proxy(startedGame, {

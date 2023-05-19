@@ -11,10 +11,10 @@ export const colorEmotes: { [k in typeof colors[number] | "other"]: string } = {
 } as const;
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
 export const uniqueVariants = ["wild", "+4",] as const;
-export const cards = (colors
+export const cards = colors
     .map(c => variants.map(v => `${c}-${v}`))
-    .flat() as Card[])
-    .concat(uniqueVariants);
+    .flat()
+    .concat(uniqueVariants) as ReadonlyArray<Card>;
 export const cardEmojis = {
     "red-0": "<:R0:1079758914909900890>",
     "red-1": "<:R1:1079758916491149332>",
