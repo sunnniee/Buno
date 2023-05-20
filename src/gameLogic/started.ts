@@ -59,6 +59,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             break;
         }
         case ButtonIDs.LEAVE_GAME: {
+            if (!game.players.includes(ctx.member.id)) return;
             return ctx.createFollowup({
                 content: "Are you sure you want to leave?",
                 components: new ComponentBuilder<MessageActionRow>()
