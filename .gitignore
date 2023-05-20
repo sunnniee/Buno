@@ -133,3 +133,4 @@ pnpm-lock.yaml
 _commandTemplate.ts
 database/*.json
 config.toml
+emotes.json
