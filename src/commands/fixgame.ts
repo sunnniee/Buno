@@ -6,7 +6,7 @@ import { games, sendGameMessage } from "../gameLogic/index.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Command, UnoGame } from "../types";
-import { getUsername, hasStarted, updateStats, without } from "../utils.js";
+import { cardArrayToCount, getUsername, hasStarted, next, updateStats, without } from "../utils.js";
 
 function sendDebugLog(game: UnoGame<true>, reason: "player left" | "card was played") {
     const debugChannel = client.getChannel(config.logChannel);
@@ -59,6 +59,16 @@ export const cmd = {
                 timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
+            } else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 23)) {
+                const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 23)![0];
+                game.players.splice(game.players.indexOf(badPlayer), 1);
+                respond(msg, `Removed **${getUsername(badPlayer, true, msg.guild)}**`);
+                if (game.players.length <= 1) return;
+                if (game.currentPlayer === badPlayer) {
+                    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+                    game.lastPlayer.duration = 0;
+                }
+                return sendGameMessage(game);
             } else {
                 msg.channel.getMessage(game.message.id)
                     .then(() => respond(msg, "Couldn't find anything wrong."))
