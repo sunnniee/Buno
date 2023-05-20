@@ -18,6 +18,7 @@ export function patch<T extends AnyInteractionGateway>(ctx: T) {
         "editOriginal", "editFollowup", "editParent",
         "getFollowup", "getOriginal",
     ] as const;
+
     methods.forEach(m => ctx[m] && (ctx[m] = new Proxy(ctx[m], {
         apply(target, thisArg, argArray) {
             return target.apply(thisArg, argArray).catch(e => onInteractionError(e, ctx));

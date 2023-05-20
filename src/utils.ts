@@ -1,13 +1,11 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
-import { AnyGuildTextChannel, ButtonStyles, ComponentTypes, Guild,MessageActionRow } from "oceanic.js";
+import { AnyGuildTextChannel, ButtonStyles, ComponentTypes, Guild, MessageActionRow } from "oceanic.js";
 
 import { client } from "./client.js";
-import { ButtonIDs, cardEmotes, cards,defaultSettings, SelectIDs, SettingsIDs } from "./constants.js";
+import { ButtonIDs, cardEmotes, cards, defaultSettings, SelectIDs, SettingsIDs } from "./constants.js";
 import database from "./database.js";
 import { games } from "./gameLogic/index.js";
-import { Card, PlayerStorage,UnoGame } from "./types.js";
-
-
+import { Card, PlayerStorage, UnoGame } from "./types.js";
 
 export const GameButtons = (() => {
     const components = new ComponentBuilder<MessageActionRow>()
@@ -68,7 +66,8 @@ export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: numbe
                     label: "Skip your turn",
                     value: "skip",
                     emoji: ComponentBuilder.emojiToPartial("➡")
-                }] : []),
+                }]
+                : []),
             type: ComponentTypes.STRING_SELECT
         })
         .toJSON();
@@ -98,6 +97,7 @@ export function toHumanReadableTime(n: number) {
     const m = Math.floor(n / 60), s = n % 60;
     return `${m} minute${m === 1 ? "" : "s"}${s ? ` and ${s} second${s === 1 ? "" : "s"}` : ""}`;
 }
+
 export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
         customID: SelectIDs.EDIT_GAME_SETTINGS,
@@ -169,20 +169,25 @@ export class Queue {
 
 export const toTitleCase = (n: string) =>
     n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
+
 export const wasLastTurnBlocked = (game: UnoGame<true>) =>
     game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1]);
+
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
     .reduce((obj, c) => {
         obj[c] = (obj[c] + 1) || 1; return obj;
     }, {} as { [k in Card]: number; });
+
 export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
+
 export function cancelGameMessageFail(game: UnoGame<boolean>) {
     getPlayerMember(game, game.host).user.createDM()
         .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
         .catch(() => { });
     delete games[game.channelID];
 }
+
 export function updateStats(game: UnoGame<true>, winner: string) {
     if (game._modified) return;
     const newStats: { [id: string]: PlayerStorage; } = {};

@@ -39,6 +39,7 @@ export interface DebugState {
 }
 
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]
+
 export type UnoGameSettings = {
     timeoutDuration: number
     kickOnTimeout: boolean

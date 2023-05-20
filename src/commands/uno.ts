@@ -2,7 +2,7 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, MessageActionRow } from "oceanic.js";
 
 import { respond } from "../client.js";
-import { autoStartTimeout,ButtonIDs, defaultSettings } from "../constants.js";
+import { autoStartTimeout, ButtonIDs, defaultSettings } from "../constants.js";
 import database from "../database.js";
 import { games, makeStartMessage } from "../gameLogic/index.js";
 import { startGame } from "../gameLogic/notStarted.js";
@@ -18,6 +18,7 @@ export const cmd = {
         if (existingGame) return respond(msg, `Someone already started a game
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
         games[msg.channel.id] = { started: false } as UnoGame<false>;
+
         const data = database.get(msg.channel.guild.id, msg.author.id);
         const gameObj = {
             uid: Math.random().toString().substring(2),
@@ -31,6 +32,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
             channelID: msg.channel.id,
             guildID: msg.channel.guild.id
         } as UnoGame<false>;
+
         respond(msg, {
             embeds: [makeStartMessage(gameObj, msg.channel.guild)],
             components: new ComponentBuilder<MessageActionRow>()
@@ -68,12 +70,14 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
                 delete games[msg.channel.id];
                 return msg.createReaction("‼");
             }
+
             timeouts.delete(gameObj.channelID);
             gameObj.message = m;
             timeouts.set(gameObj.channelID, () => {
                 const g = games[msg.channel.id];
                 if (!hasStarted(g)) startGame(g, true);
             }, autoStartTimeout * 1000);
+
             games[msg.channel.id] = gameObj;
         });
     },

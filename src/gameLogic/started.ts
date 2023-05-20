@@ -13,8 +13,10 @@ export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
         delete game.cards[ctx.member.id];
         if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+
         sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** left the game.`);
         ctx.deleteOriginal();
+
         if (game.players.length <= 1) return;
         sendGameMessage(game);
     }
@@ -31,6 +33,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: game.cards[ctx.member.id].map(c => `${cardEmotes[c]} ${toTitleCase(c)}`).join(", "),
                 flags: MessageFlags.EPHEMERAL
             });
+
             ctx.createFollowup({
                 content: game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
                 flags: MessageFlags.EPHEMERAL
@@ -51,6 +54,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 components: DrawStackedCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
                 flags: MessageFlags.EPHEMERAL
             });
+
             ctx.createFollowup({
                 content: config.emoteless ? null : game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" "),
                 components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id])),
@@ -60,6 +64,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
         }
         case ButtonIDs.LEAVE_GAME: {
             if (!game.players.includes(ctx.member.id)) return;
+
             return ctx.createFollowup({
                 content: "Are you sure you want to leave?",
                 components: new ComponentBuilder<MessageActionRow>()

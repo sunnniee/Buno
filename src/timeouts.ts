@@ -15,10 +15,12 @@ class TimeoutManager {
             clearTimeout(this.timeouts[id]);
             delete this.timeouts[id];
         }
+
         const timeout = setTimeout(() => {
             delete this.timeouts[id];
             func();
         }, duration);
+
         this.timeouts[id] = timeout;
         return timeout;
     }

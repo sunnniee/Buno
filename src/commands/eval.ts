@@ -31,12 +31,14 @@ export const cmd = {
         try {
             const game = games[msg.channel.id];
             game;
+
             (eval(`(async function(){${code}})().catch(reportError)`) as Promise<any>).then(evalResult => {
                 let result = inspect(evalResult, { depth: 5 });
                 if (result.length > MAX_RESPONSE_LENGTH)
                     for (let i = 4; i > 0; i--) {
                         if (result.length > MAX_RESPONSE_LENGTH) result = inspect(evalResult, { depth: i });
                     }
+
                 if (result.length > MAX_RESPONSE_LENGTH) {
                     return clientUtils.respond(msg, {
                         attachments: [{
@@ -49,6 +51,7 @@ export const cmd = {
                         }]
                     });
                 }
+
                 if (result !== "undefined") clientUtils.respond(msg, "```ts\n" + result + "```");
             }).catch(reportError);
         } catch (e) { reportError(e); }

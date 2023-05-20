@@ -11,6 +11,7 @@ import { cardArrayToCount, getUsername, hasStarted, next, updateStats, without }
 function sendDebugLog(game: UnoGame<true>, reason: "player left" | "card was played") {
     const debugChannel = client.getChannel(config.logChannel);
     if (!debugChannel || debugChannel.type !== ChannelTypes.GUILD_TEXT) return;
+
     debugChannel.createMessage({
         content: `Debug log from <t:${Math.floor(Date.now() / 1000)}> (<t:${Math.floor(Date.now() / 1000)}:R>)
 Reason: ${reason}
@@ -33,6 +34,7 @@ export const cmd = {
         const game = games[msg.channel.id];
         if (!game) return respond(msg, "There's no game in this channel");
         const guild = game.message?.channel?.guild;
+
         if (!hasStarted(game)) {
             msg.channel.getMessage(game.message.id)
                 .then(() => respond(msg, "Couldn't find anything wrong."))
@@ -51,7 +53,8 @@ export const cmd = {
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner, true, guild)}** would've "won"`);
-            } else if (Object.values(game.cards).some(a => a.length === 0)) {
+            }
+            else if (Object.values(game.cards).some(a => a.length === 0)) {
                 sendDebugLog({ ...game }, "card was played");
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
@@ -59,7 +62,8 @@ export const cmd = {
                 timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
-            } else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 23)) {
+            }
+            else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 23)) {
                 const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 23)![0];
                 game.players.splice(game.players.indexOf(badPlayer), 1);
                 respond(msg, `Removed **${getUsername(badPlayer, true, msg.guild)}**`);
@@ -69,7 +73,8 @@ export const cmd = {
                     game.lastPlayer.duration = 0;
                 }
                 return sendGameMessage(game);
-            } else {
+            }
+            else {
                 msg.channel.getMessage(game.message.id)
                     .then(() => respond(msg, "Couldn't find anything wrong."))
                     .catch(e => {

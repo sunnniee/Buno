@@ -23,6 +23,7 @@ export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
 export function onTimeout(game: UnoGame<true>, player: string) {
     if (!games[game.channelID] || player !== game.currentPlayer || game.uid !== games[game.channelID].uid) return;
     const kickedPlayer = getPlayerMember(game, player);
+
     game.currentPlayer = next(game.players, game.players.indexOf(player));
     if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(player), 1);
     sendMessage(game.channelID,
@@ -33,6 +34,7 @@ export function onTimeout(game: UnoGame<true>, player: string) {
         deleteMessage(game.message);
         return;
     }
+
     timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
     sendGameMessage(game);
 }
@@ -50,6 +52,7 @@ ${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.gui
         .setColor(defaultColor)
         .toJSON();
 }
+
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "\u200b  "}\
 ${getUsername(playerID, true, game.message.channel.guild, true) ?? `Unknown [${playerID}]`}: \
@@ -58,6 +61,7 @@ ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s
 export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
     const isUnique = uniqueVariants.includes(game.currentCard);
     const currentCardEmote = isUnique ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
+
     sendMessage(game.channelID, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
@@ -83,8 +87,10 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
         components: GameButtons()
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
+
         if (game.message?.channel) deleteMessage(game.message);
         if (!keepTimeout) timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
+
         game.message = msg;
         games[game.channelID] = game;
     });
@@ -125,8 +131,10 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         if (ctx.data.values.raw[0] === SettingsIDs.TIMEOUT_DURATION) return makeSettingsModal(ctx);
     }
     ctx.deferUpdate();
+
     const game = games[ctx.channel.id];
     if (!game) return;
+
     if (ctx.data.customID === SelectIDs.CHOOSE_CARD && hasStarted(game)) onCardPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game)) onColorPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game)) onForceDrawPlayed(ctx, game);
@@ -138,13 +146,17 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
     if (ctx.data.customID === SettingsIDs.TIMEOUT_DURATION_MODAL) {
         const game = games[ctx.channel.id];
         if (!game || hasStarted(game)) return;
+
         const [timeoutDurationRaw] = ctx.data.components.map(i => i.components[0].value);
         let timeoutDuration = parseInt(timeoutDurationRaw.replace(/[ .,_]/gm, ""), 10);
+
         if (Number.isNaN(timeoutDuration)) ({ timeoutDuration } = defaultSettings);
         if (timeoutDuration < 0 || timeoutDuration > 3600) timeoutDuration = veryLongTime; // :slight_smile:
         if (timeoutDuration < 20) timeoutDuration = 20;
+
         game.settings.timeoutDuration = timeoutDuration;
         database.set(ctx.guild.id, ctx.member.id, { preferredSettings: game.settings });
+
         games[ctx.channel.id] = game;
         ctx.editOriginal({
             components: SettingsSelectMenu(game)
@@ -156,6 +168,7 @@ export function handleGameResend(msg: Message<AnyGuildTextChannel>) {
     if (msg.author.id === client.user.id) return;
     const game = games[msg.channel.id];
     if (!game || !hasStarted(game) || !game.settings.resendGameMessage) return;
+
     const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyGuildTextChannel>>)
         .filter(m => BigInt(m.id) > BigInt(game.message.id))
         .reduce((weight, msg2) => (msg2.content.length > 800 || !msg2.attachments.empty || msg2.embeds.length ? 2 : 1) + weight, 0);

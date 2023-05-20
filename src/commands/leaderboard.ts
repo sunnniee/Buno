@@ -38,6 +38,7 @@ function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, 
     const stats = fullStats.slice(page * 10, page * 10 + 9);
     const yourStats = fullStats.find(s => s.id === author);
     const yourStatsIndex = fullStats.indexOf(yourStats);
+
     return new EmbedBuilder()
         .setTitle(`Leaderboard for ${guild.name}`)
         .setColor(defaultColor)
@@ -68,6 +69,7 @@ export const cmd = {
             id,
             ...v
         })).sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+
         const endPage = Math.ceil(stats.length / 10);
         const page = (_page <= endPage ? _page : 1) - 1;
         const statsSegment = stats.slice(page * 10, page * 10 + 9);
@@ -77,6 +79,7 @@ export const cmd = {
         }).then(m => {
             if (!m) return;
             const missingMembers = statsSegment.filter(({ id }) => getUsername(id, false, guild) === id);
+
             if (missingMembers.length && missingMembers.every(m => cannotBeFetchedTimestamp[m.id] + retryFetchAfter < Date.now()))
                 guild.fetchMembers({ userIDs: missingMembers.map(m => m.id) })
                     .then(members => {
@@ -88,6 +91,7 @@ export const cmd = {
                                     allowedMentions: { repliedUser: false }
                                 })
                             );
+
                             stillMissingMembers.forEach(({ id }) => {
                                 if (cannotBeFetchedTimestamp[id] + retryFetchAfter < Date.now())
                                     queue.push(() => client.rest.users.get(id));

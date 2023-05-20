@@ -28,6 +28,7 @@ function pushStateFactory(game: UnoGame<true>): (state: DebugState & { type: Deb
             _index: (stateArray.at(-1)?._index ?? 0) + 1
         });
         if (stateArray.length > MAX_STATE_LENGTH) stateArray.shift();
+
         game._debug._state[state.type] = stateArray;
         games[game.channelID] = game;
     };
@@ -44,11 +45,13 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         }
         return;
     }
+
     game.players.forEach(id => {
         if (!database.get(game.guildID, id)) database.set(game.guildID, id, { wins: 0, losses: 0 });
     });
     timeouts.delete(game.channelID);
     games[game.channelID].started = true;
+
     const settings = game.settings || { ...defaultSettings };
     const playerList = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
     const players = new Proxy(playerList, {
@@ -94,6 +97,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         guildID: game.guildID,
         _modified: game._modified,
     } as UnoGame<true>;
+
     startedGame.draw = drawFactory(startedGame);
     startedGame._debug = {
         _state: {
@@ -102,6 +106,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         },
         pushState: pushStateFactory(startedGame)
     };
+
     const cardsToBeUsed = Object.fromEntries(game.players.map(p =>
         [p, startedGame.draw(7).cards.sort((a, b) => cards.indexOf(a) - cards.indexOf(b))]
     ));
@@ -138,11 +143,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
             }
         });
     });
-    // startedGame.cards = new Proxy(cardsToBeUsed, {
-    //     set(t, p, n) {
-    //         throw new Error("Attempted to replace cards array - from [" + t[p as string] + "] to [" + n + "]");
-    //     }
-    // });
+
     startedGame.cards = cardsToBeUsed;
     startedGame.currentCard = drawUntilNotSpecial(startedGame);
     // TODO: how the fuck, genuinely, how the fuck, can it be undefined
@@ -150,14 +151,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     if (!startedGame.currentCard) startedGame.currentCard = "green-block";
     startedGame.currentCardColor = startedGame.currentCard.split("-")[0] as any;
     startedGame.deck = startedGame.draw(0).newDeck;
-    // sendGameMessage(new Proxy(startedGame, {
-    //     set(t, p, n) {
-    //         if (p === "players")
-    //             throw new Error("Attempted to replace cards array - from " + t[p as string] + " to " + n);
-    //         t[p] = n;
-    //         return true;
-    //     },
-    // }));
+
     sendGameMessage(startedGame);
 }
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
@@ -176,6 +170,7 @@ export function makeSettingsModal(ctx: ComponentInteraction) {
         content: "This can only be used by the game's host",
         flags: MessageFlags.EPHEMERAL
     });
+
     ctx.createModal({
         title: "Edit game settings",
         customID: SettingsIDs.TIMEOUT_DURATION_MODAL,
@@ -224,6 +219,7 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
             });
         }
     }
+
     games[ctx.channel.id] = game;
     database.set(ctx.guild.id, ctx.member.id, { preferredSettings: game.settings });
     ctx.editOriginal({
@@ -237,6 +233,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
             if (!game.players.includes(ctx.member.id)) {
                 game.players.push(ctx.member.id);
                 games[ctx.channelID] = game;
+
                 ctx.editOriginal({
                     embeds: [makeStartMessage(game)]
                 });
@@ -248,6 +245,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 game.players.splice(game.players.indexOf(ctx.member.id), 1);
                 if (game.host === ctx.member.id) game.host = game.players[0];
                 games[ctx.channelID] = game;
+
                 ctx.editOriginal({
                     embeds: [makeStartMessage(game)]
                 });
@@ -259,6 +257,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
+
             startGame(game, false);
             break;
         }
@@ -267,6 +266,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
+
             ctx.createFollowup({
                 content: "Click on a setting to change it",
                 flags: MessageFlags.EPHEMERAL,
@@ -279,6 +279,7 @@ export function onGameJoin(ctx: ComponentInteraction<ComponentTypes.BUTTON>, gam
                 content: "This can only be used by the game's host",
                 flags: MessageFlags.EPHEMERAL
             });
+
             timeouts.delete(game.channelID);
             respond(ctx.message, `👋 - game stopped by <@${ctx.member.id}>`)
                 .then(() => ctx.deleteOriginal());

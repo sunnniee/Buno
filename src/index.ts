@@ -34,10 +34,12 @@ readdir("./src/commands", (err, res) => {
         f => (import(`./commands/${f.slice(0, -3)}.js`) as Promise<{ cmd: Command }>)
             .then(c => {
                 if (commands[c.cmd.name]) return console.error(`Duplicate command ${c.cmd.name}`);
+
                 c.cmd.aliases?.forEach(a => {
                     if (commands[a]) return console.error(`Duplicate command ${a}`);
                     else commands[a] = c.cmd;
                 });
+
                 commands[c.cmd.name] = c.cmd;
             })
     );
@@ -45,6 +47,7 @@ readdir("./src/commands", (err, res) => {
 
 client.on("ready", () => {
     console.log("Ready as", client.user.tag);
+
     if (config.status) client.editStatus("online", [{ name: `${config.status} - ${prefix}uno`, type: ActivityTypes.GAME }]);
     if (config.logChannel) client.rest.channels.createMessage(config.logChannel, {
         content: `Restarted (<t:${Math.floor(Date.now() / 1000)}>)`
@@ -55,6 +58,7 @@ client.on("error", console.error);
 client.on("messageCreate", msg => {
     if (!msg.inCachedGuildChannel()) return;
     handleGameResend(msg);
+
     if (!msg.content.startsWith(prefix)) return;
     const args = msg.content.slice(prefix.length).split(/ +/);
     const command = args.shift();
@@ -63,6 +67,7 @@ client.on("messageCreate", msg => {
 
 client.on("interactionCreate", ctx => {
     patch(ctx);
+
     if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
         if (ctx.isButtonComponentInteraction()) onButtonPress(ctx);
         else onSelectMenu(ctx);

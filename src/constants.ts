@@ -11,12 +11,15 @@ export const colorEmotes: { [k in typeof colors[number] | "other"]: string } = {
     blue: "🟦",
     other: "⬛"
 } as const;
+
 export const variants = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+2", "reverse", "block",] as const;
 export const uniqueVariants = ["wild", "+4",] as const;
+
 export const cards = colors
     .map(c => variants.map(v => `${c}-${v}`))
     .flat()
     .concat(uniqueVariants) as ReadonlyArray<Card>;
+
 export let cardEmojis: { [k in Card]: string };
 try {
     cardEmojis = Object.freeze(JSON.parse(readFileSync("./emotes.json", "utf8")));
@@ -25,6 +28,7 @@ try {
     console.log(e);
     setTimeout(() => process.exit(1), 30_000);
 }
+
 export let cardEmotes: { [k in Card]: string };
 // this has to be some of the most insane code i've written
 setImmediate(() => cardEmotes = config.emoteless
@@ -34,6 +38,7 @@ setImmediate(() => cardEmotes = config.emoteless
         .reduce((obj, val) => { val.forEach(([k, v]) => obj[k] = v); return obj; }, {}) as { [k in Card]: string }
     : cardEmojis
 );
+
 export const coloredUniqueCards: { [k in `${typeof colors[number]}-${typeof uniqueVariants[number]}`] } = {
     "red-wild": "<:Wr:1083073403197587476>",
     "red-+4": "<:4r:1083073363360108545>",
