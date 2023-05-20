@@ -51,8 +51,10 @@ ${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.gui
         .toJSON();
 }
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
-    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "  "}${getUsername(playerID, true, game.message.channel.guild, true) ?? `Unknown [${playerID}]`}: \
+    `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "\u200b  "}\
+${getUsername(playerID, true, game.message.channel.guild, true) ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
+
 export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
     const isUnique = uniqueVariants.includes(game.currentCard);
     const currentCardEmote = isUnique ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
