@@ -93,6 +93,7 @@ export const ButtonIDs = Object.freeze({
 
 export const SelectIDs = Object.freeze({
     CHOOSE_CARD: "choose-card",
+    CHOOSE_CARD_ABOVE_25: "choose-card-2",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
     EDIT_GAME_SETTINGS: "change-settings",

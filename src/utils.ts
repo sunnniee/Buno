@@ -1,10 +1,10 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { AnyGuildTextChannel, ButtonStyles, ComponentTypes, Guild, MessageActionRow } from "oceanic.js";
 
-import { client } from "./client.js";
+import { client, sendMessage } from "./client.js";
 import { ButtonIDs, cardEmotes, cards, defaultSettings, SelectIDs, SettingsIDs } from "./constants.js";
 import database from "./database.js";
-import { games } from "./gameLogic/index.js";
+import { games, sendGameMessage } from "./gameLogic/index.js";
 import { Card, PlayerStorage, UnoGame } from "./types.js";
 
 export const GameButtons = (() => {
@@ -42,35 +42,64 @@ export function onMsgError(e: Error, ctx: { channelID: string }) {
     console.log(e);
 }
 
-export const PickCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) =>
-    new ComponentBuilder<MessageActionRow>()
-        .addSelectMenu({
-            customID: SelectIDs.CHOOSE_CARD,
-            placeholder: "Choose a card",
-            options: [
-                ...Object.keys(cards).map(c => {
-                    return {
-                        label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
-                        value: c,
-                        emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
-                    };
-                }),
-                {
-                    label: "Draw a card",
-                    value: "draw",
-                    emoji: ComponentBuilder.emojiToPartial("🃏")
-                }
-            ].concat(game.lastPlayer.id === game.currentPlayer && game.settings.allowSkipping &&
-                (game.players.length === 2 ? (wasLastTurnBlocked(game) ? game.lastPlayer.duration >= 1 : true) : true)
-                ? [{
-                    label: "Skip your turn",
-                    value: "skip",
-                    emoji: ComponentBuilder.emojiToPartial("➡")
-                }]
-                : []),
-            type: ComponentTypes.STRING_SELECT
-        })
-        .toJSON();
+export function PickCardSelect(game: UnoGame<true>, id: string): MessageActionRow[] | false {
+    if (!game.players.includes(id))
+        throw new Error(`Player ${id} not in game ${game.channelID}`);
+
+    const cards = cardArrayToCount(game.cards[id]);
+    const entries = [
+        ...Object.keys(cards).map(c => {
+            return {
+                label: `${toTitleCase(c)}${cards[c] >= 2 ? ` x${cards[c]}` : ""}`,
+                value: c,
+                emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
+            };
+        }),
+        {
+            label: "Draw a card",
+            value: "draw",
+            emoji: ComponentBuilder.emojiToPartial("🃏")
+        }
+    ];
+
+    if (game.lastPlayer.id === game.currentPlayer
+        && game.settings.allowSkipping
+        && (game.players.length !== 2 || !wasLastTurnBlocked(game) || game.lastPlayer.duration >= 1)
+    )
+        entries.push({
+            label: "Skip your turn",
+            value: "skip",
+            emoji: ComponentBuilder.emojiToPartial("➡")
+        });
+
+    if (entries.length > 50) {
+        game.players.splice(game.players.indexOf(id), 1);
+        sendMessage(game.channelID, `Removed **${getUsername(id, true, client.guilds.get(game.guildID))}**`);
+        if (game.players.length <= 1) return;
+        if (game.currentPlayer === id) {
+            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+            game.lastPlayer.duration = 0;
+        }
+        sendGameMessage(game);
+        return false;
+    }
+
+    const row = new ComponentBuilder<MessageActionRow>();
+    row.addSelectMenu({
+        customID: SelectIDs.CHOOSE_CARD,
+        placeholder: "Choose a card",
+        type: ComponentTypes.STRING_SELECT,
+        options: entries.slice(0, 25)
+    });
+    if (entries.length > 25) row.addSelectMenu({
+        customID: SelectIDs.CHOOSE_CARD_ABOVE_25,
+        placeholder: "Choose a card",
+        type: ComponentTypes.STRING_SELECT,
+        options: entries.slice(25)
+    });
+
+    return row.toJSON();
+}
 
 export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
@@ -177,7 +206,7 @@ export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))
     .reduce((obj, c) => {
         obj[c] = (obj[c] + 1) || 1; return obj;
-    }, {} as { [k in Card]: number; });
+    }, {} as { [k in Card]?: number; });
 
 export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
 

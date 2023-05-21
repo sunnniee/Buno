@@ -63,8 +63,8 @@ export const cmd = {
                 delete games[msg.channel.id];
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
             }
-            else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 23)) {
-                const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 23)![0];
+            else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 48)) {
+                const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 48)![0];
                 game.players.splice(game.players.indexOf(badPlayer), 1);
                 respond(msg, `Removed **${getUsername(badPlayer, true, msg.guild)}**`);
                 if (game.players.length <= 1) return;

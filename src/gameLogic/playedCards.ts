@@ -6,7 +6,7 @@ import { cardEmotes, cards, colors, SelectIDs, uniqueVariants, variants } from "
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Card, UnoGame } from "../types.js";
-import { cardArrayToCount, getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
+import { getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
 import { games, onTimeout, sendGameMessage } from "./index.js";
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
@@ -130,14 +130,16 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
             game.cards[ctx.member.id].push(newCards[0]);
             game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
             game.deck = newDeck;
-            if (game.settings.allowSkipping)
-                ctx.editOriginal({
+            if (game.settings.allowSkipping) {
+                const components = PickCardSelect(game, ctx.member.id);
+                if (components) ctx.editOriginal({
                     content: config.emoteless
                         ? `You drew a ${cardEmotes[newCards[0]]} ${toTitleCase(newCards[0])}`
                         : `${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}
 You drew ${cardEmotes[newCards[0]]}`,
-                    components: PickCardSelect(game, cardArrayToCount(game.cards[ctx.member.id]))
+                    components
                 });
+            }
             else
                 ctx.deleteOriginal();
         }
