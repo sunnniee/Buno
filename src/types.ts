@@ -66,6 +66,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
         duration: number,
     },
     settings: UnoGameSettings,
+    saboteurs: { [id: string]: boolean },
     message: Message<AnyGuildTextChannel>,
     channelID: string,
     guildID: string,

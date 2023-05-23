@@ -93,6 +93,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         currentPlayer: players[0],
         lastPlayer: { id: null, duration: 0 },
         settings,
+        saboteurs: {},
         channelID: game.channelID,
         guildID: game.guildID,
         _modified: game._modified,

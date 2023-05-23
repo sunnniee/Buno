@@ -6,8 +6,34 @@ import { cardEmotes, cards, colors, SelectIDs, uniqueVariants, variants } from "
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Card, UnoGame } from "../types.js";
-import { getUsername, next, PickCardSelect, toTitleCase, wasLastTurnBlocked } from "../utils.js";
+import { getUsername, next, PickCardSelect, toTitleCase, updateStats, wasLastTurnBlocked } from "../utils.js";
 import { games, onTimeout, sendGameMessage } from "./index.js";
+
+function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>): boolean {
+    // first card is duration=0, second is duration=1, etc
+    let maxDuration = 4; // so default is kick on 5th card drawn
+    if (game.cards[next(game.players, game.players.indexOf(game.lastPlayer.id))].length <= 2) maxDuration--;
+    if (game.saboteurs[game.lastPlayer.id]) maxDuration--;
+
+    if (game.lastPlayer.duration >= maxDuration) {
+        game.players.splice(game.players.indexOf(ctx.member.id), 1);
+        sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
+        if (game.players.length <= 1) {
+            updateStats(game, game.players[0]);
+            return true;
+        }
+
+        game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+        game.lastPlayer.duration = 0;
+        return true;
+    }
+
+    if (game.lastPlayer.duration === maxDuration - 1) {
+        game.saboteurs[game.lastPlayer.id] = true;
+    }
+
+    return false;
+}
 
 export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     const { currentPlayer } = game;
@@ -117,32 +143,25 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
 
     let extraInfo = "";
     if (cardPlayed === "draw") {
-        if (game.lastPlayer.duration >= 4 && game.settings.antiSabotage) {
-            game.players.splice(game.players.indexOf(ctx.member.id), 1);
-            sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
-            if (game.players.length <= 1) return;
-            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-            game.lastPlayer.duration = 0;
+        if (isSabotage(ctx, game)) return;
 
-            return sendGameMessage(game);
-        } else {
-            const { cards: newCards, newDeck } = game.draw(1);
-            game.cards[ctx.member.id].push(newCards[0]);
-            game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
-            game.deck = newDeck;
-            if (game.settings.allowSkipping) {
-                const components = PickCardSelect(game, ctx.member.id);
-                if (components) ctx.editOriginal({
-                    content: config.emoteless
-                        ? `You drew a ${cardEmotes[newCards[0]]} ${toTitleCase(newCards[0])}`
-                        : `${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}
+        const { cards: newCards, newDeck } = game.draw(1);
+        game.cards[ctx.member.id].push(newCards[0]);
+        game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
+        game.deck = newDeck;
+
+        if (game.settings.allowSkipping) {
+            const components = PickCardSelect(game, ctx.member.id);
+            if (components) ctx.editOriginal({
+                content: config.emoteless
+                    ? `You drew a ${cardEmotes[newCards[0]]} ${toTitleCase(newCards[0])}`
+                    : `${game.cards[ctx.member.id].map(c => cardEmotes[c]).join(" ")}
 You drew ${cardEmotes[newCards[0]]}`,
-                    components
-                });
-            }
-            else
-                ctx.deleteOriginal();
+                components
+            });
         }
+        else
+            ctx.deleteOriginal();
     }
 
     else if (cardPlayed === "skip") {
@@ -154,6 +173,7 @@ You drew ${cardEmotes[newCards[0]]}`,
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
         game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
+        delete game.saboteurs[game.lastPlayer.id];
 
         if (variant === "reverse") {
             game.players = game.players.reverse();
