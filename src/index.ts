@@ -3,6 +3,7 @@ import { ActivityTypes, InteractionTypes } from "oceanic.js";
 import { parse } from "toml";
 
 import { client } from "./client.js";
+import { defaultConfig } from "./constants.js";
 import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { patch } from "./patchContext.js";
 import { Command, Config } from "./types.js";
@@ -17,11 +18,12 @@ declare global {
 }
 
 export let config: Config;
+let configFile: Partial<Config>;
 try {
-    config = parse(readFileSync("config.toml", "utf-8"));
+    configFile = parse(readFileSync("config.toml", "utf-8"));
+    config = { ...defaultConfig, ...configFile };
 } catch (e) {
-    console.error("Invalid or nonexistent config file");
-    setTimeout(() => process.exit(1), 30_000);
+    config = defaultConfig;
 }
 
 const prefix = process.argv[2] === "--dev" ? config.devPrefix : config.prefix;

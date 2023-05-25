@@ -5,10 +5,11 @@ import { colors, uniqueVariants, variants } from "./constants.js";
 export type Config = {
     prefix: string,
     emoteless: boolean,
-    status: string,
+    status: string | undefined,
     developerIds: string[],
     devPrefix: string,
-    logChannel?: string
+    logChannel: string | undefined,
+    title: string | undefined
 }
 
 export type Command = {

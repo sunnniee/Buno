@@ -1,7 +1,17 @@
 import { readFileSync } from "fs";
 
 import { config } from "./index.js";
-import { Card, UnoGameSettings } from "./types.js";
+import { Card, Config, UnoGameSettings } from "./types.js";
+
+export const defaultConfig: Config = Object.freeze({
+    prefix: "]",
+    emoteless: true,
+    status: undefined,
+    developerIds: [],
+    devPrefix: "]]",
+    logChannel: undefined,
+    title: undefined
+});
 
 export const colors = ["red", "yellow", "green", "blue",] as const;
 export const colorEmotes: { [k in typeof colors[number] | "other"]: string } = {

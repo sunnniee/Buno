@@ -41,7 +41,7 @@ export function onTimeout(game: UnoGame<true>, player: string) {
 
 export function makeStartMessage(game: UnoGame<false>, guild?: Guild) {
     return new EmbedBuilder()
-        .setTitle("The Buno.")
+        .setTitle(config.title)
         .setDescription(`
 **Game will start <t:${game.starting}:R>**
 Current game host: ${getUsername(game.host, true, guild ?? game.message?.channel?.guild)}
@@ -66,7 +66,7 @@ export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
         embeds: [new EmbedBuilder()
-            .setTitle("The Buno.")
+            .setTitle(config.title)
             .setDescription(`
 Currently playing: **${getUsername(game.currentPlayer, true, game.message?.channel?.guild) ?? `<@${game.currentPlayer}>`}**
 Current card: ${config.emoteless && isUnique ? cardEmotes[game.currentCard] : currentCardEmote} \
