@@ -42,7 +42,7 @@ export function onMsgError(e: Error, ctx: { channelID: string }) {
     console.log(e);
 }
 
-export function PickCardSelect(game: UnoGame<true>, id: string): MessageActionRow[] | false {
+export function PickCardSelect(game: UnoGame<true>, id: string, canSkip = false): MessageActionRow[] | false {
     if (!game.players.includes(id))
         throw new Error(`Player ${id} not in game ${game.channelID}`);
 
@@ -62,10 +62,7 @@ export function PickCardSelect(game: UnoGame<true>, id: string): MessageActionRo
         }
     ];
 
-    if (game.lastPlayer.id === game.currentPlayer
-        && game.settings.allowSkipping
-        && (game.players.length !== 2 || !wasLastTurnBlocked(game) || game.lastPlayer.duration >= 1)
-    )
+    if (game.settings.allowSkipping && canSkip)
         entries.push({
             label: "Skip your turn",
             value: "skip",

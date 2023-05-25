@@ -3,6 +3,7 @@ import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } 
 
 import { deleteMessage, sendMessage } from "../client.js";
 import { cardEmotes, cards, colors, SelectIDs, uniqueVariants, variants } from "../constants.js";
+import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Card, UnoGame } from "../types.js";
@@ -21,7 +22,9 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
         if (game.players.length <= 1) {
             updateStats(game, game.players[0]);
             return true;
-        }
+        } else database.set(game.guildID, ctx.member.id, {
+            losses: database.get(game.guildID, ctx.member.id).losses + 1
+        });
 
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         game.lastPlayer.duration = 0;
@@ -135,10 +138,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
 
     if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer.id !== game.currentPlayer && !wasLastTurnBlocked(game))))
         return ctx.createFollowup({
-            content: "https://cdn.discordapp.com/attachments/1077657001330487316/1078347206366597180/how.jpg",
+            content: "nuh uh ☝️",
             flags: MessageFlags.EPHEMERAL
         });
-    if (game.lastPlayer.id === game.currentPlayer) game.lastPlayer.duration++;
+    if (game.lastPlayer.id === game.currentPlayer || (game.players.length === 2 && wasLastTurnBlocked(game)))
+        game.lastPlayer.duration++;
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 };
 
     let extraInfo = "";
@@ -151,7 +155,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
         game.deck = newDeck;
 
         if (game.settings.allowSkipping) {
-            const components = PickCardSelect(game, ctx.member.id);
+            const components = PickCardSelect(game, ctx.member.id, true);
             if (components) ctx.editOriginal({
                 content: config.emoteless
                     ? `You drew a ${cardEmotes[newCards[0]]} ${toTitleCase(newCards[0])}`
