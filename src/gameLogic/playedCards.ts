@@ -2,12 +2,13 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 
 import { deleteMessage, sendMessage } from "../client.js";
+import { PickCardSelect } from "../components.js";
 import { cardEmotes, cards, colors, SelectIDs, uniqueVariants, variants } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Card, UnoGame } from "../types.js";
-import { getUsername, next, PickCardSelect, toTitleCase, updateStats, wasLastTurnBlocked } from "../utils.js";
+import { getUsername, next, toTitleCase, updateStats, wasLastTurnBlocked } from "../utils.js";
 import { games, onTimeout, sendGameMessage } from "./index.js";
 
 function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>): boolean {

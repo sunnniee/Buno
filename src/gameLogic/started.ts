@@ -2,10 +2,11 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
 
 import { sendMessage } from "../client.js";
+import { DrawStackedCardSelect, PickCardSelect } from "../components.js";
 import { ButtonIDs, cardEmotes } from "../constants.js";
 import { config } from "../index.js";
 import { UnoGame } from "../types.js";
-import { cardArrayToCount, DrawStackedCardSelect, getUsername, next, PickCardSelect, toTitleCase } from "../utils.js";
+import { cardArrayToCount, getUsername, next, toTitleCase } from "../utils.js";
 import { sendGameMessage } from "./index.js";
 import { makeDrawCardProxy } from "./notStarted.js";
 

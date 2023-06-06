@@ -2,12 +2,13 @@ import { EmbedBuilder } from "@oceanicjs/builders";
 import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
 
 import { client, deleteMessage, sendMessage } from "../client.js";
+import { GameButtons, SettingsSelectMenu } from "../components.js";
 import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, maxRejoinableTurnCount, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { UnoGame } from "../types.js";
-import { cancelGameMessageFail, GameButtons, getPlayerMember, getUsername, hasStarted, next, SettingsSelectMenu, toHumanReadableTime, toTitleCase } from "../utils.js";
+import { cancelGameMessageFail, getPlayerMember, getUsername, hasStarted, next, toHumanReadableTime, toTitleCase } from "../utils.js";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
 import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
 import { leaveGame, onGameButtonPress } from "./started.js";

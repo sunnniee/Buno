@@ -2,11 +2,12 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 
 import { deleteMessage, respond, sendMessage } from "../client.js";
+import { SettingsSelectMenu } from "../components.js";
 import { ButtonIDs, cardEmotes, cards, defaultSettings, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
 import timeouts from "../timeouts.js";
 import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
-import { getPlayerMember, hasStarted, SettingsSelectMenu, shuffle, toTitleCase, updateStats, without } from "../utils.js";
+import { getPlayerMember, hasStarted, shuffle, toTitleCase, updateStats, without } from "../utils.js";
 import { games, makeStartMessage, sendGameMessage } from "./index.js";
 
 export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
