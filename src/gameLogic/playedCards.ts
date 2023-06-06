@@ -18,6 +18,8 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
 
     if (game.lastPlayer.duration >= maxDuration) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
+        game.playersWhoLeft.push(ctx.member.id);
+
         sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
         if (game.players.length <= 1) {
             updateStats(game, game.players[0]);
@@ -144,6 +146,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (game.lastPlayer.id === game.currentPlayer || (game.players.length === 2 && wasLastTurnBlocked(game)))
         game.lastPlayer.duration++;
     else game.lastPlayer = { id: game.currentPlayer, duration: 0 };
+    game.turn++;
 
     let extraInfo = "";
     if (cardPlayed === "draw") {

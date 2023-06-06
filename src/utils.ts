@@ -7,19 +7,25 @@ import database from "./database.js";
 import { games, sendGameMessage } from "./gameLogic/index.js";
 import { Card, PlayerStorage, UnoGame } from "./types.js";
 
-export const GameButtons = (() => {
+export const GameButtons = ((canRejoin: boolean) => {
     const components = new ComponentBuilder<MessageActionRow>()
         .addInteractionButton({
             style: ButtonStyles.SECONDARY,
             customID: ButtonIDs.VIEW_CARDS,
-            label: "View",
+            label: "View cards",
             emoji: ComponentBuilder.emojiToPartial("🔍", "default")
         })
         .addInteractionButton({
-            style: ButtonStyles.PRIMARY,
+            style: ButtonStyles.SUCCESS,
             customID: ButtonIDs.PLAY_CARD,
             label: "Play",
             emoji: ComponentBuilder.emojiToPartial("🃏", "default")
+        })
+        .addRow()
+        .addInteractionButton({
+            style: ButtonStyles.SECONDARY,
+            customID: ButtonIDs.VIEW_GAME_SETTINGS,
+            emoji: ComponentBuilder.emojiToPartial("⚙", "default")
         })
         .addInteractionButton({
             style: ButtonStyles.DANGER,
@@ -27,9 +33,11 @@ export const GameButtons = (() => {
             emoji: ComponentBuilder.emojiToPartial("🚪", "default")
         })
         .addInteractionButton({
-            style: ButtonStyles.SECONDARY,
-            customID: ButtonIDs.VIEW_GAME_SETTINGS,
-            emoji: ComponentBuilder.emojiToPartial("⚙", "default")
+            style: ButtonStyles.PRIMARY,
+            customID: ButtonIDs.JOIN_MID_GAME,
+            label: "Join",
+            disabled: !canRejoin,
+            emoji: ComponentBuilder.emojiToPartial("➡️", "default")
         });
     return components.toJSON();
 });
@@ -162,6 +170,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             label: "Resend game message",
             value: SettingsIDs.RESEND_GAME_MESSAGE,
             description: `if it gets sent too far up because of chat. ${game.settings.resendGameMessage ? "Enabled" : "Disabled"}`
+        },
+        {
+            label: "Allow joining mid game",
+            value: SettingsIDs.ALLOW_REJOINING,
+            description: game.settings.canRejoin ? "Enabled" : "Disabled"
         }]
     })
     .toJSON();

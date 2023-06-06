@@ -7,10 +7,12 @@ import { config } from "../index.js";
 import { UnoGame } from "../types.js";
 import { cardArrayToCount, DrawStackedCardSelect, getUsername, next, PickCardSelect, toTitleCase } from "../utils.js";
 import { sendGameMessage } from "./index.js";
+import { makeDrawCardProxy } from "./notStarted.js";
 
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
+        game.playersWhoLeft.push(ctx.member.id);
         delete game.cards[ctx.member.id];
         if (game.currentPlayer === ctx.member.id) game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
 
@@ -40,6 +42,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             });
             break;
         }
+
         case ButtonIDs.PLAY_CARD: {
             if (!game.players.includes(ctx.member.id)) return ctx.createFollowup({
                 content: "You aren't in the game!",
@@ -63,6 +66,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             });
             break;
         }
+
         case ButtonIDs.LEAVE_GAME: {
             if (!game.players.includes(ctx.member.id)) return;
 
@@ -83,15 +87,44 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 flags: MessageFlags.EPHEMERAL
             });
         }
+
+        case ButtonIDs.JOIN_MID_GAME: {
+            if (game.players.includes(ctx.member.id)) return;
+            if (game.playersWhoLeft.includes(ctx.member.id)) return ctx.createFollowup({
+                content: "You can't rejoin a game you left!",
+                flags: MessageFlags.EPHEMERAL
+            });
+
+            game.players.push(ctx.member.id);
+            // in ascending order
+            const cardCounts = Object.values(game.cards).map(c => c.length).sort((a, b) => a - b);
+            // amount of cards is the same as the player with the highest amount of cards
+            // but at most 5 above the 2nd highest amount of cards
+            const highest = cardCounts.pop();
+            const secondHighest = cardCounts.pop();
+            const { cards, newDeck } = game.draw(highest > secondHighest + 5 ? secondHighest + 5 : highest);
+            game.cards[ctx.member.id] = new Proxy(cards, {
+                set(t, p, n) {
+                    makeDrawCardProxy(game, ctx.member.id, t, p, n);
+                    return true;
+                }
+            });
+            game.deck = newDeck;
+
+            sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** has joined the game!`);
+            sendGameMessage(game, true);
+            break;
+        }
+
         case ButtonIDs.VIEW_GAME_SETTINGS: {
             return ctx.createFollowup({
                 content: `Kick on timeout: **${game.settings.kickOnTimeout ? "Enabled" : "Disabled"}**
-                Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**
-                Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
-                Randomize order of players: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
-                Resend game message: **${game.settings.resendGameMessage ? "Enabled" : "Disabled"}**
-                Anti sabotage: **find out 🚎**`
-                    .replace(/ {8,}/g, ""),
+Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**
+Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
+Randomize order of players: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
+Resend game message: **${game.settings.resendGameMessage ? "Enabled" : "Disabled"}**
+Can join mid game: **${game.settings.resendGameMessage ? "Yes" : "No"}**
+Anti sabotage: **find out 🚎**`,
                 flags: MessageFlags.EPHEMERAL
             });
         }

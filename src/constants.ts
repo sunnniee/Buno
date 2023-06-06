@@ -74,12 +74,15 @@ export const defaultColor = 0x6c7086;
 export const defaultSettings: UnoGameSettings = {
     timeoutDuration: 150,
     kickOnTimeout: true,
-    allowSkipping: true,
+    allowSkipping: false,
     antiSabotage: true,
     allowStacking: true,
     randomizePlayerList: true,
-    resendGameMessage: true
+    resendGameMessage: true,
+    canRejoin: false
 } as const;
+
+export const maxRejoinableTurnCount = 30;
 
 export const autoStartTimeout = 305;
 
@@ -96,6 +99,7 @@ export const ButtonIDs = Object.freeze({
     VIEW_CARDS: "view-cards",
     PLAY_CARD: "play-game",
     LEAVE_GAME: "leave-game",
+    JOIN_MID_GAME: "join-ongoing",
     LEAVE_GAME_CONFIRMATION_YES: "confirm-leave-game",
     LEAVE_GAME_CONFIRMATION_NO: "deny-leave-game",
     VIEW_GAME_SETTINGS: "view-settings",
@@ -111,12 +115,14 @@ export const SelectIDs = Object.freeze({
 
 export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION: "timeout-duration-setting",
-    TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
-    TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
     KICK_ON_TIMEOUT: "kick-on-timeout-setting",
     ALLOW_SKIPPING: "allow-skipping",
     ANTI_SABOTAGE: "anti-sabotage",
     ALLOW_CARD_STACKING: "allow-stacking",
     RANDOMIZE_PLAYER_LIST: "randomize-list",
     RESEND_GAME_MESSAGE: "resend-game-message",
+    ALLOW_REJOINING: "can-rejoin",
+
+    TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
+    TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
 });

@@ -42,18 +42,20 @@ export interface DebugState {
 export type Card = `${typeof colors[number]}-${typeof variants[number]}` | typeof uniqueVariants[number]
 
 export type UnoGameSettings = {
-    timeoutDuration: number
-    kickOnTimeout: boolean
+    timeoutDuration: number,
+    kickOnTimeout: boolean,
     allowSkipping: boolean,
     antiSabotage: boolean,
     allowStacking: boolean,
     randomizePlayerList: boolean,
-    resendGameMessage: boolean
+    resendGameMessage: boolean,
+    canRejoin: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {
     uid: string,
     started: true,
     players: string[],
+    playersWhoLeft: string[],
     host: string,
     cards: { [player: string]: Card[] },
     currentCard: Card,
@@ -67,6 +69,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
         duration: number,
     },
     settings: UnoGameSettings,
+    turn: number,
     saboteurs: { [id: string]: boolean },
     message: Message<AnyGuildTextChannel>,
     channelID: string,

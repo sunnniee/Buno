@@ -9,6 +9,35 @@ import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
 import { getPlayerMember, hasStarted, SettingsSelectMenu, shuffle, toTitleCase, updateStats, without } from "../utils.js";
 import { games, makeStartMessage, sendGameMessage } from "./index.js";
 
+export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
+    t[p] = n;
+    if (p === "length") startedGame._debug.pushState({
+        type: "set-cards",
+        newState: t,
+        meetsEndCondition: [p === "length" && n === 0, n]
+    });
+    if (p === "length" && n === 0) {
+        // TODO: check that the card shown here is the correct one and dont just pray it is
+        const card = startedGame.currentCard;
+        const winner = getPlayerMember(startedGame, userId);
+        timeouts.delete(startedGame.channelID);
+        updateStats(startedGame, userId);
+        delete games[startedGame.channelID];
+        sendMessage(startedGame.channelID, {
+            content: `**${winner?.nick ?? winner?.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
+            components: new ComponentBuilder<MessageActionRow>()
+                .addInteractionButton({
+                    style: ButtonStyles.SUCCESS,
+                    label: "gg",
+                    emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                    disabled: true,
+                    customID: "we-have-a-nerd-here🤓"
+                })
+                .toJSON()
+        });
+    }
+}
+
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
     let card = game.draw(1).cards[0];
     while (uniqueVariants.includes(card)) {
@@ -52,7 +81,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     timeouts.delete(game.channelID);
     games[game.channelID].started = true;
 
-    const settings = game.settings || { ...defaultSettings };
+    const settings = { ...defaultSettings, ...game.settings };
     const playerList = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
     const players = new Proxy(playerList, {
         deleteProperty(t, p) {
@@ -86,12 +115,15 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         uid: game.uid,
         started: true,
         message: game.message,
+        // TODO: proxy to push to playersWhoLeft?
         players,
+        playersWhoLeft: [],
         host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
         drawStackCounter: 0,
         currentPlayer: players[0],
         lastPlayer: { id: null, duration: 0 },
+        turn: 0,
         settings,
         saboteurs: {},
         channelID: game.channelID,
@@ -114,32 +146,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
             set(t, p, n) {
-                t[p] = n;
-                if (p === "length") startedGame._debug.pushState({
-                    type: "set-cards",
-                    newState: t,
-                    meetsEndCondition: [p === "length" && n === 0, n]
-                });
-                if (p === "length" && n === 0) {
-                    // TODO: check that the card shown here is the correct one and dont just pray it is
-                    const card = startedGame.currentCard;
-                    const winner = getPlayerMember(startedGame, id);
-                    timeouts.delete(game.channelID);
-                    updateStats(startedGame, id);
-                    delete games[startedGame.channelID];
-                    sendMessage(startedGame.channelID, {
-                        content: `**${winner?.nick ?? winner?.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
-                        components: new ComponentBuilder<MessageActionRow>()
-                            .addInteractionButton({
-                                style: ButtonStyles.SUCCESS,
-                                label: "gg",
-                                emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                                disabled: true,
-                                customID: "we-have-a-nerd-here🤓"
-                            })
-                            .toJSON()
-                    });
-                }
+                makeDrawCardProxy(startedGame, id, t, p, n);
                 return true;
             }
         });
@@ -158,6 +165,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
 function drawFactory(game: UnoGame<true>): (amount: number) => { cards: Card[], newDeck: Card[] } {
     let { deck } = game;
     return (amount: number) => {
+        if (amount > 50) amount = 50;
         if (deck.length < amount) deck = deck.concat(shuffle(dupe([...cards, ...uniqueVariants])));
         const takenCards = deck.splice(0, amount);
         return { cards: takenCards, newDeck: deck };
@@ -212,6 +220,10 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
         }
         case SettingsIDs.RESEND_GAME_MESSAGE: {
             game.settings.resendGameMessage = !game.settings.resendGameMessage;
+            break;
+        }
+        case SettingsIDs.ALLOW_REJOINING: {
+            game.settings.canRejoin = !game.settings.canRejoin;
             break;
         }
         default: {

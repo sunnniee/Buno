@@ -2,7 +2,7 @@ import { EmbedBuilder } from "@oceanicjs/builders";
 import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
 
 import { client, deleteMessage, sendMessage } from "../client.js";
-import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
+import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, maxRejoinableTurnCount, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
@@ -25,7 +25,10 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     const kickedPlayer = getPlayerMember(game, player);
 
     game.currentPlayer = next(game.players, game.players.indexOf(player));
-    if (game.settings.kickOnTimeout) game.players.splice(game.players.indexOf(player), 1);
+    if (game.settings.kickOnTimeout) {
+        game.players.splice(game.players.indexOf(player), 1);
+        game.playersWhoLeft.push(player);
+    }
     sendMessage(game.channelID,
         `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
@@ -62,6 +65,7 @@ export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {
     const isUnique = uniqueVariants.includes(game.currentCard);
     const currentCardEmote = isUnique ? coloredUniqueCards[`${game.currentCardColor}-${game.currentCard}`] : cardEmotes[game.currentCard];
 
+    games[game.channelID] = game;
     sendMessage(game.channelID, {
         content: `<@${game.currentPlayer}> it's now your turn`,
         allowedMentions: { users: true },
@@ -84,7 +88,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
-        components: GameButtons()
+        components: GameButtons(game.settings.canRejoin && game.turn < maxRejoinableTurnCount)
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
 
@@ -112,6 +116,7 @@ export function onButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTON>) 
         case ButtonIDs.VIEW_CARDS:
         case ButtonIDs.PLAY_CARD:
         case ButtonIDs.LEAVE_GAME:
+        case ButtonIDs.JOIN_MID_GAME:
         case ButtonIDs.VIEW_GAME_SETTINGS:
             if (!game || !hasStarted(game)) return;
             onGameButtonPress(ctx, game);
