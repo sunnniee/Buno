@@ -141,13 +141,17 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     const game = games[ctx.channel.id];
     if (!game) return;
 
-    if ((ctx.data.customID === SelectIDs.CHOOSE_CARD || ctx.data.customID === SelectIDs.CHOOSE_CARD_ABOVE_25) && hasStarted(game))
+    if ((ctx.data.customID === SelectIDs.CHOOSE_CARD || ctx.data.customID === SelectIDs.CHOOSE_CARD_ABOVE_25)
+        && hasStarted(game)
+    )
         onCardPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game))
         onColorPlayed(ctx, game);
     else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game))
         onForceDrawPlayed(ctx, game);
-    else if (ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS && !hasStarted(game))
+    else if ((ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS || ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS_RULES)
+        && !hasStarted(game)
+    )
         onSettingsChange(ctx, game);
 }
 

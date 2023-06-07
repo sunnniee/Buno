@@ -1,8 +1,7 @@
-import { ComponentBuilder } from "@oceanicjs/builders";
-import { ButtonStyles, MessageActionRow } from "oceanic.js";
 
 import { respond } from "../client.js";
-import { autoStartTimeout, ButtonIDs, defaultSettings } from "../constants.js";
+import { JoinButtons } from "../components.js";
+import { autoStartTimeout, defaultSettings } from "../constants.js";
 import database from "../database.js";
 import { games, makeStartMessage } from "../gameLogic/index.js";
 import { startGame } from "../gameLogic/notStarted.js";
@@ -35,36 +34,7 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
 
         respond(msg, {
             embeds: [makeStartMessage(gameObj, msg.channel.guild)],
-            components: new ComponentBuilder<MessageActionRow>()
-                .addInteractionButton({
-                    style: ButtonStyles.PRIMARY,
-                    customID: ButtonIDs.JOIN_GAME,
-                    label: "Join",
-                })
-                .addInteractionButton({
-                    style: ButtonStyles.DANGER,
-                    customID: ButtonIDs.LEAVE_GAME_BEFORE_START,
-                    emoji: ComponentBuilder.emojiToPartial("🚪", "default")
-                })
-                .addInteractionButton({
-                    style: ButtonStyles.PRIMARY,
-                    customID: ButtonIDs.START_GAME,
-                    emoji: ComponentBuilder.emojiToPartial("▶", "default")
-                })
-                .addRow()
-                .addInteractionButton({
-                    style: ButtonStyles.DANGER,
-                    customID: ButtonIDs.DELETE_GAME,
-                    label: "Stop game",
-                    emoji: ComponentBuilder.emojiToPartial("🛑", "default")
-                })
-                .addInteractionButton({
-                    style: ButtonStyles.SECONDARY,
-                    customID: ButtonIDs.EDIT_GAME_SETTINGS,
-                    label: "Settings",
-                    emoji: ComponentBuilder.emojiToPartial("⚙", "default")
-                })
-                .toJSON()
+            components: JoinButtons
         }).then(m => {
             if (!m) {
                 delete games[msg.channel.id];

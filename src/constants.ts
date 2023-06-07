@@ -79,7 +79,8 @@ export const defaultSettings: UnoGameSettings = {
     allowStacking: true,
     randomizePlayerList: true,
     resendGameMessage: true,
-    canRejoin: false
+    canRejoin: false,
+    sevenAndZero: false
 } as const;
 
 export const maxRejoinableTurnCount = 30;
@@ -111,18 +112,21 @@ export const SelectIDs = Object.freeze({
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
     EDIT_GAME_SETTINGS: "change-settings",
+    EDIT_GAME_SETTINGS_RULES: "change-game-rules",
 });
 
 export const SettingsIDs = Object.freeze({
     TIMEOUT_DURATION: "timeout-duration-setting",
-    KICK_ON_TIMEOUT: "kick-on-timeout-setting",
-    ALLOW_SKIPPING: "allow-skipping",
+    KICK_ON_TIMEOUT: "kick-on-timeout",
     ANTI_SABOTAGE: "anti-sabotage",
-    ALLOW_CARD_STACKING: "allow-stacking",
     RANDOMIZE_PLAYER_LIST: "randomize-list",
     RESEND_GAME_MESSAGE: "resend-game-message",
     ALLOW_REJOINING: "can-rejoin",
 
-    TIMEOUT_DURATION_MODAL: "tiemeout-duration-modal",
+    ALLOW_SKIPPING: "allow-skipping",
+    ALLOW_CARD_STACKING: "allow-stacking",
+    SEVEN_AND_ZERO: "7-and-0",
+
+    TIMEOUT_DURATION_MODAL: "timeout-duration-modal",
     TIMEOUT_DURATION_MODAL_SETTING: "timeout-setting-field",
 });

@@ -7,6 +7,37 @@ import { sendGameMessage } from "./gameLogic/index.js";
 import { Card, UnoGame } from "./types.js";
 import { cardArrayToCount, getUsername, next, toHumanReadableTime, toTitleCase } from "./utils.js";
 
+export const JoinButtons = new ComponentBuilder<MessageActionRow>()
+    .addInteractionButton({
+        style: ButtonStyles.PRIMARY,
+        customID: ButtonIDs.JOIN_GAME,
+        label: "Join",
+    })
+    .addInteractionButton({
+        style: ButtonStyles.DANGER,
+        customID: ButtonIDs.LEAVE_GAME_BEFORE_START,
+        emoji: ComponentBuilder.emojiToPartial("🚪", "default")
+    })
+    .addInteractionButton({
+        style: ButtonStyles.PRIMARY,
+        customID: ButtonIDs.START_GAME,
+        emoji: ComponentBuilder.emojiToPartial("▶", "default")
+    })
+    .addRow()
+    .addInteractionButton({
+        style: ButtonStyles.DANGER,
+        customID: ButtonIDs.DELETE_GAME,
+        label: "Stop game",
+        emoji: ComponentBuilder.emojiToPartial("🛑", "default")
+    })
+    .addInteractionButton({
+        style: ButtonStyles.SECONDARY,
+        customID: ButtonIDs.EDIT_GAME_SETTINGS,
+        label: "Settings",
+        emoji: ComponentBuilder.emojiToPartial("⚙", "default")
+    })
+    .toJSON();
+
 export const GameButtons = ((canRejoin: boolean) => {
     const components = new ComponentBuilder<MessageActionRow>()
         .addInteractionButton({
@@ -121,45 +152,60 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
     .addSelectMenu({
         customID: SelectIDs.EDIT_GAME_SETTINGS,
         type: ComponentTypes.STRING_SELECT,
-        options: [{
-            label: "Turn duration",
-            value: SettingsIDs.TIMEOUT_DURATION,
-            description: `${toHumanReadableTime(game.settings.timeoutDuration ?? defaultSettings.timeoutDuration)}`
-        },
-        {
-            label: "Kick on timeout",
-            value: SettingsIDs.KICK_ON_TIMEOUT,
-            description: game.settings.kickOnTimeout ? "Enabled" : "Disabled"
-        },
-        {
-            label: "Allow skipping turns",
-            value: SettingsIDs.ALLOW_SKIPPING,
-            description: game.settings.allowSkipping ? "Enabled" : "Disabled"
-        },
-        {
-            label: "Anti sabotage",
-            value: SettingsIDs.ANTI_SABOTAGE,
-            description: `Don't allow drawing too many cards at once. ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
-        },
-        {
-            label: "Stack +2's and +4's",
-            value: SettingsIDs.ALLOW_CARD_STACKING,
-            description: game.settings.allowStacking ? "Enabled" : "Disabled"
-        },
-        {
-            label: "Randomize order of players",
-            value: SettingsIDs.RANDOMIZE_PLAYER_LIST,
-            description: game.settings.randomizePlayerList ? "Enabled" : "Disabled"
-        },
-        {
-            label: "Resend game message",
-            value: SettingsIDs.RESEND_GAME_MESSAGE,
-            description: `if it gets sent too far up because of chat. ${game.settings.resendGameMessage ? "Enabled" : "Disabled"}`
-        },
-        {
-            label: "Allow joining mid game",
-            value: SettingsIDs.ALLOW_REJOINING,
-            description: game.settings.canRejoin ? "Enabled" : "Disabled"
-        }]
+        placeholder: "Edit a setting",
+        options: [
+            {
+                label: "Turn duration",
+                value: SettingsIDs.TIMEOUT_DURATION,
+                description: toHumanReadableTime(game.settings.timeoutDuration ?? defaultSettings.timeoutDuration)
+            },
+            {
+                label: "Kick on timeout",
+                value: SettingsIDs.KICK_ON_TIMEOUT,
+                description: game.settings.kickOnTimeout ? "Enabled" : "Disabled"
+            },
+            {
+                label: "Anti sabotage",
+                value: SettingsIDs.ANTI_SABOTAGE,
+                description: `Don't allow drawing too many cards at once. ${game.settings.antiSabotage ? "Enabled" : "Disabled"}`
+            },
+            {
+                label: "Randomize order of players",
+                value: SettingsIDs.RANDOMIZE_PLAYER_LIST,
+                description: game.settings.randomizePlayerList ? "Enabled" : "Disabled"
+            },
+            {
+                label: "Resend game message",
+                value: SettingsIDs.RESEND_GAME_MESSAGE,
+                description: `if it gets sent too far up because of chat. ${game.settings.resendGameMessage ? "Enabled" : "Disabled"}`
+            },
+            {
+                label: "Allow joining mid game",
+                value: SettingsIDs.ALLOW_REJOINING,
+                description: game.settings.canRejoin ? "Enabled" : "Disabled"
+            }
+        ]
+    })
+    .addSelectMenu({
+        customID: SelectIDs.EDIT_GAME_SETTINGS_RULES,
+        type: ComponentTypes.STRING_SELECT,
+        placeholder: "Edit a game rule",
+        options: [
+            {
+                label: "Allow skipping turns",
+                value: SettingsIDs.ALLOW_SKIPPING,
+                description: game.settings.allowSkipping ? "Enabled" : "Disabled"
+            },
+            {
+                label: "Stack +2's and +4's",
+                value: SettingsIDs.ALLOW_CARD_STACKING,
+                description: game.settings.allowStacking ? "Enabled" : "Disabled"
+            },
+            // {
+            //     label: "7 and 0 (does not work)",
+            //     value: SettingsIDs.SEVEN_AND_ZERO,
+            //     description: game.settings.sevenAndZero ? "Enabled" : "Disabled"
+            // }
+        ]
     })
     .toJSON();

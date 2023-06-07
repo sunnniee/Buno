@@ -44,29 +44,36 @@ export const cmd = {
                         respond(msg, "👍 Deleted the game in this channel");
                     } else console.log(e);
                 });
-        } else {
+        }
+        else {
             if (game.players.length <= 1) {
                 sendDebugLog({ ...game }, "player left");
+
                 const possiblyTheWinner = /\d{17,20}/.test(game.currentPlayer) ? game.currentPlayer : game.lastPlayer.id;
                 deleteMessage(game.message);
                 timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
+
                 respond(msg, `👍 Deleted the game in this channel\nGames that ended in everyone leaving shouldn't count as a win
 **${getUsername(possiblyTheWinner, true, guild)}** would've "won"`);
             }
             else if (Object.values(game.cards).some(a => a.length === 0)) {
+
                 sendDebugLog({ ...game }, "card was played");
+
                 const winner = Object.entries(game.cards).find(([, cards]) => cards.length === 0)[0];
                 updateStats(game, winner);
                 deleteMessage(game.message);
                 timeouts.delete(game.channelID);
                 delete games[msg.channel.id];
+
                 respond(msg, `👍 Deleted the game in this channel and gave **${getUsername(winner, true, guild)}** the win`);
             }
             else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 48)) {
                 const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 48)![0];
                 game.players.splice(game.players.indexOf(badPlayer), 1);
                 respond(msg, `Removed **${getUsername(badPlayer, true, msg.guild)}**`);
+
                 if (game.players.length <= 1) return;
                 if (game.currentPlayer === badPlayer) {
                     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
@@ -78,8 +85,10 @@ export const cmd = {
                 msg.channel.getMessage(game.message.id)
                     .then(() => respond(msg, "Couldn't find anything wrong."))
                     .catch(e => {
-                        if (e.message.includes("Unknown Message")) sendGameMessage(game);
-                        else console.log(e);
+                        if (e.message.includes("Unknown Message"))
+                            sendGameMessage(game);
+                        else
+                            console.log(e);
                     });
             }
         }

@@ -8,7 +8,7 @@ export const client = new Client({
     gateway: {
         intents: ["GUILDS", "GUILD_MESSAGES", "MESSAGE_CONTENT"]
     },
-    allowedMentions: { roles: false }
+    allowedMentions: { everyone: false, roles: false, users: false, repliedUser: false }
 });
 
 export const sendMessage = (channelID: string, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyGuildTextChannel>> =>
