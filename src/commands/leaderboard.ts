@@ -72,7 +72,7 @@ export const cmd = {
 
         const endPage = Math.ceil(stats.length / 10);
         const page = (_page <= endPage ? _page : 1) - 1;
-        const statsSegment = stats.slice(page * 10, page * 10 + 9);
+        const statsSegment = stats.slice(page * 10, page * 10 + 10);
 
         respond(msg, {
             embeds: [makeLeaderboardEmbed(stats, page, msg.author.id, guild, false)],
@@ -85,7 +85,7 @@ export const cmd = {
                     .then(members => {
                         if (members.length !== missingMembers.length) {
                             const stillMissingMembers = missingMembers.filter(({ id }) => !members.some(m => m.id === id));
-                            if (stillMissingMembers.length >= 5) queue.push(
+                            if (stillMissingMembers.length >= 4) queue.push(
                                 () => m.edit({
                                     content: "Fetching missing users, this will take a bit",
                                     allowedMentions: { repliedUser: false }
@@ -94,7 +94,7 @@ export const cmd = {
 
                             stillMissingMembers.forEach(({ id }) => {
                                 if (cannotBeFetchedTimestamp[id] + retryFetchAfter < Date.now())
-                                    queue.push(() => client.rest.users.get(id).catch(() => {}));
+                                    queue.push(() => client.rest.users.get(id).catch(() => { }));
                             });
                         }
                         queue.push(
