@@ -4,6 +4,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 import { sendMessage } from "../client.js";
 import { DrawStackedCardSelect, PickCardSelect } from "../components.js";
 import { ButtonIDs, cardEmotes } from "../constants.js";
+import database from "../database.js";
 import { config } from "../index.js";
 import { UnoGame } from "../types.js";
 import { cardArrayToCount, getUsername, next, toTitleCase } from "../utils.js";
@@ -97,6 +98,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             });
 
             game.players.push(ctx.member.id);
+            database.getOrCreate(ctx.guild.id, ctx.member.id);
             // in ascending order
             const cardCounts = Object.values(game.cards).map(c => c.length).sort((a, b) => a - b);
             // amount of cards is the same as the player with the highest amount of cards

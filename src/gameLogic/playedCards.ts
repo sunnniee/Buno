@@ -26,7 +26,7 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
             updateStats(game, game.players[0]);
             return true;
         } else database.set(game.guildID, ctx.member.id, {
-            losses: database.get(game.guildID, ctx.member.id).losses + 1
+            losses: database.getOrCreate(game.guildID, ctx.member.id).losses + 1
         });
 
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));

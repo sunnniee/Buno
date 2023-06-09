@@ -73,7 +73,7 @@ export function updateStats(game: UnoGame<true>, winner: string) {
     if (game._modified) return;
     const newStats: { [id: string]: PlayerStorage; } = {};
     game.players.forEach(id => {
-        const val: PlayerStorage = database.get(game.guildID, id) ?? database.defaultValue;
+        const val = database.getOrCreate(game.guildID, id);
         if (id === winner) val.wins++;
         else val.losses++;
         newStats[id] = val;

@@ -91,6 +91,14 @@ class PlayerStatsDatabase {
         return guild[playerId];
     }
 
+    getOrCreate(guildId: string, playerId: string): PlayerStorage {
+        const value = this.get(guildId, playerId);
+        if (value) return value;
+
+        this.set(guildId, playerId, this.defaultValue);
+        return { ...this.defaultValue };
+    }
+
     getAllForGuild(guildId: string): GuildStorage | undefined {
         if (!this.hasInitalized) return {} as any;
 
