@@ -35,7 +35,7 @@ const cannotBeFetchedTimestamp: { [id: string]: number } = new Proxy({}, {
 
 function makeLeaderboardEmbed(fullStats: Stats[], page: number, author: string, guild: Guild, markMissing: boolean) {
     const getText = (i: number) => emotes[i + page * 10] || `${i + page * 10 + 1}.`;
-    const stats = fullStats.slice(page * 10, page * 10 + 9);
+    const stats = fullStats.slice(page * 10, page * 10 + 10);
     const yourStats = fullStats.find(s => s.id === author);
     const yourStatsIndex = fullStats.indexOf(yourStats);
 
@@ -94,7 +94,7 @@ export const cmd = {
 
                             stillMissingMembers.forEach(({ id }) => {
                                 if (cannotBeFetchedTimestamp[id] + retryFetchAfter < Date.now())
-                                    queue.push(() => client.rest.users.get(id));
+                                    queue.push(() => client.rest.users.get(id).catch(() => {}));
                             });
                         }
                         queue.push(
