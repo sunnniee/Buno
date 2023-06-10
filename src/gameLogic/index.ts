@@ -3,7 +3,7 @@ import { AnyTextableGuildChannel, ComponentInteraction, ComponentTypes, Guild, M
 
 import { client, deleteMessage, sendMessage } from "../client.js";
 import { GameButtons, SettingsSelectMenu } from "../components.js";
-import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, maxRejoinableTurnCount, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
+import { ButtonIDs, cardEmojis, cardEmotes, coloredUniqueCards, defaultColor, defaultSettings, rainbowColors, SelectIDs, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
@@ -89,7 +89,7 @@ ${game.players.map((p, i) => makeGameLine(game, p, i)).join("\n")}
             .setFooter((game._modified ? "This game will not count towards the leaderboard. " : "")
                 + `Timeout is ${toHumanReadableTime(game.settings.timeoutDuration).toLowerCase()}`)
             .toJSON()],
-        components: GameButtons(game.settings.canRejoin && game.turn < maxRejoinableTurnCount)
+        components: GameButtons(game)
     }).then(msg => {
         if (!msg) return cancelGameMessageFail(game);
 

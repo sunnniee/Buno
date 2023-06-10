@@ -2,7 +2,7 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentTypes, MessageActionRow } from "oceanic.js";
 
 import { client, sendMessage } from "./client.js";
-import { ButtonIDs, cardEmotes, defaultSettings, SelectIDs, SettingsIDs } from "./constants.js";
+import { ButtonIDs, cardEmotes, defaultSettings, maxRejoinableTurnCount, SelectIDs, SettingsIDs } from "./constants.js";
 import { sendGameMessage } from "./gameLogic/index.js";
 import { Card, UnoGame } from "./types.js";
 import { cardArrayToCount, getUsername, next, toHumanReadableTime, toTitleCase } from "./utils.js";
@@ -38,7 +38,7 @@ export const JoinButtons = new ComponentBuilder<MessageActionRow>()
     })
     .toJSON();
 
-export const GameButtons = ((canRejoin: boolean) => {
+export const GameButtons = ((game: UnoGame<true>) => {
     const components = new ComponentBuilder<MessageActionRow>()
         .addInteractionButton({
             style: ButtonStyles.SECONDARY,
@@ -67,7 +67,8 @@ export const GameButtons = ((canRejoin: boolean) => {
             style: ButtonStyles.PRIMARY,
             customID: ButtonIDs.JOIN_MID_GAME,
             label: "Join",
-            disabled: !canRejoin,
+            disabled: game.settings.canRejoin === "no"
+                || (game.settings.canRejoin === "temporarily" && game.turn > maxRejoinableTurnCount),
             emoji: ComponentBuilder.emojiToPartial("➡️", "default")
         });
     return components.toJSON();
@@ -182,7 +183,19 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
             {
                 label: "Allow joining mid game",
                 value: SettingsIDs.ALLOW_REJOINING,
-                description: game.settings.canRejoin ? "Enabled" : "Disabled"
+                description: (() => {
+                    switch (game.settings.canRejoin) {
+                        case "no": {
+                            return "Disabled";
+                        }
+                        case "temporarily": {
+                            return "Only quickly after game start";
+                        }
+                        case "permanently": {
+                            return "For the whole game";
+                        }
+                    }
+                })()
             }
         ]
     })

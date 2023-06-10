@@ -7,7 +7,7 @@ import { ButtonIDs, cardEmotes, cards, defaultSettings, SettingsIDs, uniqueVaria
 import database from "../database.js";
 import timeouts from "../timeouts.js";
 import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
-import { getPlayerMember, hasStarted, shuffle, toTitleCase, updateStats, without } from "../utils.js";
+import { getPlayerMember, hasStarted, next, shuffle, toTitleCase, updateStats, without } from "../utils.js";
 import { games, makeStartMessage, sendGameMessage } from "./index.js";
 
 export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
@@ -198,6 +198,8 @@ export function makeSettingsModal(ctx: ComponentInteraction) {
     });
 }
 export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<false>) {
+    const rejoinOptionOrder = ["no", "temporarily", "permanently"] as const;
+
     switch (ctx.data.values.raw[0]) {
         case SettingsIDs.KICK_ON_TIMEOUT: {
             game.settings.kickOnTimeout = !game.settings.kickOnTimeout;
@@ -224,7 +226,8 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
             break;
         }
         case SettingsIDs.ALLOW_REJOINING: {
-            game.settings.canRejoin = !game.settings.canRejoin;
+            // @ts-ignore Argument of type 'readonly ["no", "temporarily", "permanently"]' is not assignable to parameter of type '("no" | "temporarily" | "permanently")[]'.
+            game.settings.canRejoin = next(rejoinOptionOrder, rejoinOptionOrder.indexOf(game.settings.canRejoin));
             break;
         }
         default: {

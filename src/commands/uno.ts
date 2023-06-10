@@ -18,13 +18,20 @@ export const cmd = {
 Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${existingGame.message.channel.id}/${existingGame.message.id}`);
         games[msg.channel.id] = { started: false } as UnoGame<false>;
 
-        const data = database.getOrCreate(msg.channel.guild.id, msg.author.id);
+        const data = database.getOrCreate(msg.guild.id, msg.author.id);
+
+        const { canRejoin } = data.preferredSettings;
+        if (typeof canRejoin === "boolean") {
+            data.preferredSettings.canRejoin = canRejoin ? "temporarily" : "no";
+            database.set(msg.guild.id, msg.author.id, { preferredSettings: data.preferredSettings });
+        }
+
         const gameObj = {
             uid: Math.random().toString().substring(2),
             started: false,
             starting: Math.floor(Date.now() / 1000) + autoStartTimeout,
             host: msg.author.id,
-            settings: data?.preferredSettings,
+            settings: data.preferredSettings,
             players: [msg.author.id],
             _allowSolo: args[0]?.toLowerCase() === "solo",
             _modified: false,

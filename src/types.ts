@@ -49,7 +49,7 @@ export type UnoGameSettings = {
     allowStacking: boolean,
     randomizePlayerList: boolean,
     resendGameMessage: boolean,
-    canRejoin: boolean,
+    canRejoin: "no" | "temporarily" | "permanently",
     sevenAndZero: boolean
 }
 export type UnoGame<T extends boolean> = T extends true ? {

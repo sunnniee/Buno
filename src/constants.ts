@@ -79,7 +79,7 @@ export const defaultSettings: UnoGameSettings = {
     allowStacking: true,
     randomizePlayerList: true,
     resendGameMessage: true,
-    canRejoin: false,
+    canRejoin: "no",
     sevenAndZero: false
 } as const;
 

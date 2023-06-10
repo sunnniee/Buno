@@ -3,7 +3,7 @@ import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, M
 
 import { sendMessage } from "../client.js";
 import { DrawStackedCardSelect, PickCardSelect } from "../components.js";
-import { ButtonIDs, cardEmotes } from "../constants.js";
+import { ButtonIDs, cardEmotes, maxRejoinableTurnCount } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import { UnoGame } from "../types.js";
@@ -96,16 +96,23 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: "You can't rejoin a game you left!",
                 flags: MessageFlags.EPHEMERAL
             });
+            if (game.settings.canRejoin === "no"
+                || (game.settings.canRejoin === "temporarily" && game.turn > maxRejoinableTurnCount))
+                return ctx.createFollowup({
+                    content: "You can't rejoin this game",
+                    flags: MessageFlags.EPHEMERAL
+                });
 
             game.players.push(ctx.member.id);
             database.getOrCreate(ctx.guild.id, ctx.member.id);
             // in ascending order
             const cardCounts = Object.values(game.cards).map(c => c.length).sort((a, b) => a - b);
-            // amount of cards is the same as the player with the highest amount of cards
+            // amount of cards is the same as the player with the highest amount of cards (minimum of 7)
             // but at most 5 above the 2nd highest amount of cards
             const highest = cardCounts.pop();
             const secondHighest = cardCounts.pop();
-            const { cards, newDeck } = game.draw(highest > secondHighest + 5 ? secondHighest + 5 : highest);
+            const { cards, newDeck } = game.draw(Math.min(highest, secondHighest + 5, 7));
+
             game.cards[ctx.member.id] = new Proxy(cards, {
                 set(t, p, n) {
                     makeDrawCardProxy(game, ctx.member.id, t, p, n);
