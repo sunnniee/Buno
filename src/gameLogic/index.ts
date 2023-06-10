@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "@oceanicjs/builders";
-import { AnyGuildTextChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
+import { AnyTextableGuildChannel, ComponentInteraction, ComponentTypes, Guild, Message, ModalSubmitInteraction, TypedCollection } from "oceanic.js";
 
 import { client, deleteMessage, sendMessage } from "../client.js";
 import { GameButtons, SettingsSelectMenu } from "../components.js";
@@ -178,12 +178,12 @@ export function onModalSubmit(ctx: ModalSubmitInteraction) {
     }
 }
 
-export function handleGameResend(msg: Message<AnyGuildTextChannel>) {
+export function handleGameResend(msg: Message<AnyTextableGuildChannel>) {
     if (msg.author.id === client.user.id) return;
     const game = games[msg.channel.id];
     if (!game || !hasStarted(game) || !game.settings.resendGameMessage) return;
 
-    const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyGuildTextChannel>>)
+    const scrolledWeight = (msg.channel.messages as TypedCollection<string, any, Message<AnyTextableGuildChannel>>)
         .filter(m => BigInt(m.id) > BigInt(game.message.id))
         .reduce((weight, msg2) => (msg2.content.length > 800 || !msg2.attachments.empty || msg2.embeds.length ? 2 : 1) + weight, 0);
     if (scrolledWeight > 20) sendGameMessage(game, true);

@@ -1,5 +1,5 @@
 import { config } from "dotenv"; config();
-import { AnyGuildTextChannel, Client, CreateMessageOptions, Message } from "oceanic.js";
+import { AnyTextableGuildChannel, Client, CreateMessageOptions, Message } from "oceanic.js";
 
 import { onMsgError } from "./utils.js";
 
@@ -11,14 +11,14 @@ export const client = new Client({
     allowedMentions: { everyone: false, roles: false, users: false, repliedUser: false }
 });
 
-export const sendMessage = (channelID: string, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyGuildTextChannel>> =>
+export const sendMessage = (channelID: string, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyTextableGuildChannel>> =>
     client.rest.channels
-        .createMessage<AnyGuildTextChannel>(channelID, typeof content === "string" ? { content } : content)
+        .createMessage<AnyTextableGuildChannel>(channelID, typeof content === "string" ? { content } : content)
         .catch(e => tryAgain ? sendMessage(channelID, content, false) : onMsgError(e, { channelID }));
 
-export const editMessage = (message: Message, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyGuildTextChannel>> =>
+export const editMessage = (message: Message, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyTextableGuildChannel>> =>
     client.rest.channels
-        .editMessage<AnyGuildTextChannel>(message.channelID, message.id, typeof content === "string" ? { content } : content)
+        .editMessage<AnyTextableGuildChannel>(message.channelID, message.id, typeof content === "string" ? { content } : content)
         .catch(e => tryAgain ? editMessage(message, content, false) : onMsgError(e, message));
 
 export const deleteMessage = (message: Message, tryAgain = true) =>

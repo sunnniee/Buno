@@ -1,4 +1,4 @@
-import { AnyGuildTextChannel, Message } from "oceanic.js";
+import { AnyTextableGuildChannel, Message } from "oceanic.js";
 
 import { colors, uniqueVariants, variants } from "./constants.js";
 
@@ -15,7 +15,7 @@ export type Config = {
 export type Command = {
     name: string,
     aliases?: string[]
-    execute: (msg: Message<AnyGuildTextChannel>, args: string[]) => any;
+    execute: (msg: Message<AnyTextableGuildChannel>, args: string[]) => any;
 }
 
 export type PlayerStorage = {
@@ -72,7 +72,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     settings: UnoGameSettings,
     turn: number,
     saboteurs: { [id: string]: boolean },
-    message: Message<AnyGuildTextChannel>,
+    message: Message<AnyTextableGuildChannel>,
     channelID: string,
     guildID: string,
     _modified: boolean,
@@ -92,7 +92,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     host: string,
     players: string[],
     settings: UnoGameSettings,
-    message: Message<AnyGuildTextChannel>,
+    message: Message<AnyTextableGuildChannel>,
     channelID: string,
     guildID: string,
     _allowSolo: boolean,

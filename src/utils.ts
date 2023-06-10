@@ -1,4 +1,4 @@
-import { AnyGuildTextChannel, Guild } from "oceanic.js";
+import { AnyTextableGuildChannel, Guild } from "oceanic.js";
 
 import { client } from "./client.js";
 import { cards } from "./constants.js";
@@ -7,7 +7,7 @@ import { games } from "./gameLogic/index.js";
 import { Card, PlayerStorage, UnoGame } from "./types.js";
 
 export function onMsgError(e: Error, ctx: { channelID: string }) {
-    client.rest.channels.createMessage<AnyGuildTextChannel>(ctx.channelID, {
+    client.rest.channels.createMessage<AnyTextableGuildChannel>(ctx.channelID, {
         content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
     }).catch(() => { });
     if (e.message.includes("Unknown ")) return;
@@ -82,6 +82,7 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 }
 
 export function getUsername(id: string, nick: boolean, guild: Guild, inCodeblock = false) {
+    // Member.displayName is not actually the user's display name
     const name = (nick && guild?.members.get(id)?.nick)
         || guild?.members.get(id)?.username
         || client.users.get(id)?.username
