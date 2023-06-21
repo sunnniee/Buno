@@ -2,7 +2,7 @@ import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentTypes, MessageActionRow } from "oceanic.js";
 
 import { client, sendMessage } from "./client.js";
-import { ButtonIDs, cardEmotes, defaultSettings, maxRejoinableTurnCount, SelectIDs, SettingsIDs } from "./constants.js";
+import { ButtonIDs, cardEmotes, colors, defaultSettings, maxRejoinableTurnCount, SelectIDs, SettingsIDs, uniqueVariants } from "./constants.js";
 import { sendGameMessage } from "./gameLogic/index.js";
 import { Card, UnoGame } from "./types.js";
 import { cardArrayToCount, getUsername, next, toHumanReadableTime, toTitleCase } from "./utils.js";
@@ -130,24 +130,53 @@ export function PickCardSelect(game: UnoGame<true>, id: string, canSkip = false)
     return row.toJSON();
 }
 
-export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) => new ComponentBuilder<MessageActionRow>()
+export const DrawStackedCardSelect = (game: UnoGame<true>, cards: { [k in Card]?: number }) =>
+    new ComponentBuilder<MessageActionRow>()
+        .addSelectMenu({
+            customID: SelectIDs.FORCEFUL_DRAW,
+            options: [{
+                label: `Draw ${game.drawStackCounter} cards`,
+                value: "draw-forceful",
+                emoji: ComponentBuilder.emojiToPartial("🃏")
+            },
+            ...Object.keys(cards).map(c => {
+                if (c === "+4" || c.split("-")[1] === "+2") return {
+                    label: `${toTitleCase(c)}`,
+                    value: c,
+                    emoji: ComponentBuilder.emojiToPartial(cardEmotes[c])
+                };
+            })].filter(Boolean),
+            type: ComponentTypes.STRING_SELECT
+        })
+        .toJSON();
+
+export const CardColorSelect = (cardType: typeof uniqueVariants[number]) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({
-        customID: SelectIDs.FORCEFUL_DRAW,
-        options: [{
-            label: `Draw ${game.drawStackCounter} cards`,
-            value: "draw-forceful",
-            emoji: ComponentBuilder.emojiToPartial("🃏")
-        },
-        ...Object.keys(cards).map(c => {
-            if (c === "+4" || c.split("-")[1] === "+2") return {
-                label: `${toTitleCase(c)}`,
-                value: c,
-                emoji: ComponentBuilder.emojiToPartial(cardEmotes[c], "custom")
+        customID: SelectIDs.CHOOSE_COLOR,
+        options: Object.values(colors).map(c => {
+            return {
+                label: toTitleCase(c),
+                value: `${c}-${cardType}`
             };
-        })].filter(Boolean),
-        type: ComponentTypes.STRING_SELECT
+        }),
+        type: ComponentTypes.STRING_SELECT,
     })
     .toJSON();
+
+export function PlayerUserSelect(game: UnoGame<true>) {
+    const guild = client.guilds.get(game.guildID);
+    return new ComponentBuilder<MessageActionRow>()
+        .addSelectMenu({
+            customID: SelectIDs.PLAYER_USER_SELECT,
+            placeholder: "Choose a player",
+            options: game.players.filter(id => id !== game.currentPlayer).map(id => ({
+                label: getUsername(id, true, guild, "none"),
+                value: id
+            })),
+            type: ComponentTypes.STRING_SELECT
+        })
+        .toJSON();
+}
 
 export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder<MessageActionRow>()
     .addSelectMenu({

@@ -1,9 +1,8 @@
-import { ComponentBuilder } from "@oceanicjs/builders";
-import { ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags } from "oceanic.js";
+import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js";
 
 import { deleteMessage, sendMessage } from "../client.js";
-import { PickCardSelect } from "../components.js";
-import { cardEmotes, cards, colors, SelectIDs, uniqueVariants, variants } from "../constants.js";
+import { CardColorSelect, PickCardSelect } from "../components.js";
+import { cardEmotes, cards, colors, uniqueVariants, variants } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
@@ -124,19 +123,8 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     if (uniqueVariants.includes(color)) {
         return ctx.createFollowup({
             content: "Choose a color",
-            components: new ComponentBuilder<MessageActionRow>()
-                .addSelectMenu({
-                    customID: SelectIDs.CHOOSE_COLOR,
-                    options: Object.values(colors).map(c => {
-                        return {
-                            label: toTitleCase(c),
-                            value: `${c}-${color}`
-                        };
-                    }),
-                    type: ComponentTypes.STRING_SELECT,
-                })
-                .toJSON()
-        });
+            components: CardColorSelect(color as typeof uniqueVariants[number])
+        }).then(() => ctx.deleteOriginal());
     }
 
     if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer.id !== game.currentPlayer && !wasLastTurnBlocked(game))))
@@ -183,33 +171,41 @@ You drew ${cardEmotes[newCards[0]]}`,
         game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
         delete game.saboteurs[game.lastPlayer.id];
 
-        if (variant === "reverse") {
-            game.players = game.players.reverse();
-            if (game.players.length === 2) {
+        switch (variant) {
+            case "reverse": {
+                game.players = game.players.reverse();
+                if (game.players.length === 2) {
+                    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+                    extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
+                }
+                break;
+            }
+            case "+2": {
+                const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
+                if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
+                    game.drawStackCounter += 2;
+                }
+                else if (game.cards[ctx.member.id].length > 0) {
+                    const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
+                    game.cards[nextPlayer].push(...cards);
+                    game.deck = newDeck;
+                    extraInfo = `**${getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
+                    game.drawStackCounter = 0;
+                    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+                }
+                break;
+            }
+            case "block": {
                 game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
                 extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
+                break;
+            }
+            case "7":
+            case "0": {
+                // TODO
             }
         }
 
-        if (variant === "+2") {
-            const nextPlayer = next(game.players, game.players.indexOf(ctx.member.id));
-            if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
-                game.drawStackCounter += 2;
-            }
-            else if (game.cards[ctx.member.id].length > 0) {
-                const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
-                game.cards[nextPlayer].push(...cards);
-                game.deck = newDeck;
-                extraInfo = `**${getUsername(nextPlayer, true, ctx.guild)}** drew **${2 + game.drawStackCounter}** cards and was skipped`;
-                game.drawStackCounter = 0;
-                game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-            }
-        }
-
-        if (variant === "block") {
-            game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
-            extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
-        }
         if (game.settings.allowSkipping)
             game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         ctx.deleteOriginal();

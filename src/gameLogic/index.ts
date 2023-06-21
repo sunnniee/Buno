@@ -50,7 +50,7 @@ export function makeStartMessage(game: UnoGame<false>, guild?: Guild) {
 **Game will start <t:${game.starting}:R>**
 Current game host: ${getUsername(game.host, true, guild ?? game.message?.channel?.guild)}
 \`\`\`
-${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.guild, true) ?? `Unknown [${p}]`).join("\n")}
+${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.guild, "codeblock") ?? `Unknown [${p}]`).join("\n")}
 \`\`\`
     `)
         .setColor(defaultColor)
@@ -59,7 +59,7 @@ ${game.players.map(p => getUsername(p, true, guild ?? game.message?.channel?.gui
 
 const makeGameLine = (game: UnoGame<true>, playerID: string, i: number) =>
     `${game.players.indexOf(game.currentPlayer) === i ? "+ " : "\u200b  "}\
-${getUsername(playerID, true, game.message.channel.guild, true) ?? `Unknown [${playerID}]`}: \
+${getUsername(playerID, true, game.message.channel.guild, "codeblock") ?? `Unknown [${playerID}]`}: \
 ${game.cards[playerID].length} card${game.cards[playerID].length === 1 ? "" : "s"}`;
 
 export function sendGameMessage(game: UnoGame<true>, keepTimeout = false) {

@@ -111,6 +111,7 @@ export const SelectIDs = Object.freeze({
     CHOOSE_CARD_ABOVE_25: "choose-card-2",
     CHOOSE_COLOR: "choose-color",
     FORCEFUL_DRAW: "draw-or-stack",
+    PLAYER_USER_SELECT: "select-player-user",
     EDIT_GAME_SETTINGS: "change-settings",
     EDIT_GAME_SETTINGS_RULES: "change-game-rules",
 });

@@ -3,6 +3,7 @@ import { inspect } from "util";
 
 import { client } from "../client.js";
 import * as clientUtils from "../client.js";
+import * as components from "../components.js";
 import * as constants from "../constants.js";
 import database from "../database.js";
 import { games } from "../gameLogic/index.js";
@@ -10,7 +11,7 @@ import * as gameLogic from "../gameLogic/index.js";
 import { config } from "../index.js";
 import { Command } from "../types";
 import * as utils from "../utils.js";
-client; gameLogic; database; constants; utils;
+client; components; gameLogic; database; constants; utils;
 
 const MAX_RESPONSE_LENGTH = 1950;
 

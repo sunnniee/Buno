@@ -81,13 +81,15 @@ export function updateStats(game: UnoGame<true>, winner: string) {
     database.setBulk(game.guildID, newStats);
 }
 
-export function getUsername(id: string, nick: boolean, guild: Guild, inCodeblock = false) {
+export function getUsername(id: string, nick: boolean, guild: Guild, charEscape: "none" | "markdown" | "codeblock" = "markdown") {
     // Member.displayName is not actually the user's display name
     const name = (nick && guild?.members.get(id)?.nick)
         || guild?.members.get(id)?.username
         || client.users.get(id)?.username
         || id;
     if (!name) return "[this shouldn't be here]";
-    if (inCodeblock) return name.replace(/`/g, "`\u200b");
+
+    if (charEscape === "none") return name;
+    else if (charEscape === "codeblock") return name.replace(/`/g, "`\u200b");
     return name.replace(/([*_~`|])/g, "\\$1");
 }
