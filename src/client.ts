@@ -17,12 +17,12 @@ export const sendMessage = (channelID: string, content: CreateMessageOptions | s
         .catch(e => tryAgain ? sendMessage(channelID, content, false) : onMsgError(e, { channelID }));
 
 export const editMessage = (message: Message, content: CreateMessageOptions | string, tryAgain = true): Promise<void | Message<AnyTextableGuildChannel>> =>
-    client.rest.channels
+    message && client.rest.channels
         .editMessage<AnyTextableGuildChannel>(message.channelID, message.id, typeof content === "string" ? { content } : content)
         .catch(e => tryAgain ? editMessage(message, content, false) : onMsgError(e, message));
 
 export const deleteMessage = (message: Message, tryAgain = true) =>
-    client.rest.channels
+    message && client.rest.channels
         .deleteMessage(message.channel.id, message.id)
         .catch(() => tryAgain && deleteMessage(message, false));
 

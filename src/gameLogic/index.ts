@@ -8,9 +8,9 @@ import database from "../database.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { UnoGame } from "../types.js";
-import { cancelGameMessageFail, getPlayerMember, getUsername, hasStarted, next, toHumanReadableTime, toTitleCase } from "../utils.js";
+import { cancelGameMessageFail, getUsername, hasStarted, next, toHumanReadableTime, toTitleCase } from "../utils.js";
 import { makeSettingsModal, onGameJoin, onSettingsChange } from "./notStarted.js";
-import { onCardPlayed, onColorPlayed, onForceDrawPlayed } from "./playedCards.js";
+import { onCardPlayed, onColorPlayed, onForceDrawPlayed, onSevenPlayed } from "./playedCards.js";
 import { leaveGame, onGameButtonPress } from "./started.js";
 
 export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
@@ -23,15 +23,16 @@ export const games: { [channelId: string]: UnoGame<boolean> } = new Proxy({}, {
 
 export function onTimeout(game: UnoGame<true>, player: string) {
     if (!games[game.channelID] || player !== game.currentPlayer || game.uid !== games[game.channelID].uid) return;
-    const kickedPlayer = getPlayerMember(game, player);
+    const guild = client.guilds.get(game.guildID);
 
     game.currentPlayer = next(game.players, game.players.indexOf(player));
     if (game.settings.kickOnTimeout) {
         game.players.splice(game.players.indexOf(player), 1);
         game.playersWhoLeft.push(player);
     }
+
     sendMessage(game.channelID,
-        `**${kickedPlayer?.nick ?? kickedPlayer?.username}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
+        `**${getUsername(player, true, guild)}** was ${game.settings.kickOnTimeout ? "removed" : "skipped"} for inactivity`
     );
     if (game.players.length <= 1) {
         timeouts.delete(game.channelID);
@@ -141,18 +142,35 @@ export function onSelectMenu(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     const game = games[ctx.channel.id];
     if (!game) return;
 
-    if ((ctx.data.customID === SelectIDs.CHOOSE_CARD || ctx.data.customID === SelectIDs.CHOOSE_CARD_ABOVE_25)
-        && hasStarted(game)
-    )
-        onCardPlayed(ctx, game);
-    else if (ctx.data.customID === SelectIDs.CHOOSE_COLOR && hasStarted(game))
-        onColorPlayed(ctx, game);
-    else if (ctx.data.customID === SelectIDs.FORCEFUL_DRAW && hasStarted(game))
-        onForceDrawPlayed(ctx, game);
-    else if ((ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS || ctx.data.customID === SelectIDs.EDIT_GAME_SETTINGS_RULES)
-        && !hasStarted(game)
-    )
-        onSettingsChange(ctx, game);
+    switch (ctx.data.customID) {
+        case SelectIDs.CHOOSE_CARD:
+        case SelectIDs.CHOOSE_CARD_ABOVE_25: {
+            hasStarted(game) && onCardPlayed(ctx, game);
+            break;
+        }
+        case SelectIDs.CHOOSE_COLOR: {
+            hasStarted(game) && onColorPlayed(ctx, game);
+            break;
+        }
+        case SelectIDs.FORCEFUL_DRAW: {
+            hasStarted(game) && onForceDrawPlayed(ctx, game);
+            break;
+        }
+        case SelectIDs.PLAYER_USER_SELECT: {
+            hasStarted(game) && onSevenPlayed(ctx, game);
+            break;
+        }
+        case SelectIDs.EDIT_GAME_SETTINGS:
+        case SelectIDs.EDIT_GAME_SETTINGS_RULES: {
+            !hasStarted(game) && onSettingsChange(ctx, game);
+            break;
+        }
+        default: {
+            ctx.createFollowup({
+                content: `The \`${ctx.data.customID}\` select menu is missing a handler; this is a bug`
+            });
+        }
+    }
 }
 
 export function onModalSubmit(ctx: ModalSubmitInteraction) {

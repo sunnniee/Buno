@@ -1,7 +1,7 @@
 import { ComponentInteraction, ComponentTypes, MessageFlags } from "oceanic.js";
 
 import { deleteMessage, sendMessage } from "../client.js";
-import { CardColorSelect, PickCardSelect } from "../components.js";
+import { CardColorSelect, PickCardSelect, PlayerUserSelect } from "../components.js";
 import { cardEmotes, cards, colors, uniqueVariants, variants } from "../constants.js";
 import database from "../database.js";
 import { config } from "../index.js";
@@ -71,6 +71,8 @@ export function onColorPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(variant), 1);
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
+    deleteMessage(ctx.message.channel.messages.get(ctx.message.messageReference?.messageID));
+
     if (game.cards[ctx.member.id].length === 0) return;
     sendMessage(ctx.channel.id, `
     ${`**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[variant]} ${toTitleCase(variant)}, switching the color to ${color}`}\
@@ -95,6 +97,21 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
         sendGameMessage(game);
     }
     else onCardPlayed(ctx, game, true);
+}
+
+export function onSevenPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
+    if (game.currentPlayer !== ctx.member.id) return;
+    const id = ctx.data.values.raw[0];
+
+    [game.cards[ctx.member.id], game.cards[id]] = [game.cards[id], game.cards[ctx.member.id]];
+    sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** played \
+${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)}
+**${getUsername(ctx.member.id, true, ctx.guild)}** switched cards with **${getUsername(id, true, ctx.guild)}**`);
+
+    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
+    ctx.deleteOriginal();
+    deleteMessage(ctx.message.channel.messages.get(ctx.message.messageReference?.messageID));
+    sendGameMessage(game);
 }
 
 export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>, ignoreDrawStack = false) {
@@ -122,9 +139,10 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
 
     if (uniqueVariants.includes(color)) {
         return ctx.createFollowup({
-            content: "Choose a color",
-            components: CardColorSelect(color as typeof uniqueVariants[number])
-        }).then(() => ctx.deleteOriginal());
+            content: `<@${ctx.member.id}> Choose a color`,
+            components: CardColorSelect(color as typeof uniqueVariants[number]),
+            allowedMentions: { users: true }
+        });
     }
 
     if (cardPlayed === "skip" && (!game.settings.allowSkipping || (game.lastPlayer.id !== game.currentPlayer && !wasLastTurnBlocked(game))))
@@ -200,9 +218,25 @@ You drew ${cardEmotes[newCards[0]]}`,
                 extraInfo = `**${getUsername(game.currentPlayer, true, ctx.guild)}** was skipped`;
                 break;
             }
-            case "7":
+            case "7": {
+                if (!game.settings.sevenAndZero) break;
+
+                return ctx.createFollowup({
+                    content: `<@${ctx.member.id}> Choose a player`,
+                    components: PlayerUserSelect(game),
+                    allowedMentions: { users: true }
+                });
+            }
             case "0": {
-                // TODO
+                if (!game.settings.sevenAndZero) break;
+                extraInfo = "All players' cards have been switched!";
+
+                const keys = Object.keys(game.cards);
+                keys.unshift(keys.pop());
+                game.cards = Object.fromEntries(Object.entries(game.cards).map(([_, value], i) =>
+                    [keys[i], value]
+                ));
+                break;
             }
         }
 
@@ -224,6 +258,7 @@ You drew ${cardEmotes[newCards[0]]}`,
                     : `**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
         );
+
         if (cardPlayed !== "draw" || !game.settings.allowSkipping) {
             sendGameMessage(game);
         } else {

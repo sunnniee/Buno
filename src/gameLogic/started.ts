@@ -129,12 +129,14 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
         case ButtonIDs.VIEW_GAME_SETTINGS: {
             return ctx.createFollowup({
                 content: `Kick on timeout: **${game.settings.kickOnTimeout ? "Enabled" : "Disabled"}**
-Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**
-Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
 Randomize order of players: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
 Resend game message: **${game.settings.resendGameMessage ? "Enabled" : "Disabled"}**
-Can join mid game: **${game.settings.resendGameMessage ? "Yes" : "No"}**
-Anti sabotage: **find out 🚎**`,
+Joining mid game: **${game.settings.canRejoin === "no" ? "Disabled" : "Enabled"}**
+Anti sabotage: **find out :troll\\:**
+
+Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**
+Stack +2's and +4's: **${game.settings.allowStacking ? "Enabled" : "Disabled"}**
+7 and 0: **${game.settings.sevenAndZero ? "Enabled" : "Disabled"}**`,
                 flags: MessageFlags.EPHEMERAL
             });
         }

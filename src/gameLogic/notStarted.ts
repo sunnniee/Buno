@@ -230,6 +230,10 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
             game.settings.canRejoin = next(rejoinOptionOrder, rejoinOptionOrder.indexOf(game.settings.canRejoin));
             break;
         }
+        case SettingsIDs.SEVEN_AND_ZERO: {
+            game.settings.sevenAndZero = !game.settings.sevenAndZero;
+            break;
+        }
         default: {
             ctx.createFollowup({
                 content: `The **${ctx.data.values.raw[0]}** setting is missing a handler. this is a bug`

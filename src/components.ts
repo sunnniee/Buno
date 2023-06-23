@@ -243,11 +243,11 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
                 value: SettingsIDs.ALLOW_CARD_STACKING,
                 description: game.settings.allowStacking ? "Enabled" : "Disabled"
             },
-            // {
-            //     label: "7 and 0 (does not work)",
-            //     value: SettingsIDs.SEVEN_AND_ZERO,
-            //     description: game.settings.sevenAndZero ? "Enabled" : "Disabled"
-            // }
+            {
+                label: "7 and 0",
+                value: SettingsIDs.SEVEN_AND_ZERO,
+                description: game.settings.sevenAndZero ? "Enabled" : "Disabled"
+            }
         ]
     })
     .toJSON();
