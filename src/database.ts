@@ -95,8 +95,9 @@ class PlayerStatsDatabase {
         const value = this.get(guildId, playerId);
         if (value) return value;
 
-        this.set(guildId, playerId, this.defaultValue);
-        return { ...this.defaultValue };
+        const defaultValue = JSON.parse(JSON.stringify(this.defaultValue));
+        this.set(guildId, playerId, defaultValue);
+        return defaultValue;
     }
 
     getAllForGuild(guildId: string): GuildStorage | undefined {
@@ -114,8 +115,9 @@ class PlayerStatsDatabase {
         if (!this.hasInitalized) return;
 
         let current = this.cache[guildId][playerId];
-        if (!current) current = { ...this.defaultValue };
+        if (!current) current = JSON.parse(JSON.stringify(this.defaultValue));
         this.cache[guildId][playerId] = { ...newValue, ...current };
+
         if (this.cache[guildId].settingsVersion !== this.latestSettingsVersion)
             this.cache[guildId] = this.migrateSettings(this.cache[guildId]);
 
@@ -127,9 +129,10 @@ class PlayerStatsDatabase {
 
         Object.entries(values).forEach(([id, value]) => {
             let current = this.cache[guildId][id];
-            if (!current) current = { ...this.defaultValue };
+            if (!current) current = JSON.parse(JSON.stringify(this.defaultValue));
             this.cache[guildId][id] = { ...value, ...current };
         });
+
         if (this.cache[guildId].settingsVersion !== this.latestSettingsVersion)
             this.cache[guildId] = this.migrateSettings(this.cache[guildId]);
 

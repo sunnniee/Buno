@@ -19,12 +19,14 @@ Jump: https://discord.com/channels/${existingGame.message.channel.guild.id}/${ex
         games[msg.channel.id] = { started: false } as UnoGame<false>;
 
         const data = database.getOrCreate(msg.guild.id, msg.author.id);
-
-        const { canRejoin } = data.preferredSettings;
-        if (typeof canRejoin === "boolean") {
-            data.preferredSettings.canRejoin = canRejoin ? "temporarily" : "no";
-            database.set(msg.guild.id, msg.author.id, { preferredSettings: data.preferredSettings });
-        }
+        Object.entries(database.defaultValue.preferredSettings).forEach(([k, v]) => {
+            let isOutdated = false;
+            if (!(k in data.preferredSettings)) {
+                isOutdated = true;
+                data.preferredSettings[k] = v;
+            }
+            if (isOutdated) database.set(msg.guild.id, msg.author.id, { preferredSettings: data.preferredSettings });
+        });
 
         const gameObj = {
             uid: Math.random().toString().substring(2),

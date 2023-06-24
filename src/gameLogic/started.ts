@@ -96,8 +96,8 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: "You can't rejoin a game you left!",
                 flags: MessageFlags.EPHEMERAL
             });
-            if (game.settings.canRejoin === "no"
-                || (game.settings.canRejoin === "temporarily" && game.turn > maxRejoinableTurnCount))
+            if (game.settings.canJoinMidgame === "no"
+                || (game.settings.canJoinMidgame === "temporarily" && game.turn > maxRejoinableTurnCount))
                 return ctx.createFollowup({
                     content: "You can't rejoin this game",
                     flags: MessageFlags.EPHEMERAL
@@ -131,7 +131,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
                 content: `Kick on timeout: **${game.settings.kickOnTimeout ? "Enabled" : "Disabled"}**
 Randomize order of players: **${game.settings.randomizePlayerList ? "Enabled" : "Disabled"}**
 Resend game message: **${game.settings.resendGameMessage ? "Enabled" : "Disabled"}**
-Joining mid game: **${game.settings.canRejoin === "no" ? "Disabled" : "Enabled"}**
+Joining mid game: **${game.settings.canJoinMidgame === "no" ? "Disabled" : "Enabled"}**
 Anti sabotage: **find out :troll\\:**
 
 Skipping turns: **${game.settings.allowSkipping ? "Enabled" : "Disabled"}**

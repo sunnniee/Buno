@@ -227,7 +227,7 @@ export function onSettingsChange(ctx: ComponentInteraction<ComponentTypes.STRING
         }
         case SettingsIDs.ALLOW_REJOINING: {
             // @ts-ignore Argument of type 'readonly ["no", "temporarily", "permanently"]' is not assignable to parameter of type '("no" | "temporarily" | "permanently")[]'.
-            game.settings.canRejoin = next(rejoinOptionOrder, rejoinOptionOrder.indexOf(game.settings.canRejoin));
+            game.settings.canJoinMidgame = next(rejoinOptionOrder, rejoinOptionOrder.indexOf(game.settings.canJoinMidgame));
             break;
         }
         case SettingsIDs.SEVEN_AND_ZERO: {

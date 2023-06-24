@@ -67,8 +67,8 @@ export const GameButtons = ((game: UnoGame<true>) => {
             style: ButtonStyles.PRIMARY,
             customID: ButtonIDs.JOIN_MID_GAME,
             label: "Join",
-            disabled: game.settings.canRejoin === "no"
-                || (game.settings.canRejoin === "temporarily" && game.turn > maxRejoinableTurnCount),
+            disabled: game.settings.canJoinMidgame === "no"
+                || (game.settings.canJoinMidgame === "temporarily" && game.turn > maxRejoinableTurnCount),
             emoji: ComponentBuilder.emojiToPartial("➡️", "default")
         });
     return components.toJSON();
@@ -213,7 +213,7 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
                 label: "Allow joining mid game",
                 value: SettingsIDs.ALLOW_REJOINING,
                 description: (() => {
-                    switch (game.settings.canRejoin) {
+                    switch (game.settings.canJoinMidgame) {
                         case "no": {
                             return "Disabled";
                         }
@@ -222,6 +222,9 @@ export const SettingsSelectMenu = (game: UnoGame<false>) => new ComponentBuilder
                         }
                         case "permanently": {
                             return "For the whole game";
+                        }
+                        default: {
+                            return "[placeholder, if this is shown something went wrong]";
                         }
                     }
                 })()
