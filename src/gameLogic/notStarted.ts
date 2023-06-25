@@ -121,6 +121,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
         playersWhoLeft: [],
         host: game.host,
         deck: shuffle(dupe([...cards, ...uniqueVariants])),
+        drawDuration: 0,
         drawStackCounter: 0,
         currentPlayer: players[0],
         lastPlayer: { id: null, duration: 0 },

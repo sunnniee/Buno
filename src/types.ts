@@ -63,6 +63,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     currentCardColor: typeof colors[number],
     deck: Card[],
     draw: (amount: number) => { cards: Card[], newDeck: Card[] },
+    drawDuration: number,
     drawStackCounter: number,
     currentPlayer: string,
     lastPlayer: {

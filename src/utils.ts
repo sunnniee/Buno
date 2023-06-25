@@ -52,7 +52,9 @@ export const toTitleCase = (n: string) =>
     n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
 
 export const wasLastTurnBlocked = (game: UnoGame<true>) =>
-    game.currentCard === "+4" || ["+2", "block"].includes(game.currentCard.split("-")[1]);
+    game.currentCard === "+4"
+    || ["+2", "block"].includes(game.currentCard.split("-")[1])
+    || (game.players.length <= 2 && game.currentCard.split("-")[1] === "reverse");
 
 export const cardArrayToCount = (a: Card[]) => a
     .sort((a, b) => cards.indexOf(a) - cards.indexOf(b))

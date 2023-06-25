@@ -16,7 +16,7 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
     if (game.cards[next(game.players, game.players.indexOf(game.lastPlayer.id))].length <= 2) maxDuration--;
     if (game.saboteurs[game.lastPlayer.id]) maxDuration--;
 
-    if (game.lastPlayer.duration >= maxDuration) {
+    if (game.drawDuration >= maxDuration) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
         game.playersWhoLeft.push(ctx.member.id);
 
@@ -33,7 +33,7 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
         return true;
     }
 
-    if (game.lastPlayer.duration === maxDuration - 1) {
+    if (game.drawDuration === maxDuration - 1) {
         game.saboteurs[game.lastPlayer.id] = true;
     }
 
@@ -102,13 +102,13 @@ export function onForceDrawPlayed(ctx: ComponentInteraction<ComponentTypes.STRIN
 export function onSevenPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>) {
     if (game.currentPlayer !== ctx.member.id) return;
     const id = ctx.data.values.raw[0];
+    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
 
     [game.cards[ctx.member.id], game.cards[id]] = [game.cards[id], game.cards[ctx.member.id]];
     sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** played \
 ${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)}
 **${getUsername(ctx.member.id, true, ctx.guild)}** switched cards with **${getUsername(id, true, ctx.guild)}**`);
 
-    game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     ctx.deleteOriginal();
     deleteMessage(ctx.message.channel.messages.get(ctx.message.messageReference?.messageID));
     sendGameMessage(game);
@@ -138,6 +138,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     });
 
     if (uniqueVariants.includes(color)) {
+        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed as Card), 1);
         return ctx.createFollowup({
             content: `<@${ctx.member.id}> Choose a color`,
             components: CardColorSelect(color as typeof uniqueVariants[number]),
@@ -158,6 +159,7 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     let extraInfo = "";
     if (cardPlayed === "draw") {
         if (isSabotage(ctx, game)) return;
+        game.drawDuration++;
 
         const { cards: newCards, newDeck } = game.draw(1);
         game.cards[ctx.member.id].push(newCards[0]);
@@ -179,6 +181,7 @@ You drew ${cardEmotes[newCards[0]]}`,
     }
 
     else if (cardPlayed === "skip") {
+        game.drawDuration = 0;
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         ctx.deleteOriginal();
     }
@@ -187,7 +190,7 @@ You drew ${cardEmotes[newCards[0]]}`,
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
         game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
-        delete game.saboteurs[game.lastPlayer.id];
+        game.drawDuration = 0;
 
         switch (variant) {
             case "reverse": {
