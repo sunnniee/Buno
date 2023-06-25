@@ -84,8 +84,9 @@ export function updateStats(game: UnoGame<true>, winner: string) {
 }
 
 export function getUsername(id: string, nick: boolean, guild: Guild, charEscape: "none" | "markdown" | "codeblock" = "markdown") {
-    // Member.displayName is not actually the user's display name
     const name = (nick && guild?.members.get(id)?.nick)
+        || guild?.members.get(id)?.user.globalName
+        || client.users.get(id)?.globalName
         || guild?.members.get(id)?.username
         || client.users.get(id)?.username
         || id;
