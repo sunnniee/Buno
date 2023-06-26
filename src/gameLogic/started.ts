@@ -9,7 +9,7 @@ import { config } from "../index.js";
 import { UnoGame } from "../types.js";
 import { cardArrayToCount, getUsername, next, toTitleCase } from "../utils.js";
 import { sendGameMessage } from "./index.js";
-import { makeDrawCardProxy } from "./notStarted.js";
+import { handleDrawCardProxy } from "./notStarted.js";
 
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
@@ -115,8 +115,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
 
             game.cards[ctx.member.id] = new Proxy(cards, {
                 set(t, p, n) {
-                    makeDrawCardProxy(game, ctx.member.id, t, p, n);
-                    return true;
+                    return handleDrawCardProxy(game, ctx.member.id, t, p, n);
                 }
             });
             game.deck = newDeck;

@@ -1,16 +1,16 @@
 import { ComponentBuilder } from "@oceanicjs/builders";
 import { ButtonStyles, ComponentInteraction, ComponentTypes, MessageActionRow, MessageFlags, ModalActionRow, TextInputStyles } from "oceanic.js";
 
-import { deleteMessage, respond, sendMessage } from "../client.js";
+import { client, deleteMessage, respond, sendMessage } from "../client.js";
 import { SettingsSelectMenu } from "../components.js";
 import { ButtonIDs, cardEmotes, cards, defaultSettings, SettingsIDs, uniqueVariants, veryLongTime } from "../constants.js";
 import database from "../database.js";
 import timeouts from "../timeouts.js";
 import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
-import { getPlayerMember, hasStarted, next, shuffle, toTitleCase, updateStats, without } from "../utils.js";
+import { getUsername, hasStarted, next, shuffle, toTitleCase, updateStats, without } from "../utils.js";
 import { games, makeStartMessage, sendGameMessage } from "./index.js";
 
-export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
+export function handleDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
     t[p] = n;
     if (p === "length") startedGame._debug.pushState({
         type: "set-cards",
@@ -20,12 +20,12 @@ export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t,
     if (p === "length" && n === 0) {
         // TODO: check that the card shown here is the correct one and dont just pray it is
         const card = startedGame.currentCard;
-        const winner = getPlayerMember(startedGame, userId);
         timeouts.delete(startedGame.channelID);
         updateStats(startedGame, userId);
         delete games[startedGame.channelID];
         sendMessage(startedGame.channelID, {
-            content: `**${winner?.nick ?? winner?.username}** played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
+            content: `**${getUsername(userId, true, client.guilds.get(startedGame.guildID))}** \
+played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
             components: new ComponentBuilder<MessageActionRow>()
                 .addInteractionButton({
                     style: ButtonStyles.SUCCESS,
@@ -37,6 +37,7 @@ export function makeDrawCardProxy(startedGame: UnoGame<true>, userId: string, t,
                 .toJSON()
         });
     }
+    return true;
 }
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
@@ -93,12 +94,12 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
                 meetsEndCondition: [t.filter(Boolean).length <= 1, t.filter(Boolean).length]
             });
             if (t.filter(Boolean).length <= 1) {
-                const winner = getPlayerMember(startedGame, t.filter(Boolean)[0]);
                 timeouts.delete(game.channelID);
                 delete games[startedGame.channelID];
                 setTimeout(() =>
                     sendMessage(startedGame.channelID, {
-                        content: `**${winner?.nick ?? winner?.username}** won by default`,
+                        content: `**${getUsername(t.filter(Boolean)[0], true, client.guilds.get(game.guildID))}** \
+won by default`,
                         components: new ComponentBuilder<MessageActionRow>()
                             .addInteractionButton({
                                 style: ButtonStyles.SUCCESS,
@@ -148,8 +149,7 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     Object.keys(cardsToBeUsed).forEach(id => {
         cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
             set(t, p, n) {
-                makeDrawCardProxy(startedGame, id, t, p, n);
-                return true;
+                return handleDrawCardProxy(startedGame, id, t, p, n);
             }
         });
     });

@@ -62,10 +62,8 @@ export const cardArrayToCount = (a: Card[]) => a
         obj[c] = (obj[c] + 1) || 1; return obj;
     }, {} as { [k in Card]?: number; });
 
-export const getPlayerMember = (game: UnoGame<boolean>, player: string) => game.message.channel.guild.members.get(player);
-
 export function cancelGameMessageFail(game: UnoGame<boolean>) {
-    getPlayerMember(game, game.host).user.createDM()
+    game.message.channel.guild.members.get(game.host).user.createDM()
         .then(ch => ch.createMessage({ content: "Cancelling game as the bot is unable to send messages" }))
         .catch(() => { });
     delete games[game.channelID];
