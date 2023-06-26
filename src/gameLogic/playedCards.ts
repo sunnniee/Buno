@@ -9,7 +9,7 @@ import timeouts from "../timeouts.js";
 import { Card, UnoGame } from "../types.js";
 import { getUsername, next, toTitleCase, updateStats, wasLastTurnBlocked } from "../utils.js";
 import { games, onTimeout, sendGameMessage } from "./index.js";
-import { handleDrawCardProxy } from "./notStarted.js";
+import { makeDrawCardProxy } from "./notStarted.js";
 
 function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, game: UnoGame<true>): boolean {
     // first card is duration=0, second is duration=1, etc
@@ -106,16 +106,8 @@ export function onSevenPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SE
     game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
 
     const otherPlayerCards = [...game.cards[id]];
-    game.cards[id] = new Proxy([...game.cards[ctx.member.id]], {
-        set(t, p, n) {
-            return handleDrawCardProxy(game, id, t, p, n);
-        }
-    });
-    game.cards[ctx.member.id] = new Proxy(otherPlayerCards, {
-        set(t, p, n) {
-            return handleDrawCardProxy(game, ctx.member.id, t, p, n);
-        }
-    });
+    game.cards[id] = makeDrawCardProxy(game.cards[ctx.member.id], game, id);
+    game.cards[ctx.member.id] = makeDrawCardProxy(otherPlayerCards, game, ctx.member.id);
 
     sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** played \
 ${cardEmotes[game.currentCard]} ${toTitleCase(game.currentCard)}
@@ -249,11 +241,7 @@ You drew ${cardEmotes[newCards[0]]}`,
                 const keys = Object.keys(game.cards);
                 keys.unshift(keys.pop());
                 game.cards = Object.fromEntries(Object.entries(game.cards).map(([_, value], i) =>
-                    [keys[i], new Proxy([...value], {
-                        set(t, p, n) {
-                            return handleDrawCardProxy(game, keys[i], t, p, n);
-                        }
-                    })]
+                    [keys[i], makeDrawCardProxy(value, game, keys[i])]
                 ));
                 break;
             }

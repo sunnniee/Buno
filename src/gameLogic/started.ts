@@ -9,7 +9,7 @@ import { config } from "../index.js";
 import { UnoGame } from "../types.js";
 import { cardArrayToCount, getUsername, next, toTitleCase } from "../utils.js";
 import { sendGameMessage } from "./index.js";
-import { handleDrawCardProxy } from "./notStarted.js";
+import { makeDrawCardProxy } from "./notStarted.js";
 
 export function leaveGame(ctx: ComponentInteraction<ComponentTypes.BUTTON>, game: UnoGame<true>) {
     if (game.players.includes(ctx.member.id)) {
@@ -113,11 +113,7 @@ export function onGameButtonPress(ctx: ComponentInteraction<ComponentTypes.BUTTO
             const secondHighest = cardCounts.pop();
             const { cards, newDeck } = game.draw(Math.min(highest, secondHighest + 5, 7));
 
-            game.cards[ctx.member.id] = new Proxy(cards, {
-                set(t, p, n) {
-                    return handleDrawCardProxy(game, ctx.member.id, t, p, n);
-                }
-            });
+            game.cards[ctx.member.id] = makeDrawCardProxy(cards, game, ctx.member.id);
             game.deck = newDeck;
 
             sendMessage(ctx.channel.id, `**${getUsername(ctx.member.id, true, ctx.guild)}** has joined the game!`);

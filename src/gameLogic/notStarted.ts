@@ -10,34 +10,42 @@ import { Card, DebugState, DebugStateType, UnoGame } from "../types.js";
 import { getUsername, hasStarted, next, shuffle, toTitleCase, updateStats, without } from "../utils.js";
 import { games, makeStartMessage, sendGameMessage } from "./index.js";
 
-export function handleDrawCardProxy(startedGame: UnoGame<true>, userId: string, t, p, n) {
-    t[p] = n;
-    if (p === "length") startedGame._debug.pushState({
-        type: "set-cards",
-        newState: t,
-        meetsEndCondition: [p === "length" && n === 0, n]
-    });
-    if (p === "length" && n === 0) {
-        // TODO: check that the card shown here is the correct one and dont just pray it is
-        const card = startedGame.currentCard;
-        timeouts.delete(startedGame.channelID);
-        updateStats(startedGame, userId);
-        delete games[startedGame.channelID];
-        sendMessage(startedGame.channelID, {
-            content: `**${getUsername(userId, true, client.guilds.get(startedGame.guildID))}** \
+export function makeDrawCardProxy(cards: Card[], game: UnoGame<true>, userId: string) {
+    return new Proxy([...cards], {
+        get(t, p) {
+            if (p === "owner") return userId;
+            else return t[p];
+        },
+        set(t, p, n) {
+            t[p] = n;
+            if (p === "length") game._debug.pushState({
+                type: "set-cards",
+                newState: t,
+                meetsEndCondition: [p === "length" && n === 0, n]
+            });
+            if (p === "length" && n === 0) {
+                // TODO: check that the card shown here is the correct one and dont just pray it is
+                const card = game.currentCard;
+                timeouts.delete(game.channelID);
+                updateStats(game, userId);
+                delete games[game.channelID];
+                sendMessage(game.channelID, {
+                    content: `**${getUsername(userId, true, client.guilds.get(game.guildID))}** \
 played ${cardEmotes[card]} ${toTitleCase(card)}, and won`,
-            components: new ComponentBuilder<MessageActionRow>()
-                .addInteractionButton({
-                    style: ButtonStyles.SUCCESS,
-                    label: "gg",
-                    emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
-                    disabled: true,
-                    customID: "we-have-a-nerd-here🤓"
-                })
-                .toJSON()
-        });
-    }
-    return true;
+                    components: new ComponentBuilder<MessageActionRow>()
+                        .addInteractionButton({
+                            style: ButtonStyles.SUCCESS,
+                            label: "gg",
+                            emoji: ComponentBuilder.emojiToPartial("🏆", "default"),
+                            disabled: true,
+                            customID: "we-have-a-nerd-here🤓"
+                        })
+                        .toJSON()
+                });
+            }
+            return true;
+        }
+    });
 }
 
 const drawUntilNotSpecial = (game: UnoGame<true>) => {
@@ -147,11 +155,7 @@ won by default`,
         [p, startedGame.draw(7).cards.sort((a, b) => cards.indexOf(a) - cards.indexOf(b))]
     ));
     Object.keys(cardsToBeUsed).forEach(id => {
-        cardsToBeUsed[id] = new Proxy(cardsToBeUsed[id], {
-            set(t, p, n) {
-                return handleDrawCardProxy(startedGame, id, t, p, n);
-            }
-        });
+        cardsToBeUsed[id] = makeDrawCardProxy(cardsToBeUsed[id], startedGame, id);
     });
 
     startedGame.cards = cardsToBeUsed;
