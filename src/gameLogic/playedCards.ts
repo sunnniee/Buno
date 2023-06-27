@@ -142,7 +142,11 @@ export function onCardPlayed(ctx: ComponentInteraction<ComponentTypes.STRING_SEL
     });
 
     if (uniqueVariants.includes(color)) {
+        game.currentCard = color as typeof uniqueVariants[number];
+        game.drawDuration = 0;
         game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed as Card), 1);
+        if (game.cards[ctx.member.id].length === 0) return deleteMessage(game.message);
+
         return ctx.createFollowup({
             content: `<@${ctx.member.id}> Choose a color`,
             components: CardColorSelect(color as typeof uniqueVariants[number]),
@@ -193,8 +197,9 @@ You drew ${cardEmotes[newCards[0]]}`,
     else {
         game.currentCard = cardPlayed;
         game.currentCardColor = color as typeof colors[number];
-        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
         game.drawDuration = 0;
+        game.cards[ctx.member.id].splice(game.cards[ctx.member.id].indexOf(cardPlayed), 1);
+        if (game.cards[ctx.member.id].length === 0) return deleteMessage(game.message);
 
         switch (variant) {
             case "reverse": {
@@ -210,7 +215,7 @@ You drew ${cardEmotes[newCards[0]]}`,
                 if (game.settings.allowStacking && game.cards[nextPlayer].some(c => c === "+4" || c.endsWith("+2"))) {
                     game.drawStackCounter += 2;
                 }
-                else if (game.cards[ctx.member.id].length > 0) {
+                else {
                     const { cards, newDeck } = game.draw(2 + game.drawStackCounter);
                     game.cards[nextPlayer].push(...cards);
                     game.deck = newDeck;
@@ -256,21 +261,19 @@ You drew ${cardEmotes[newCards[0]]}`,
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
     game.cards[ctx.member.id].sort((a, b) => cards.indexOf(a) - cards.indexOf(b));
 
-    if (game.cards[ctx.member.id].length !== 0) {
-        sendMessage(ctx.channel.id,
-            `${cardPlayed === "draw"
-                ? `**${getUsername(ctx.member.id, true, ctx.guild)}** drew a card`
-                : cardPlayed === "skip"
-                    ? `**${getUsername(ctx.member.id, true, ctx.guild)}** skipped their turn`
-                    : `**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
+    sendMessage(ctx.channel.id,
+        `${cardPlayed === "draw"
+            ? `**${getUsername(ctx.member.id, true, ctx.guild)}** drew a card`
+            : cardPlayed === "skip"
+                ? `**${getUsername(ctx.member.id, true, ctx.guild)}** skipped their turn`
+                : `**${getUsername(ctx.member.id, true, ctx.guild)}** played ${cardEmotes[cardPlayed]} ${toTitleCase(cardPlayed)}`}\
         ${extraInfo.length ? `\n${extraInfo}` : ""}`
-        );
+    );
 
-        if (cardPlayed !== "draw" || !game.settings.allowSkipping) {
-            sendGameMessage(game);
-        } else {
-            timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
-            games[ctx.message.channel.id] = game;
-        }
-    } else deleteMessage(game.message);
+    if (cardPlayed !== "draw" || !game.settings.allowSkipping) {
+        sendGameMessage(game);
+    } else {
+        timeouts.set(game.channelID, () => onTimeout(game, game.currentPlayer), game.settings.timeoutDuration * 1000);
+        games[ctx.message.channel.id] = game;
+    }
 }
