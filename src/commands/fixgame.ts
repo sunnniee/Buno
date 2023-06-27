@@ -6,7 +6,7 @@ import { games, sendGameMessage } from "../gameLogic/index.js";
 import { config } from "../index.js";
 import timeouts from "../timeouts.js";
 import { Command, UnoGame } from "../types";
-import { cardArrayToCount, getUsername, hasStarted, next, updateStats, without } from "../utils.js";
+import { cardArrayToCount, drawProxyStatus, getUsername, hasStarted, next, updateStats, without } from "../utils.js";
 
 function sendDebugLog(game: UnoGame<true>, reason: "player left" | "card was played") {
     const debugChannel = client.getChannel(config.logChannel);
@@ -19,11 +19,14 @@ ${config.developerIds.map(id => `<@${id}>`).join(" ")}`,
         allowedMentions: { users: true },
         attachments: [{
             id: "0",
-            filename: "game.json"
+            filename: "game.ts"
         }],
         files: [{
-            name: "game.json",
-            contents: Buffer.from(inspect(without(game, "message"), { depth: Infinity }))
+            name: "game.ts",
+            contents: Buffer.from(`Card proxy status:
+${drawProxyStatus(game)}
+
+${inspect(without(game, "message"), { depth: Infinity })}`)
         }]
     });
 }

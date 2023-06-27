@@ -9,7 +9,7 @@ import database from "../database.js";
 import { games } from "../gameLogic/index.js";
 import * as gameLogic from "../gameLogic/index.js";
 import { config } from "../index.js";
-import { Command, UnoGame } from "../types";
+import { Command } from "../types";
 import * as utils from "../utils.js";
 client; components; gameLogic; database; constants; utils;
 
@@ -18,14 +18,6 @@ const MAX_RESPONSE_LENGTH = 1950;
 const bash = (cmd: string) => execSync(cmd, { encoding: "utf8" });
 const update = () => bash("git pull && npm run build");
 update;
-
-function sendDrawProxyStatus(game: UnoGame<true>) {
-    return clientUtils.sendMessage(game.message.channelID, Object.entries(game.cards).map(([k, v]) =>
-        // @ts-ignore
-        `\`${k}:\` ${v.owner ? `yes (${v.owner})` : "no"}`
-    ).join("\n"));
-}
-sendDrawProxyStatus;
 
 export const cmd = {
     name: "eval",

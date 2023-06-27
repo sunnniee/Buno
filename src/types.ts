@@ -79,7 +79,7 @@ export type UnoGame<T extends boolean> = T extends true ? {
     _modified: boolean,
     _debug: {
         _state: {
-            [k in DebugStateType]: (Omit<UnoGame<true>, "_debug" | "message" | "deck"> & {
+            [k in DebugStateType]: (Omit<UnoGame<true>, "_debug" | "message" | "deck" | "settings"> & {
                 action: DebugState,
                 _index: number
             })[]

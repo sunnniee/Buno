@@ -48,6 +48,13 @@ export class Queue {
     }
 }
 
+export function drawProxyStatus(game: UnoGame<true>) {
+    return Object.entries(game.cards).map(([k, v]) =>
+        // @ts-ignore
+        `\`${k}:\` ${v.owner ? `yes (${v.owner})` : "no"}`
+    ).join("\n");
+}
+
 export const toTitleCase = (n: string) =>
     n.split("-").map(w => `${w[0].toUpperCase()}${w.slice(1).toLowerCase()}`).join(" ");
 

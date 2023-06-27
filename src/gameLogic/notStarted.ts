@@ -58,11 +58,11 @@ const drawUntilNotSpecial = (game: UnoGame<true>) => {
 function dupe<T>(a: T[]): T[] { return a.concat(a); }
 
 function pushStateFactory(game: UnoGame<true>): (state: DebugState & { type: DebugStateType }) => void {
-    const MAX_STATE_LENGTH = 8;
+    const MAX_STATE_LENGTH = 10;
     return state => {
         const stateArray = game._debug._state[state.type];
         stateArray.push({
-            ...without(game, "_debug", "message", "deck"),
+            ...without(game, "_debug", "message", "deck", "settings"),
             action: state,
             _index: (stateArray.at(-1)?._index ?? 0) + 1
         });
