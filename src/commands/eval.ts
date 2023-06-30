@@ -13,7 +13,7 @@ import { Command } from "../types";
 import * as utils from "../utils.js";
 client; components; gameLogic; database; constants; utils;
 
-const MAX_RESPONSE_LENGTH = 1950;
+const MAX_RESPONSE_LENGTH = 1980;
 
 const bash = (cmd: string) => execSync(cmd, { encoding: "utf8" });
 const update = () => bash("git pull && npm run build");
@@ -26,7 +26,10 @@ export const cmd = {
         if (!config.developerIds.includes(msg.author.id)) return;
         const code = args.join(" ");
         const reportError = (e: Error): void => {
-            clientUtils.respond(msg, `Error\n\`\`\`ts\n${e}\`\`\``);
+            const evalPos = e.stack.split("\n").findIndex(l => l.includes("at eval"));
+            const stack = e.stack.split("\n").splice(0, evalPos).join("\n");
+
+            clientUtils.respond(msg, `Error\n\`\`\`ts\n${stack}\`\`\``);
         };
         msg.createReaction("👍").catch(() => { });
         try {
