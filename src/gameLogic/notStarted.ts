@@ -93,9 +93,31 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
 
     const settings = { ...defaultSettings, ...game.settings };
     const playerList = game.settings.randomizePlayerList ? shuffle(game.players) : game.players;
+    const startedGame = {
+        uid: game.uid,
+        started: true,
+        message: game.message,
+        playersWhoLeft: [],
+        host: game.host,
+        deck: shuffle(dupe([...cards, ...uniqueVariants])),
+        drawDuration: 0,
+        drawStackCounter: 0,
+        currentPlayer: playerList[0],
+        lastPlayer: { id: null, duration: 0 },
+        turn: 0,
+        settings,
+        saboteurs: {},
+        channelID: game.channelID,
+        guildID: game.guildID,
+        _modified: game._allowSolo ? true : game._modified,
+    } as UnoGame<true>;
+
     const players = new Proxy(playerList, {
-        deleteProperty(t, p) {
+        deleteProperty(t, p: string) {
             delete t[p];
+            delete startedGame.cards[p];
+            startedGame.playersWhoLeft.push(p);
+
             startedGame._debug.pushState({
                 type: "delete-player",
                 newState: t,
@@ -121,26 +143,7 @@ won by default`,
             return true;
         },
     });
-    const startedGame = {
-        uid: game.uid,
-        started: true,
-        message: game.message,
-        // TODO: proxy to push to playersWhoLeft?
-        players,
-        playersWhoLeft: [],
-        host: game.host,
-        deck: shuffle(dupe([...cards, ...uniqueVariants])),
-        drawDuration: 0,
-        drawStackCounter: 0,
-        currentPlayer: players[0],
-        lastPlayer: { id: null, duration: 0 },
-        turn: 0,
-        settings,
-        saboteurs: {},
-        channelID: game.channelID,
-        guildID: game.guildID,
-        _modified: game._modified,
-    } as UnoGame<true>;
+    startedGame.players = players;
 
     startedGame.draw = drawFactory(startedGame);
     startedGame._debug = {
