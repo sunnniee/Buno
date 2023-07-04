@@ -8,7 +8,9 @@ import { Card, PlayerStorage, UnoGame } from "./types.js";
 
 export function onMsgError(e: Error, ctx: { channelID: string }) {
     client.rest.channels.createMessage<AnyTextableGuildChannel>(ctx.channelID, {
-        content: `\`\`\`ts\n${e.toString().replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
+        content: `\`\`\`ts\n${(
+            process.argv[2] === "--dev" ? e.stack : e.toString()
+        )?.replace(/\/[\w]{25,}/gi, "/[REDACTED]")}\`\`\``
     }).catch(() => { });
     if (e.message.includes("Unknown ")) return;
     console.log(e);

@@ -7,6 +7,7 @@ import { defaultConfig } from "./constants.js";
 import { handleGameResend, onButtonPress, onModalSubmit, onSelectMenu } from "./gameLogic/index.js";
 import { patch } from "./patchContext.js";
 import { Command, Config } from "./types.js";
+import { onMsgError } from "./utils.js";
 
 declare global {
     interface Array<T> {
@@ -64,18 +65,28 @@ client.on("messageCreate", msg => {
     if (!msg.content.startsWith(prefix)) return;
     const args = msg.content.slice(prefix.length).split(/ +/);
     const command = args.shift();
-    if (commands[command]) commands[command].execute(msg, args);
+    if (commands[command]) {
+        try {
+            commands[command].execute(msg, args);
+        } catch (e) {
+            onMsgError(e, msg);
+        }
+    }
 });
 
 client.on("interactionCreate", ctx => {
     patch(ctx);
 
-    if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
-        if (ctx.isButtonComponentInteraction()) onButtonPress(ctx);
-        else onSelectMenu(ctx);
-    }
-    else if (ctx.type === InteractionTypes.MODAL_SUBMIT) {
-        onModalSubmit(ctx);
+    try {
+        if (ctx.type === InteractionTypes.MESSAGE_COMPONENT) {
+            if (ctx.isButtonComponentInteraction()) onButtonPress(ctx);
+            else onSelectMenu(ctx);
+        }
+        else if (ctx.type === InteractionTypes.MODAL_SUBMIT) {
+            onModalSubmit(ctx);
+        }
+    } catch (e) {
+        onMsgError(e, ctx);
     }
 });
 
