@@ -19,6 +19,8 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
 
     if (game.drawDuration >= maxDuration) {
         game.players.splice(game.players.indexOf(ctx.member.id), 1);
+        delete game.cards[ctx.member.id];
+        game.playersWhoLeft.push(ctx.member.id);
 
         sendMessage(ctx.channel.id, `Removed **${getUsername(game.lastPlayer.id, true, ctx.guild)}** for attempting to sabotage the game`);
         if (game.players.length <= 1) {
@@ -30,6 +32,7 @@ function isSabotage(ctx: ComponentInteraction<ComponentTypes.STRING_SELECT>, gam
 
         game.currentPlayer = next(game.players, game.players.indexOf(game.currentPlayer));
         game.lastPlayer.duration = 0;
+        sendGameMessage(game);
         return true;
     }
 

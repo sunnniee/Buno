@@ -75,6 +75,8 @@ export const cmd = {
             else if (Object.values(game.cards).some(c => Object.keys(cardArrayToCount(c)).length > 48)) {
                 const badPlayer = Object.entries(game.cards).find(c => Object.keys(cardArrayToCount(c[1])).length > 48)![0];
                 game.players.splice(game.players.indexOf(badPlayer), 1);
+                delete game.cards[badPlayer];
+                game.playersWhoLeft.push(badPlayer);
                 respond(msg, `Removed **${getUsername(badPlayer, true, msg.guild)}**`);
 
                 if (game.players.length <= 1) return;

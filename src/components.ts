@@ -103,6 +103,9 @@ export function PickCardSelect(game: UnoGame<true>, id: string, canSkip = false)
 
     if (entries.length > 50) {
         game.players.splice(game.players.indexOf(id), 1);
+        delete game.cards[id];
+        game.playersWhoLeft.push(id);
+
         sendMessage(game.channelID, `Removed **${getUsername(id, true, client.guilds.get(game.guildID))}**`);
         if (game.players.length <= 1) return;
         if (game.currentPlayer === id) {

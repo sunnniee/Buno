@@ -115,8 +115,6 @@ export function startGame(game: UnoGame<false>, automatic: boolean) {
     const players = new Proxy(playerList, {
         deleteProperty(t, p: string) {
             delete t[p];
-            delete startedGame.cards[p];
-            startedGame.playersWhoLeft.push(p);
 
             startedGame._debug.pushState({
                 type: "delete-player",
@@ -140,6 +138,7 @@ won by default`,
                             .toJSON()
                     }), 50);
             }
+
             return true;
         },
     });

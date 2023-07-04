@@ -28,6 +28,8 @@ export function onTimeout(game: UnoGame<true>, player: string) {
     game.currentPlayer = next(game.players, game.players.indexOf(player));
     if (game.settings.kickOnTimeout) {
         game.players.splice(game.players.indexOf(player), 1);
+        delete game.cards[player];
+        game.playersWhoLeft.push(player);
     }
 
     sendMessage(game.channelID,
