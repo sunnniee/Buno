@@ -48,7 +48,7 @@ readdir("./src/commands", (err, res) => {
     );
 });
 
-client.on("ready", () => {
+client.once("ready", () => {
     console.log("Ready as", client.user.tag);
 
     if (config.status) client.editStatus("online", [{ name: `${config.status} - ${prefix}uno`, type: ActivityTypes.GAME }]);
